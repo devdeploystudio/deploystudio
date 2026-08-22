@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>deploy studio</title>
+<meta name="description" content="Deploy Studio — Estudio de desarrollo web e identidad de marca. Landings, e-commerce, sitios institucionales y web apps. Logo y sistema visual completo." />
+<meta name="theme-color" content="#0D0D0D" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Deploy Studio — Diseño y desarrollo web" />
+<meta property="og:description" content="Sitios web e identidad de marca para proyectos que quieren verse en serio." />
+<meta property="og:image" content="img/logo.png" />
+<meta property="og:type" content="website" />
+
+<!-- Tipografía: Geist Sans + Geist Mono -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/400.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/500.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/600.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/700.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.2.5/400.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.2.5/500.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-mono@5.2.5/700.css" />
+
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- ══════════════ BOOT / PRELOADER ══════════════ -->
+<div class="boot" id="boot" aria-hidden="true">
+  <div class="boot__inner">
+    <div class="boot__log mono" id="bootLog"></div>
+    <div class="boot__bar"><span id="bootBar"></span></div>
+  </div>
+</div>
+
+<!-- ══════════════ SPOTLIGHT (sigue al mouse en toda la página) ══════════════ -->
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<header class="nav" id="nav">
+  <a href="#top" class="logo" aria-label="deploy — inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+
+  <nav class="nav__links" aria-label="Navegación principal">
+    <a href="#servicios"><span class="mono nav__idx">01</span> Servicios</a>
+    <a href="#proceso"><span class="mono nav__idx">02</span> Proceso</a>
+    <a href="#proyectos"><span class="mono nav__idx">03</span> Proyectos</a>
+    <a href="#contacto"><span class="mono nav__idx">04</span> Contacto</a>
+  </nav>
+
+  <a href="#contacto" class="btn btn--sm btn--lime nav__cta">
+    Empezar proyecto <span class="btn__arrow">→</span>
+  </a>
+
+  <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+    <span></span><span></span>
+  </button>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#servicios"><span class="mono">01</span> Servicios</a>
+  <a href="#proceso"><span class="mono">02</span> Proceso</a>
+  <a href="#proyectos"><span class="mono">03</span> Proyectos</a>
+  <a href="#contacto"><span class="mono">04</span> Contacto</a>
+  <a href="#contacto" class="btn btn--lime">Empezar proyecto →</a>
+</div>
+
+<main id="top">
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__tag mono reveal">
+      <span class="dot"></span> Disponibles para nuevos proyectos · 2026
+    </div>
+
+    <h1 class="hero__title">
+      <span class="line reveal">Tu marca,</span>
+      <span class="line reveal">lista para</span>
+      <span class="line reveal">
+        <em>producción</em><span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span>
+      </span>
+    </h1>
+
+    <p class="hero__sub reveal">
+      Diseñamos y desarrollamos sitios web e identidades de marca completas.
+      Del logo al dominio en línea: <strong>una sola persona menos con la que coordinar</strong>.
+    </p>
+
+    <div class="hero__actions reveal">
+      <a href="#contacto" class="btn btn--lime btn--lg">
+        Iniciar proyecto <span class="btn__arrow">→</span>
+      </a>
+      <a href="#proyectos" class="btn btn--ghost btn--lg">Ver proyectos</a>
+    </div>
+
+    <!-- Terminal -->
+    <div class="terminal reveal" aria-hidden="true">
+      <div class="terminal__bar">
+        <div class="terminal__dots"><i></i><i></i><i></i></div>
+        <span class="mono">deploy — bash — 80×24</span>
+      </div>
+      <div class="terminal__body mono" id="termBody"></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ MARQUEE ══════════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>Landing pages</span><b>/</b><span>E-commerce</span><b>/</b><span>Sitios institucionales</span><b>/</b>
+    <span>Web apps</span><b>/</b><span>Identidad de marca</span><b>/</b><span>Diseño de logo</span><b>/</b>
+    <span>Sistemas visuales</span><b>/</b><span>SEO técnico</span><b>/</b>
+    <span>Landing pages</span><b>/</b><span>E-commerce</span><b>/</b><span>Sitios institucionales</span><b>/</b>
+    <span>Web apps</span><b>/</b><span>Identidad de marca</span><b>/</b><span>Diseño de logo</span><b>/</b>
+    <span>Sistemas visuales</span><b>/</b><span>SEO técnico</span><b>/</b>
+  </div>
+</div>
+
+<!-- ══════════════ STATS (oculta por ahora) ══════════════
+     Para volver a mostrarla: borrá esta línea de apertura y el cierre de abajo.
+     Ojo con los números antes de reactivarla.
+
+<section class="stats">
+  <div class="stat reveal">
+    <span class="stat__num mono" data-count="24">0</span>
+    <span class="stat__label">Proyectos entregados</span>
+  </div>
+  <div class="stat reveal">
+    <span class="stat__num mono" data-count="98" data-suffix="">0</span>
+    <span class="stat__label">Performance promedio <br><i class="mono">(Lighthouse)</i></span>
+  </div>
+  <div class="stat reveal">
+    <span class="stat__num mono" data-count="14" data-suffix="">0</span>
+    <span class="stat__label">Días promedio para entregar una landing</span>
+  </div>
+  <div class="stat reveal">
+    <span class="stat__num mono" data-count="100" data-suffix="%">0</span>
+    <span class="stat__label">Sitios responsive y optimizados</span>
+  </div>
+</section>
+
+══════════════ fin STATS oculta ══════════════ -->
+
+<!-- ══════════════ SERVICIOS ══════════════ -->
+<section class="section svcs" id="servicios">
+  <div class="section__head section__head--row">
+    <div>
+      <span class="eyebrow mono">01 — Qué hacemos</span>
+      <h2 class="section__title">Elegí lo que<br>necesitás<span class="lime">.</span></h2>
+    </div>
+    <div class="svcs__intro">
+      <p class="section__lead">
+        Pasá las tarjetas para el costado y mirá en la pantalla cómo se ve cada una.
+        Cada tarjeta dice qué incluye, cuánto tarda y cuántos ajustes entran.
+      </p>
+      <p class="svcs__note mono">
+        // ¿Tu caso no encaja en ninguno? Escribinos igual: casi siempre es una
+        combinación de dos de estos.
+      </p>
+    </div>
+  </div>
+
+  <div class="svcs__tabs mono" id="svcTabs" role="tablist" aria-label="Tipo de servicio"></div>
+
+  <div class="svcs__stage">
+
+    <!-- ── Carrusel de tarjetas ── -->
+    <div class="rail-wrap">
+      <div class="rail-row">
+        <button class="rail__btn rail__btn--prev" id="railPrev" aria-label="Servicio anterior">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 L5 8 L10 13"/></svg>
+        </button>
+
+        <div class="rail" id="svcRail" tabindex="0" aria-label="Servicios, usá las flechas para pasar"></div>
+
+        <button class="rail__btn rail__btn--next" id="railNext" aria-label="Servicio siguiente">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3 L11 8 L6 13"/></svg>
+        </button>
+      </div>
+
+      <div class="rail__ctrl">
+        <div class="rail__track" aria-hidden="true"><span id="railBar"></span></div>
+        <span class="rail__count mono" id="railCount">01/06</span>
+      </div>
+    </div>
+
+    <!-- ── Notebook ── -->
+    <div class="laptop-wrap">
+      <div class="laptop" id="laptop">
+        <div class="laptop__rig">
+          <div class="laptop__deck">
+            <span class="laptop__hinge"></span>
+            <div class="laptop__keys"></div>
+            <div class="laptop__pad"></div>
+          </div>
+
+          <div class="laptop__lid">
+            <span class="laptop__cam"></span>
+            <div class="laptop__screen">
+              <div class="laptop__chrome mono">
+                <i></i><i></i><i></i>
+                <span class="laptop__url" id="lapUrl">tumarca.com</span>
+              </div>
+              <div class="laptop__view" id="lapView"></div>
+            </div>
+            <div class="laptop__back">
+              <span class="laptop__mark">/deploy<i data-cursor>_</i></span>
+            </div>
+          </div>
+        </div>
+        <div class="laptop__shadow"></div>
+      </div>
+
+      <div class="laptop__tools">
+        <button class="laptop__toggle mono" id="lapToggle" aria-pressed="false">
+          <span class="laptop__toggle-ico" aria-hidden="true"></span>
+          <span id="lapToggleTxt">cerrar notebook</span>
+        </button>
+        <span class="laptop__now mono" id="lapNow">Landing page</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Lo que va siempre ── -->
+  <div class="baseline reveal">
+    <span class="baseline__k mono">En todos los proyectos, siempre</span>
+    <ul class="baseline__list mono">
+      <li>Diseño 100% a medida</li>
+      <li>Se ve bien en celular, tablet y computadora</li>
+      <li>Dominio, hosting y candadito de seguridad configurados</li>
+      <li>Optimizado para que cargue rápido y aparezca en Google</li>
+      <li>Métricas de visitas conectadas</li>
+      <li>Capacitación para que lo puedas administrar</li>
+      <li>30 días de soporte después de la entrega</li>
+      <li>Todos los archivos originales quedan tuyos</li>
+    </ul>
+  </div>
+
+</section>
+
+<!-- ══════════════ PROCESO ══════════════ -->
+<section class="section process" id="proceso">
+  <div class="section__head">
+    <span class="eyebrow mono">02 — Proceso</span>
+    <h2 class="section__title">De la idea al<br><em>deploy</em><span class="lime" data-cursor>_</span></h2>
+    <p class="section__lead">Cuatro etapas, fechas claras y vos viendo el avance en todo momento.</p>
+  </div>
+
+  <ol class="steps">
+    <li class="step reveal">
+      <span class="step__n mono">01</span>
+      <div>
+        <h3>Briefing</h3>
+        <p>Una charla de 30 minutos. Qué vendés, a quién, qué querés que pase cuando alguien entra al sitio. Salís con presupuesto y plazo cerrados.</p>
+        <span class="step__meta mono">↳ 1–2 días</span>
+      </div>
+    </li>
+    <li class="step reveal">
+      <span class="step__n mono">02</span>
+      <div>
+        <h3>Diseño</h3>
+        <p>Armamos la identidad y/o el diseño de las pantallas. Lo revisás, lo comentás y ajustamos hasta que te cierre.</p>
+        <span class="step__meta mono">↳ 4–7 días</span>
+      </div>
+    </li>
+    <li class="step reveal">
+      <span class="step__n mono">03</span>
+      <div>
+        <h3>Desarrollo</h3>
+        <p>Se programa a medida, responsive y optimizado. Tenés un link de preview desde el primer día para seguirlo en vivo.</p>
+        <span class="step__meta mono">↳ 5–10 días</span>
+      </div>
+    </li>
+    <li class="step reveal">
+      <span class="step__n mono">04</span>
+      <div>
+        <h3>Deploy &amp; entrega</h3>
+        <p>Dominio, hosting, certificado, métricas y una capacitación para que puedas administrarlo. Más 30 días de soporte incluido.</p>
+        <span class="step__meta mono">↳ 1 día</span>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- ══════════════ PROYECTOS ══════════════ -->
+<section class="section projects" id="proyectos">
+  <div class="section__head section__head--row">
+    <div>
+      <span class="eyebrow mono">03 — Proyectos</span>
+      <h2 class="section__title">Trabajo<br>publicado<span class="lime">.</span></h2>
+    </div>
+    <p class="section__lead">
+      Cada proyecto que sale a producción se suma acá.
+      Entrá, navegalos y decinos qué te gusta de cada uno.
+    </p>
+  </div>
+
+  <div class="filters mono" id="filters" role="tablist" aria-label="Filtrar proyectos"></div>
+
+  <div class="proj-grid" id="projGrid"></div>
+
+  <div class="proj-more" id="projMore" hidden></div>
+
+  <div class="proj-empty" id="projEmpty" hidden>
+    <p class="mono">// no hay proyectos en esta categoría todavía</p>
+  </div>
+</section>
+
+<!-- ══════════════ CTA / CONTACTO ══════════════ -->
+<section class="section contact" id="contacto">
+  <div class="contact__inner">
+    <div class="contact__left">
+      <span class="eyebrow mono">04 — Contacto</span>
+      <h2 class="contact__title">
+        Contanos qué<br>necesitás<span class="lime">.</span>
+      </h2>
+      <p class="contact__lead">
+        Respondemos en menos de 24 horas hábiles con una propuesta concreta:
+        alcance, plazo y precio. Sin vueltas.
+      </p>
+
+      <ul class="contact__links mono">
+        <li><span class="k">email</span> <a href="mailto:contact.deploystudio@gmail.com">contact.deploystudio@gmail.com</a></li>
+        <li><span class="k">instagram</span> <a href="https://instagram.com/deploystudio_" target="_blank" rel="noopener">@deploystudio_</a></li>
+        <li><span class="k">whatsapp</span> <a href="https://wa.me/5490000000000?text=%C2%A1Hola!%20Quisiera%20tener%20m%C3%A1s%20info%20sobre%20los%20servicios%20que%20ofrecen.%20Mi%20marca%20es%20" target="_blank" rel="noopener">+54 9 000 000 0000</a></li>
+      </ul>
+    </div>
+
+    <form class="form" id="form" novalidate>
+      <div class="form__row">
+        <label class="field">
+          <span class="mono">nombre *</span>
+          <input type="text" name="nombre" required placeholder="Tu nombre" />
+        </label>
+        <label class="field">
+          <span class="mono">email *</span>
+          <input type="email" name="email" required placeholder="tu@email.com" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="mono">proyecto / marca</span>
+        <input type="text" name="marca" placeholder="Nombre del proyecto" />
+      </label>
+
+      <fieldset class="field field--chips">
+        <legend class="mono">qué necesitás *</legend>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" name="servicio" value="Landing page" /><span>Landing page</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="Sitio institucional" /><span>Sitio institucional</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="E-commerce" /><span>E-commerce</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="Web app" /><span>Web app</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="Portfolio" /><span>Portfolio</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="Rediseño" /><span>Rediseño</span></label>
+          <label class="chip"><input type="checkbox" name="servicio" value="Logo / identidad" /><span>Logo / identidad</span></label>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span class="mono">contanos un poco más *</span>
+        <textarea name="mensaje" rows="4" required placeholder="Qué hacés, qué necesitás y para cuándo…"></textarea>
+      </label>
+
+      <button type="submit" class="btn btn--lime btn--lg btn--block">
+        Enviar consulta <span class="btn__arrow">→</span>
+      </button>
+
+      <p class="form__note mono" id="formNote" role="status"></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="footer">
+  <div class="footer__top">
+    <a href="#top" class="logo logo--lg" aria-label="deploy">
+      <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+    </a>
+    <p class="footer__claim">Diseño y desarrollo web · Identidad de marca</p>
+  </div>
+
+  <div class="footer__cols">
+    <div>
+      <span class="mono footer__k">Servicios</span>
+      <span class="footer__item">Landing page</span>
+      <span class="footer__item">Sitio institucional</span>
+      <span class="footer__item">E-commerce</span>
+      <span class="footer__item">Web app</span>
+      <span class="footer__item">Portfolio</span>
+      <span class="footer__item">Rediseño</span>
+      <span class="footer__item">Logo / identidad</span>
+    </div>
+    <div>
+      <span class="mono footer__k">Estudio</span>
+      <a href="#proceso">Proceso</a>
+      <a href="#proyectos">Proyectos</a>
+      <a href="#contacto">Contacto</a>
+    </div>
+    <div>
+      <span class="mono footer__k">Contacto</span>
+      <a href="https://instagram.com/deploystudio_" target="_blank" rel="noopener">@deploystudio_</a>
+      <a href="mailto:contact.deploystudio@gmail.com">contact.deploystudio@gmail.com</a>
+      <a href="https://wa.me/5490000000000?text=%C2%A1Hola!%20Quisiera%20tener%20m%C3%A1s%20info%20sobre%20los%20servicios%20que%20ofrecen.%20Mi%20marca%20es%20" target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+  </div>
+
+  <div class="footer__bottom mono">
+    <span>© <span id="year">2026</span> Deploy Studio — Todos los derechos reservados</span>
+    <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+  </div>
+</footer>
+
+<button class="totop" id="toTop" aria-label="Volver arriba">↑</button>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox__close" id="lightboxClose" aria-label="Cerrar imagen">✕</button>
+  <div class="lightbox__stage">
+    <button class="lightbox__nav lightbox__prev" id="lightboxPrev" aria-label="Ver foto anterior">‹</button>
+    <img class="lightbox__img" id="lightboxImg" src="" alt="" />
+    <button class="lightbox__nav lightbox__next" id="lightboxNext" aria-label="Ver foto siguiente">›</button>
+  </div>
+  <p class="lightbox__title mono" id="lightboxTitle"></p>
+</div>
+
+<script src="js/services.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
