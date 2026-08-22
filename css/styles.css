@@ -374,7 +374,7 @@ a{color:inherit;text-decoration:none}
 
 /* ══════════════ SERVICIOS ══════════════ */
 /* Pestañas: sitios web / identidad */
-.svcs__tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.svcs__tabs{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
 .svcs__tab{
   font-family:var(--font-mono);font-size:12px;
   padding:9px 16px;background:transparent;color:#5a5a5a;
@@ -394,16 +394,23 @@ a{color:inherit;text-decoration:none}
 
 /* ── Carrusel ── */
 .rail-wrap{min-width:0}
-.rail-row{display:flex;align-items:center;gap:10px}
-.rail-row .rail{flex:1;min-width:0}
+
+/* Cabecera del carrusel: pestañas + flechas.
+   Comparte los dos bordes con las tarjetas y con la linea de abajo. */
+.rail__head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;margin-bottom:16px;
+}
+.rail__nav{display:flex;align-items:center;gap:8px;flex:none}
+
 .rail{
   display:flex;gap:14px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
-  padding:2px 2px 18px;
+  padding:0 0 18px;
   scrollbar-width:none;-ms-overflow-style:none;
 }
 .rail::-webkit-scrollbar{display:none}
-.rail:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+.rail:focus-visible{outline:2px solid var(--lime);outline-offset:-2px}
 
 .svc-card{
   flex:0 0 100%;scroll-snap-align:start;
@@ -464,13 +471,13 @@ a{color:inherit;text-decoration:none}
 .svc-card.is-active .svc-card__see::before{background:var(--lime)}
 
 /* Controles */
-.rail__ctrl{display:flex;align-items:center;gap:14px}
+.rail__ctrl{display:flex;align-items:center}
 .rail__track{flex:1;height:2px;background:var(--mist);position:relative;overflow:hidden}
 .rail__track span{
   position:absolute;left:0;top:0;height:100%;width:20%;
   background:var(--ink);transition:width .35s var(--ease),transform .35s var(--ease);
 }
-.rail__count{font-size:11px;color:var(--stone);flex:none}
+.rail__count{font-size:11px;color:var(--stone);flex:none;margin-right:6px}
 .rail__btn{
   width:38px;height:38px;flex:none;display:grid;place-items:center;
   background:transparent;border:1px solid var(--mist);border-radius:var(--r);
@@ -491,28 +498,26 @@ a{color:inherit;text-decoration:none}
    (105 = 180 - 75, que es lo que hace que las dos caras queden paralelas). */
 .laptop-wrap{min-width:0}
 .laptop{
-  position:relative;width:100%;aspect-ratio:1 / .95;
-  /* Perspectiva bien abierta (poca distorsión): con un valor más cerrado
-     se ve más "3D" pero el borde que queda más cerca de cámara —el
-     frente del teclado abierto, o el borde de la tapa cuando se cierra—
-     se agranda por la perspectiva y no coincide con el resto. No se
-     puede recortar sin romper el preserve-3d, así que la solución es
-     que la distorsión sea chica desde el vamos. */
-  perspective:9000px;perspective-origin:50% 38%;
+  position:relative;width:100%;aspect-ratio:1 / .87;
+  /* SIN perspective, a propósito. Con perspectiva, el borde más cercano a
+     la cámara (el frente del teclado) se agranda, y cuánto se agranda lo
+     decide cada motor: Chrome lo deja en ~2% y WebKit lo exagera bastante.
+     Resultado: en iPhone la base se veía más ancha que la pantalla.
+     Sin perspectiva la proyección es ortográfica, así que el teclado mide
+     exactamente lo mismo que la tapa —y la tapa cerrada calza exacto sobre
+     él— en todos los navegadores. El giro 3D y el orden de dibujado siguen
+     funcionando igual, porque preserve-3d no depende de perspective. */
 }
-/* El 22% de abajo queda reservado para el teclado, que al estar rotado
-   se proyecta hacia abajo desde la bisagra. Y el conjunto va 5% metido a
-   cada lado para que, ya inclinado, no se meta en la tarjeta.
+/* El 20.5% de abajo queda reservado para el teclado, que al estar rotado
+   se proyecta hacia abajo desde la bisagra: 68% de ancho x cos(75°) = 17.6%
+   del ancho, que sobre este alto da ese 20.5%.
+   Ya no hace falta meter el conjunto hacia adentro (antes iba 5% a cada
+   lado) porque sin perspectiva el teclado no se ensancha.
    Ojo: NO le pongas overflow:hidden ni clip-path a este elemento (ni a
-   ningún ancestro de .laptop__lid/.laptop__deck) para "recortar" el
-   frente del teclado — ambos rompen el renderizado de preserve-3d en
-   navegadores reales (la tapa/base dejan de verse enteras, aunque las
-   medidas por JS den bien). El frente del teclado se agranda un poco
-   por la perspectiva; es una consecuencia normal del 3D y no del ancho
-   de la bisagra, que es lo que realmente tiene que coincidir con la
-   tapa (y ya coincide, por cómo está anclada la rotación abajo). */
+   ningún ancestro de .laptop__lid/.laptop__deck): ambos rompen el
+   renderizado de preserve-3d en navegadores reales. */
 .laptop__rig{
-  position:absolute;left:5%;right:5%;bottom:27%;
+  position:absolute;left:0;right:0;bottom:20.5%;
   transform-style:preserve-3d;
 }
 
@@ -520,18 +525,23 @@ a{color:inherit;text-decoration:none}
   position:absolute;bottom:0;left:0;right:0;
   aspect-ratio:16 / 10.9;
   transform-style:preserve-3d;transform-origin:50% 100%;
-  transform:rotateX(8deg);
+  transform:rotateX(8deg) translateZ(0px);
   background:var(--ink);border-radius:9px 9px 2px 2px;
   padding:2.6% 2.6% 4.4%;
   transition:transform .9s var(--ease);
 }
-.laptop.is-closed .laptop__lid{transform:rotateX(-105deg)}
+/* El translateZ separa la tapa del plano del teclado. Sin eso las dos caras
+   quedan exactamente en el mismo plano y el motor 3D no sabe cual va adelante:
+   el teclado "parpadea" o se desvanece. Con la separacion, la tapa apoya
+   siempre por encima y el teclado sigue ahi, tapado. */
+.laptop.is-closed .laptop__lid{transform:rotateX(-105deg) translateZ(-8px)}
 
 /* Camarita en el marco superior */
 .laptop__cam{
   position:absolute;top:1.1%;left:50%;translate:-50% 0;
   width:4px;height:4px;border-radius:50%;
   background:rgba(250,250,248,.22);backface-visibility:hidden;
+  transform:translateZ(1px);
 }
 .laptop__cam::after{
   content:'';position:absolute;inset:1px;border-radius:50%;
@@ -556,16 +566,13 @@ a{color:inherit;text-decoration:none}
   transform-origin:50% 0;transform:rotateX(75deg);
   background:var(--ink);border-radius:2px 2px 12px 12px;
   overflow:hidden;
-  transition:opacity .9s var(--ease);
 }
-/* Cerrada, la tapa queda exactamente coplanar con la base (a propósito,
-   para que encajen perfecto — ver nota arriba de .laptop__rig). Dos
-   superficies en el mismo plano 3D son terreno de z-fighting: según el
-   navegador, a veces el teclado se dibuja por encima de la tapa. Como de
-   todas formas quedaría tapado, la solución simple y a prueba de GPU es
-   ocultarlo mientras está cerrada, en vez de depender del orden de
-   renderizado. */
-.laptop.is-closed .laptop__deck{opacity:0}
+/* Antes el teclado se ocultaba con opacity:0 al cerrar, para esquivar el
+   z-fighting de tener las dos caras en el mismo plano. Se veía como si el
+   teclado se desvaneciera. Ya no hace falta: la tapa cerrada va 8px por
+   encima del plano de la base (ver el translateZ de .laptop.is-closed
+   .laptop__lid), así que el orden de dibujado es inequívoco y el teclado
+   puede quedarse donde está, simplemente tapado. */
 /* Teclas: dos tramas cruzadas, sin imágenes */
 .laptop__keys{
   position:absolute;top:11%;left:7%;right:7%;height:44%;
@@ -593,10 +600,15 @@ a{color:inherit;text-decoration:none}
 }
 .laptop.is-closed .laptop__shadow{transform:scale(.94);opacity:.75}
 
+/* Las tres caras de la tapa (fondo, pantalla y contratapa) viven en el
+   mismo plano. Como la tapa es preserve-3d, si quedan a la misma altura
+   pelean entre si y aparecen agujeros: cerrada, se ve el teclado a traves.
+   Por eso la pantalla se adelanta 1px y la contratapa se atrasa 1px. */
 .laptop__screen{
   height:100%;overflow:hidden;border-radius:2px;
   background:var(--paper);display:flex;flex-direction:column;
   backface-visibility:hidden;
+  transform:translateZ(1px);
 }
 .laptop__chrome{
   display:flex;align-items:center;gap:5px;flex:none;
@@ -621,7 +633,7 @@ a{color:inherit;text-decoration:none}
 .laptop__back{
   position:absolute;inset:0;background:var(--ink);
   border-radius:9px 9px 2px 2px;
-  transform:rotateX(180deg);backface-visibility:hidden;
+  transform:translateZ(-1px) rotateX(180deg);backface-visibility:hidden;
   display:grid;place-items:center;
 }
 .laptop__mark{
@@ -978,6 +990,14 @@ a{color:inherit;text-decoration:none}
 }
 
 /* La notebook pasa arriba y las tarjetas abajo */
+/* Tactil (o pantalla angosta): las tarjetas se pasan con el dedo, el riel
+   ya tiene scroll horizontal con scroll-snap. Las flechas sobran, pero el
+   contador y la barra se quedan para saber en cual estas. */
+@media (hover:none) and (pointer:coarse), (max-width:760px){
+  .rail__btn{display:none}
+  .rail__count{margin-right:0}
+}
+
 @media (max-width:1000px){
   .svcs__stage{grid-template-columns:1fr;gap:34px}
   .laptop-wrap{order:-1;width:100%;max-width:540px;margin-inline:auto}

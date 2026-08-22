@@ -74,7 +74,8 @@ Ya cargados:
 - **Email:** `contact.deploystudio@gmail.com`
 - **Instagram:** [@deploystudio_](https://instagram.com/deploystudio_)
 
-**Falta el WhatsApp.** Hoy tiene un número de relleno (`5490000000000`) en dos lugares:
+**Falta el WhatsApp.** Hoy tiene un número inventado (`5491123456789`, se muestra
+como +54 9 11 2345-6789) en dos lugares:
 
 1. `index.html` → los dos links `https://wa.me/...` (sección `#contacto` y `footer`).
 2. `js/script.js` → bloque `11. FORMULARIO`, constante `WHATSAPP`.
@@ -86,6 +87,10 @@ y el número sin el 15. Por ejemplo, para un celular de Buenos Aires
 Si preferís no mostrar WhatsApp, borrá esos dos `<li>` / `<a>` del HTML **y** el
 link que aparece en el mensaje de error del formulario, al final del bloque
 `11. FORMULARIO` de `js/script.js`.
+
+El link del mail **abre Gmail en una pestaña nueva** con el destinatario ya
+cargado (`https://mail.google.com/mail/?view=cm&fs=1&to=...`), en vez de un
+`mailto:` que depende del programa de correo que tenga instalado cada persona.
 
 El formulario envía directo a `contact.deploystudio@gmail.com` a través de
 [FormSubmit.co](https://formsubmit.co) (sin backend ni cuenta). La primera vez
@@ -109,6 +114,11 @@ tarjeta por servicio con lo que incluye, el plazo y las rondas de ajuste.
 - El pase se frena mientras tenés el mouse encima, cuando el bloque no está en
   pantalla, y por 12 segundos después de que toques algo.
 - Al final vuelve a la primera, así que nunca se traba.
+- En celular y tablet **no hay flechas**: las tarjetas se pasan deslizando con
+  el dedo (el riel usa scroll horizontal con `scroll-snap`). El contador y la
+  barra de progreso se quedan para saber en cuál estás. La regla está atada a
+  `(hover:none) and (pointer:coarse)` más un corte en 760px, así que depende
+  del tipo de dispositivo y no solo del ancho de la ventana.
 - La **notebook** de al lado muestra un ejemplo dibujado de ese servicio y
   cambia junto con la tarjeta. Se abre y cierra con el botón (o tocándola):
   cerrada muestra el logo grabado en la tapa.
@@ -132,7 +142,15 @@ de bisagra y giran sobre ella:
 | Tapa cerrada | `rotateX(-105deg)` |
 
 El `-105` no es arbitrario: es `180 − 75`, el único valor con el que las dos
-caras quedan paralelas y la tapa apoya exacto sobre la base. La base tiene la
+caras quedan paralelas y la tapa apoya exacto sobre la base.
+
+**No lleva `perspective`, a propósito.** Con perspectiva, el borde más cercano
+a la cámara (el frente del teclado) se agranda, y cuánto se agranda lo decide
+cada motor: Chrome lo dejaba en ~2% y WebKit lo exageraba, así que en iPhone la
+base se veía más ancha que la pantalla. Sin perspectiva la proyección es
+ortográfica: el teclado mide exactamente lo mismo que la tapa en todos los
+navegadores. El giro y el orden de dibujado siguen funcionando, porque
+`preserve-3d` no depende de `perspective`. La base tiene la
 misma profundidad que el alto de la tapa (68% del ancho), como una notebook
 real. Si cambiás una, cambiá la otra o la tapa va a sobrepasar la base.
 

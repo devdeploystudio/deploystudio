@@ -754,7 +754,7 @@ function startReveals(){
   // de confirmación a EMAIL con un link — lo clickeás una vez y ya queda
   // activo para siempre.
   const FORM_ENDPOINT = `https://formsubmit.co/ajax/${EMAIL}`;
-  const WHATSAPP = '5490000000000';   // ⚙️  falta el número real
+  const WHATSAPP = '5491123456789';        // ⚙️  provisorio, cambiar por el real
   const btn = form.querySelector('button[type="submit"]');
 
   // Saca el "!" del campo apenas la persona empieza a corregirlo.
@@ -814,7 +814,7 @@ function startReveals(){
     } catch(err){
       note.innerHTML = `No pudimos enviar el formulario. Escribinos por
         <a href="https://wa.me/${WHATSAPP}" target="_blank" rel="noopener" style="text-decoration:underline">WhatsApp</a>
-        o a <a href="mailto:${EMAIL}">${EMAIL}</a>.`;
+        o a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}" target="_blank" rel="noopener">${EMAIL}</a>.`;
       note.classList.add('err');
     } finally {
       btn.disabled = false;
