@@ -388,9 +388,16 @@ a{color:inherit;text-decoration:none}
 /* Escenario: tarjetas a la izquierda, notebook a la derecha */
 .svcs__stage{
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);
-  gap:clamp(24px,3.2vw,52px);align-items:start;
+  gap:0 clamp(24px,3.2vw,52px);align-items:start;
   margin-bottom:clamp(36px,4vw,56px);
 }
+/* Posiciones explícitas: el header y las tarjetas van en la columna 1,
+   la notebook en la columna 2 pero SOLO en la fila de las tarjetas (no
+   en la del header) — así arranca a la misma altura que ellas, y el
+   header (con las flechas) no se estira a todo el ancho. */
+.rail__head{grid-column:1;grid-row:1}
+.rail-wrap{grid-column:1;grid-row:2}
+.laptop-wrap{grid-column:2;grid-row:2}
 
 /* ── Carrusel ── */
 .rail-wrap{min-width:0}
@@ -406,7 +413,11 @@ a{color:inherit;text-decoration:none}
 .rail{
   display:flex;gap:14px;
   overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
-  padding:0 0 18px;
+  /* 2px a los costados: sin este margen, el borde derecho de la tarjeta
+     activa queda pegado justo al límite del área con scroll y el
+     redondeo de subpíxeles a veces lo deja afuera (se ve la tarjeta sin
+     borde derecho). */
+  padding:2px 2px 18px;
   scrollbar-width:none;-ms-overflow-style:none;
 }
 .rail::-webkit-scrollbar{display:none}
@@ -561,11 +572,27 @@ a{color:inherit;text-decoration:none}
      El borde de ABAJO (el frente, más cerca de cámara) sí se agranda
      por la perspectiva — eso es normal, así se ve una notebook real
      mirada desde este ángulo, y no es lo que hay que alinear. */
+  /* 68.125%, no 68%: tiene que ser EXACTO a 10.9/16 (el aspect-ratio de
+     la tapa, más abajo) para que las dos caras midan lo mismo antes de
+     rotar. Con 68% quedaba una diferencia de una fracción de píxel que
+     cada navegador redondeaba distinto — en Chrome de escritorio no se
+     notaba, en Safari/iOS sí. */
   position:absolute;top:0;left:0;right:0;
-  height:0;padding-bottom:68%;
+  height:0;padding-bottom:68.125%;
   transform-origin:50% 0;transform:rotateX(75deg);
   background:var(--ink);border-radius:2px 2px 12px 12px;
   overflow:hidden;
+}
+/* Red de seguridad, además del ajuste de arriba: una tira plana, SIN
+   ninguna rotación 3D, del mismo ancho que .laptop__rig (osea que la
+   tapa), exactamente sobre la línea de la bisagra. Como no depende de
+   ningún cálculo 3D, su posición es idéntica en cualquier motor — tapa
+   cualquier resto de huequito de redondeo que pueda quedar entre la
+   tapa y la base ya rotadas, venga de donde venga. */
+.laptop__seam{
+  position:absolute;left:0;right:0;bottom:0;
+  height:3px;background:var(--ink);
+  pointer-events:none;
 }
 /* Antes el teclado se ocultaba con opacity:0 al cerrar, para esquivar el
    z-fighting de tener las dos caras en el mismo plano. Se veía como si el
@@ -999,8 +1026,16 @@ a{color:inherit;text-decoration:none}
 }
 
 @media (max-width:1000px){
+  /* Una sola columna: los 3 bloques (antes en columna 1 / columna 2)
+     necesitan volver a la columna 1 explícitamente, si no el grid les
+     crea una columna 2 propia solo para la notebook y quedan pisados
+     unos con otros en vez de apilarse. El orden va por fila, no por
+     "order" (eso solo reordena el auto-flow, y acá las filas ya están
+     fijas a mano). */
   .svcs__stage{grid-template-columns:1fr;gap:34px}
-  .laptop-wrap{order:-1;width:100%;max-width:540px;margin-inline:auto}
+  .rail__head{grid-column:1;grid-row:1}
+  .laptop-wrap{grid-column:1;grid-row:2;width:100%;max-width:540px;margin-inline:auto}
+  .rail-wrap{grid-column:1;grid-row:3}
   .baseline{grid-template-columns:1fr;gap:16px}
 }
 

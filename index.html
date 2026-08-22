@@ -170,22 +170,26 @@
 
   <div class="svcs__stage">
 
+    <!-- Cabecera del carrusel: pestañas a la izquierda, flechas a la derecha.
+         Es un item de grid aparte, en la misma columna que las tarjetas
+         (no del ancho completo), así las flechas quedan arriba de las
+         tarjetas y no arriba de la notebook. La notebook ocupa solo la
+         fila de las tarjetas, para arrancar a la misma altura que ellas. -->
+    <div class="rail__head">
+      <div class="svcs__tabs mono" id="svcTabs" role="tablist" aria-label="Tipo de servicio"></div>
+      <div class="rail__nav">
+        <span class="rail__count mono" id="railCount">01/06</span>
+        <button class="rail__btn" id="railPrev" aria-label="Servicio anterior">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 L5 8 L10 13"/></svg>
+        </button>
+        <button class="rail__btn" id="railNext" aria-label="Servicio siguiente">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3 L11 8 L6 13"/></svg>
+        </button>
+      </div>
+    </div>
+
     <!-- ── Carrusel de tarjetas ── -->
     <div class="rail-wrap">
-      <!-- Cabecera: pestañas a la izquierda, flechas a la derecha -->
-      <div class="rail__head">
-        <div class="svcs__tabs mono" id="svcTabs" role="tablist" aria-label="Tipo de servicio"></div>
-        <div class="rail__nav">
-          <span class="rail__count mono" id="railCount">01/06</span>
-          <button class="rail__btn" id="railPrev" aria-label="Servicio anterior">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 L5 8 L10 13"/></svg>
-          </button>
-          <button class="rail__btn" id="railNext" aria-label="Servicio siguiente">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3 L11 8 L6 13"/></svg>
-          </button>
-        </div>
-      </div>
-
       <div class="rail" id="svcRail" tabindex="0" aria-label="Servicios, usá las flechas para pasar"></div>
 
       <div class="rail__ctrl">
@@ -216,6 +220,8 @@
               <span class="laptop__mark">/deploy<i data-cursor>_</i></span>
             </div>
           </div>
+
+          <span class="laptop__seam" aria-hidden="true"></span>
         </div>
         <div class="laptop__shadow"></div>
       </div>
