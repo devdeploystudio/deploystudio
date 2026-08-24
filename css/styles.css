@@ -1479,9 +1479,9 @@ a{color:inherit;text-decoration:none}
      Lo que SÍ hay que cambiar es cuántas columnas entran: con las mismas
      16 de escritorio comprimidas en un ancho ~40% menor, cada tecla
      queda angosta de más y se lee como rayas estiradas en vez de teclas.
-     Con un período de 0.838deg (en vez de 0.677deg en desktop) quedan 13
-     columnas acá — más angostas que las 9 de la primera prueba, que
-     pidieron 2-3 más, pero bastante más anchas que las 16 de escritorio. */
+     Con un período de 0.715deg (en vez de 0.677deg en desktop) quedan 15
+     columnas acá — pedido explícito de sumar ~2 más sobre la versión
+     anterior (13), después de verla ya deployada en un celu real. */
   /* Ojo con el período: no cualquier valor que dé más o menos la
      cantidad de columnas pedida sirve — el abanico total (de punta a
      punta) mide ~10.7-10.9deg según el ancho (varía un poco porque la
@@ -1492,8 +1492,8 @@ a{color:inherit;text-decoration:none}
      rota o de plano un hueco más grande que el resto (eso pasaba con
      0.903deg: quedaba una tecla casi pegada al límite, apenas adentro
      en algunos anchos y apenas afuera en otros, según el redondeo).
-     0.838deg = (mitad del abanico, ~5.45deg en el peor caso) / 6.5 —
-     con el 6.5 (no 6 ni 7) la última línea de cada lado queda a mitad
+     0.715deg = (mitad del abanico, ~5.45deg en el peor caso) / 7.5 —
+     con el .5 (no un entero) la última línea de cada lado queda a mitad
      de camino del límite, con margen de sobra en TODO el rango mobile,
      así que ninguna tecla de la punta se corta nunca, sea cual sea el
      ancho exacto de pantalla. */
@@ -1501,7 +1501,7 @@ a{color:inherit;text-decoration:none}
     background-image:
       repeating-conic-gradient(from -90deg at 50% -1566.7%,
         rgba(250,250,248,.16) 269.925deg 270.075deg,
-        transparent 270.075deg 270.763deg),
+        transparent 270.075deg 270.640deg),
       repeating-linear-gradient(0deg,rgba(250,250,248,.14) 0 17%,transparent 17% 21%),
       linear-gradient(180deg,rgba(250,250,248,.06),transparent 45%);
   }

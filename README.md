@@ -77,16 +77,13 @@ Ya cargados:
 
 - **Email:** `contact.deploystudio@gmail.com`
 - **Instagram:** [@deploystudio_](https://instagram.com/deploystudio_)
+- **WhatsApp:** `5491125851237` (+54 9 11 2585-1237)
 
-**Falta el WhatsApp.** Hoy tiene un número inventado (`5491123456789`, se muestra
-como +54 9 11 2345-6789) en dos lugares:
+El formato de `wa.me` es sin `+`, sin espacios y sin guiones: código de país, un 9,
+y el número sin el 15. Está en tres lugares:
 
 1. `index.html` → los dos links `https://wa.me/...` (sección `#contacto` y `footer`).
 2. `js/script.js` → bloque `11. FORMULARIO`, constante `WHATSAPP`.
-
-El formato de `wa.me` es sin `+`, sin espacios y sin guiones: código de país, un 9,
-y el número sin el 15. Por ejemplo, para un celular de Buenos Aires
-`11 2345-6789` sería `5491123456789`.
 
 Si preferís no mostrar WhatsApp, borrá esos dos `<li>` / `<a>` del HTML **y** el
 link que aparece en el mensaje de error del formulario, al final del bloque

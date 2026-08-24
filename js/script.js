@@ -857,7 +857,7 @@ function startReveals(){
   // de confirmación a EMAIL con un link — lo clickeás una vez y ya queda
   // activo para siempre.
   const FORM_ENDPOINT = `https://formsubmit.co/ajax/${EMAIL}`;
-  const WHATSAPP = '5491123456789';        // ⚙️  provisorio, cambiar por el real
+  const WHATSAPP = '5491125851237';
   const btn = form.querySelector('button[type="submit"]');
 
   // Saca el "!" del campo apenas la persona empieza a corregirlo.
