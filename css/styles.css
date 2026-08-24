@@ -1470,40 +1470,35 @@ a{color:inherit;text-decoration:none}
     margin:2px 0 0;padding-top:14px;border-top:1px solid var(--mist);
   }
 
-  /* Las líneas verticales del teclado (el repeating-conic-gradient de
-     .laptop__keys) no hay que sacarlas en mobile: el punto de fuga y el
-     ángulo del abanico son % y deg puros (no px), así que ya son
-     independientes del tamaño — a este ancho .laptop__keys mide 317×100
-     local aprox., casi la misma proporción que los 528×167 de escritorio
-     (3.17 vs 3.16), así que el punto de fuga sigue sirviendo tal cual.
-     Lo que SÍ hay que cambiar es cuántas columnas entran: con las mismas
-     16 de escritorio comprimidas en un ancho ~40% menor, cada tecla
-     queda angosta de más y se lee como rayas estiradas en vez de teclas.
-     Con un período de 0.715deg (en vez de 0.677deg en desktop) quedan 15
-     columnas acá — pedido explícito de sumar ~2 más sobre la versión
-     anterior (13), después de verla ya deployada en un celu real. */
-  /* Ojo con el período: no cualquier valor que dé más o menos la
-     cantidad de columnas pedida sirve — el abanico total (de punta a
-     punta) mide ~10.7-10.9deg según el ancho (varía un poco porque la
-     proporción de .laptop__keys no es idéntica en todo el rango mobile,
-     320-1000px), y si el período no entra un número entero+medio de
-     veces en la MITAD de ese abanico, la última columna de una punta
-     queda a mitad recortar por el clip-path — se ve como una tecla
-     rota o de plano un hueco más grande que el resto (eso pasaba con
-     0.903deg: quedaba una tecla casi pegada al límite, apenas adentro
-     en algunos anchos y apenas afuera en otros, según el redondeo).
-     0.715deg = (mitad del abanico, ~5.45deg en el peor caso) / 7.5 —
-     con el .5 (no un entero) la última línea de cada lado queda a mitad
-     de camino del límite, con margen de sobra en TODO el rango mobile,
-     así que ninguna tecla de la punta se corta nunca, sea cual sea el
-     ancho exacto de pantalla. */
+  /* Las líneas verticales del teclado: en desktop son un
+     repeating-conic-gradient (ver .laptop__keys más arriba), pero ACÁ en
+     mobile ese mismo enfoque se probó tres veces (9, 13 y 15 columnas) y
+     cada vez terminaba con un par de columnas rotas/con un hueco de más
+     en un punto fijo — no por la cuenta del período (verificada varias
+     veces, siempre con margen de sobra contra el clip-path), sino porque
+     Safari/WebKit en iPhone (confirmado por captura real, se repite en
+     Safari Y en Chrome de iOS — que corre sobre el mismo motor) tiene un
+     bug de precisión con repeating-conic-gradient cuando el período
+     angular es chico y el centro del cono está muy lejos del elemento
+     (acá a -1566.7%, para lograr el punto de fuga). En Chrome/Firefox de
+     escritorio se ve perfecto; en WebKit no.
+     La salida: las mismas 15 líneas, pero dibujadas como un SVG con
+     <line> de verdad (coordenadas fijas, sin gradiente repetido) en vez
+     de pedirle al motor que las calcule con trigonometría en cada
+     repetición. Se generaron una sola vez con las mismas fórmulas de
+     siempre (punto de fuga a -1566.7, período 0.715deg, líneas de
+     n=-7 a 7) sobre un viewBox de 317×100 (la proporción local de
+     .laptop__keys acá) y quedan comprimidas con preserveAspectRatio
+     "none" para adaptarse a como renderice cada pantalla. Es la MISMA
+     geometría que el gradient, dibujada distinto — así no hay período
+     que recalcular ni cuenta que rehacer, solo un renderer distinto que
+     no tiene el bug. */
   .laptop__keys{
     background-image:
-      repeating-conic-gradient(from -90deg at 50% -1566.7%,
-        rgba(250,250,248,.16) 269.925deg 270.075deg,
-        transparent 270.075deg 270.640deg),
+      url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20317%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%20stroke%3D%22rgba(250%2C250%2C248%2C.16)%22%20stroke-width%3D%221%22%3E%3Cline%20x1%3D%2221.29%22%20y1%3D%220%22%20x2%3D%2212.54%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%2240.97%22%20y1%3D%220%22%20x2%3D%2233.47%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%2260.62%22%20y1%3D%220%22%20x2%3D%2254.37%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%2280.23%22%20y1%3D%220%22%20x2%3D%2275.24%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%2299.82%22%20y1%3D%220%22%20x2%3D%2296.07%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22119.39%22%20y1%3D%220%22%20x2%3D%22116.89%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22138.95%22%20y1%3D%220%22%20x2%3D%22137.70%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22158.50%22%20y1%3D%220%22%20x2%3D%22158.50%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22178.05%22%20y1%3D%220%22%20x2%3D%22179.30%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22197.61%22%20y1%3D%220%22%20x2%3D%22200.11%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22217.18%22%20y1%3D%220%22%20x2%3D%22220.93%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22236.77%22%20y1%3D%220%22%20x2%3D%22241.76%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22256.38%22%20y1%3D%220%22%20x2%3D%22262.63%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22276.03%22%20y1%3D%220%22%20x2%3D%22283.53%22%20y2%3D%22100%22%2F%3E%3Cline%20x1%3D%22295.71%22%20y1%3D%220%22%20x2%3D%22304.46%22%20y2%3D%22100%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
       repeating-linear-gradient(0deg,rgba(250,250,248,.14) 0 17%,transparent 17% 21%),
       linear-gradient(180deg,rgba(250,250,248,.06),transparent 45%);
+    background-size:100% 100%,auto,auto;
   }
 
   /* Cámara y led: tamaños fijos en px, pensados para el ancho de
