@@ -507,7 +507,21 @@ a{color:inherit;text-decoration:none}
    así al cerrarse la tapa apoya exacto sobre la base en vez de pasarse.
    Ángulos: teclado rotateX(75deg) · tapa abierta 8deg · cerrada -105deg
    (105 = 180 - 75, que es lo que hace que las dos caras queden paralelas). */
-.laptop-wrap{min-width:0}
+/* Notebook y teléfono van superpuestos en la misma celda de grid (no uno
+   abajo del otro): así el alto de la fila SIEMPRE lo define la notebook —
+   que es la más alta de las dos — y el botón de abajo (.laptop__tools)
+   nunca salta de posición al cambiar de dispositivo. El que no se está
+   mostrando usa visibility:hidden (no display:none/[hidden]) a propósito:
+   sigue ocupando su lugar en el layout, por eso la fila no se achica. */
+.laptop-wrap{
+  min-width:0;display:grid;grid-template-columns:minmax(0,1fr);
+}
+.laptop,.phone{grid-column:1;grid-row:1}
+.laptop.is-off,.phone.is-off{visibility:hidden;pointer-events:none}
+/* Los dos mockups se manejan tocando el marco (no la pantalla), así que
+   son un botón grande: cursor de mano y anillo de foco para teclado. */
+.laptop,.phone{cursor:pointer}
+.laptop:focus-visible,.phone:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
 .laptop{
   position:relative;width:100%;aspect-ratio:1 / .87;
   /* SIN perspective, a propósito. Con perspectiva, el borde más cercano a
@@ -528,35 +542,97 @@ a{color:inherit;text-decoration:none}
    ningún ancestro de .laptop__lid/.laptop__deck): ambos rompen el
    renderizado de preserve-3d en navegadores reales. */
 .laptop__rig{
-  position:absolute;left:0;right:0;bottom:20.5%;
+  position:absolute;left:0;width:100%;bottom:20.5%;
   transform-style:preserve-3d;
 }
 
 .laptop__lid{
-  position:absolute;bottom:0;left:0;right:0;
+  /* width:100% explícito, no left:0;right:0 — combinado con aspect-ratio
+     y position:absolute, Safari a veces no calcula bien el ancho a
+     partir de los dos insets y termina achicando el lado derecho. Con
+     un ancho explícito no hay ambigüedad que un motor pueda resolver
+     distinto a otro. */
+  position:absolute;bottom:0;left:0;width:100%;
   aspect-ratio:16 / 10.9;
   transform-style:preserve-3d;transform-origin:50% 100%;
   transform:rotateX(8deg) translateZ(0px);
-  background:var(--ink);border-radius:9px 9px 2px 2px;
-  padding:2.6% 2.6% 4.4%;
+  background:linear-gradient(155deg,#1c1c1c 0%,var(--ink) 45%,#080808 100%);
+  border-radius:11px 11px 3px 3px;
+  padding:2% 2% 3.6%;
   transition:transform .9s var(--ease);
+}
+/* Filo de luz arriba: una línea clarita, como si agarrara un poco de brillo
+   el borde superior de la tapa. Puramente cosmético, no afecta el 3D. */
+.laptop__lid::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;z-index:1;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
 }
 /* El translateZ separa la tapa del plano del teclado. Sin eso las dos caras
    quedan exactamente en el mismo plano y el motor 3D no sabe cual va adelante:
    el teclado "parpadea" o se desvanece. Con la separacion, la tapa apoya
    siempre por encima y el teclado sigue ahi, tapado. */
+/* Ojo: .laptop__lid tiene su propio preserve-3d (para separar pantalla
+   de reverso vía backface-visibility) — clip-path/overflow DIRECTO acá
+   rompe esa separación exactamente igual que le pasaba a .laptop__rig,
+   y la pantalla se mezcla con el reverso al cerrar. El ensanche+curva
+   del frente cuando cierra ya está resuelto bien, pero en
+   .laptop__back (más abajo) — un elemento sin preserve-3d propio, así
+   que ahí sí es seguro. No dupliques ese tratamiento acá. */
+/* OJO con el orden acá: "rotateX(...) translateZ(...)" (translateZ corre
+   primero, en espacio local sin rotar, y el rotateX lo mezcla un poco
+   hacia Y después) parece un bug pero es lo que hace que la tapa cerrada
+   baje lo suficiente como para quedar APOYADA sobre el teclado (tapándolo
+   en gran parte, como una notebook real cerrada) en vez de quedar a la
+   altura exacta de la bisagra nada más. Si se invierte el orden, la tapa
+   sube ~8px y dejar de tapar el teclado — se ve la pantalla flotando al
+   lado de la base en vez de encima. No cambiar. */
 .laptop.is-closed .laptop__lid{transform:rotateX(-105deg) translateZ(-8px)}
 
 /* Camarita en el marco superior */
-.laptop__cam{
-  position:absolute;top:1.1%;left:50%;translate:-50% 0;
-  width:4px;height:4px;border-radius:50%;
-  background:rgba(250,250,248,.22);backface-visibility:hidden;
+/* top:0.65% (no 1.4% como antes): el marco de arriba de la tapa mide
+   ~10.8px a este tamaño (el padding-top de .laptop__lid) — con 1.4% +
+   los 9px que tenía antes el punto, el círculo se pasaba ~3px del borde
+   de abajo del marco y quedaba mordiendo el comienzo de la pantalla en
+   vez de flotar en el bisel. Con 0.65% (~2.4px de margen arriba) más los
+   6px del lente, queda centrado en el bisel con margen parejo abajo. */
+/* .laptop__camera es solo un punto de anclaje (0×0, sin translate): el
+   lente se centra a sí mismo EXACTO sobre ese punto (translate:-50% 0 en
+   .laptop__cam), y el led se ubica aparte, corrido unos px a la derecha
+   — así el que queda centrado en la tapa es el lente en sí (no el
+   conjunto lente+led, que lo dejaría un poco corrido del centro). */
+.laptop__camera{
+  position:absolute;top:.65%;left:50%;z-index:3;
+  backface-visibility:hidden;
   transform:translateZ(1px);
 }
-.laptop__cam::after{
-  content:'';position:absolute;inset:1px;border-radius:50%;
-  background:rgba(166,255,0,.5);
+/* Antes era un aro con el punto de adentro pintado del lima — se leía
+   como la lucecita de la cámara, no como el lente. Ahora el lente es
+   gris (como el vidrio real) con un brillito arriba-izquierda, y la
+   lucecita lima va aparte, al costado (.laptop__cam-led), que es donde
+   está en una notebook real. */
+.laptop__cam{
+  position:absolute;left:0;translate:-50% 0;
+  width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,#8a8a8a 0%,#3a3a3a 45%,#0a0a0a 100%);
+  border:1px solid rgba(250,250,248,.25);
+  box-shadow:inset 0 0 1px rgba(0,0,0,.6);
+}
+/* left:7px (no translate): arranca a la derecha del borde del lente (que
+   termina en +3px desde el ancla) — separado y a un costado, no pegado.
+   top:1.5px centra sus 3px con el alto de 6px del lente.
+   Titila despacio y de forma pareja (no un parpadeo brusco tipo error):
+   queda casi todo el tiempo prendida, con una bajada corta y suave de
+   opacidad cada tanto — como el led de standby de una cámara real. */
+.laptop__cam-led{
+  position:absolute;left:7px;top:1.5px;
+  width:3px;height:3px;border-radius:50%;
+  background:var(--lime);
+  box-shadow:0 0 3px rgba(132,230,0,.8);
+  animation:cam-led-blink 3.2s ease-in-out infinite;
+}
+@keyframes cam-led-blink{
+  0%,80%,100%{opacity:1}
+  90%{opacity:.25}
 }
 
 /* Base: se apoya en el plano del teclado, casi horizontal */
@@ -564,23 +640,50 @@ a{color:inherit;text-decoration:none}
    cerrarse las dos caras coinciden exacto, como en una notebook real. */
 .laptop__deck{
   /* El borde de ARRIBA (el de la bisagra, pegado a la pantalla) es el
-     que tiene que alinear con la tapa — y como el rotateX gira sobre
-     ese mismo borde (transform-origin:50% 0), ese borde no se mueve ni
-     se agranda por la perspectiva: queda siempre del mismo ancho que
-     .laptop__rig, igual que la tapa. Por eso acá NO va inset propio,
-     left/right en 0 como la tapa.
-     El borde de ABAJO (el frente, más cerca de cámara) sí se agranda
-     por la perspectiva — eso es normal, así se ve una notebook real
-     mirada desde este ángulo, y no es lo que hay que alinear. */
+     que tiene que alinear con la tapa — por eso NO puede angostarse: la
+     caja de este elemento se hace 110% de ancho (left:-5%) y el
+     clip-path recorta el borde de ARRIBA de vuelta a los mismos 100%
+     de .laptop__rig (así el seam sigue calzando exacto), pero deja el
+     borde de ABAJO (el frente, más cerca de cámara) con el 110%
+     completo — de ahí sale el trapecio: angosto atrás, ancho adelante,
+     que es la perspectiva real de una base de notebook vista desde
+     este ángulo. Antes, sin ningún ensanche, quedaba un rectángulo
+     perfecto (mismo ancho arriba y abajo) y se leía plano/raro.
+     Los puntos del polygon están en el espacio propio de ESTA caja
+     (0–100% de sus 110% de ancho), no en el de .laptop__rig — por eso
+     4.545%/95.455% y no 5%/95%: son 5% y 105% de un total de 110%. */
   /* 68.125%, no 68%: tiene que ser EXACTO a 10.9/16 (el aspect-ratio de
      la tapa, más abajo) para que las dos caras midan lo mismo antes de
      rotar. Con 68% quedaba una diferencia de una fracción de píxel que
      cada navegador redondeaba distinto — en Chrome de escritorio no se
      notaba, en Safari/iOS sí. */
-  position:absolute;top:0;left:0;right:0;
+  /* padding-bottom en % se calcula sobre el ancho del CONTENEDOR
+     (.laptop__rig), no sobre el ancho propio de este elemento — por eso
+     sigue siendo 68.125% y no 68.125/1.1: ensanchar este box a 110% no
+     cambia esa referencia. (Acá metí el bug del '9px de más' al cerrar:
+     había dividido por 1.1 asumiendo que sí escalaba con el ancho
+     propio.) */
+  position:absolute;top:0;left:-5%;width:110%;
   height:0;padding-bottom:68.125%;
   transform-origin:50% 0;transform:rotateX(75deg);
-  background:var(--ink);border-radius:2px 2px 12px 12px;
+  /* Esquinas redondeadas con una curva de 7 puntos (cuarto de elipse),
+     no una aproximación de 3-4 puntos — con pocos puntos se ve
+     'carcomida', no una curva limpia. El radio en Y es ~3.86x el de X
+     (1/cos(75°)) a propósito: el rotateX(75deg) de más abajo aplasta el
+     eje Y a un 25.9%, así que sin compensar, cualquier curva se ve
+     mucho más chata en Y que en X una vez proyectada. Con esta
+     compensación, ya renderizada, se ve circular de verdad. */
+  clip-path:polygon(
+    4.545% 0%,95.455% 0%,
+    100% 84.55%,99.86% 88.55%,99.46% 92.27%,98.83% 95.47%,98% 97.93%,97.04% 99.47%,96% 100%,
+    4% 100%,2.96% 99.47%,2% 97.93%,1.17% 95.47%,0.54% 92.27%,0.14% 88.55%,0% 84.55%
+  );
+  /* Gradiente propio (no el mismo negro plano que la tapa): la base está
+     casi horizontal, así que recibe la luz distinto — más clara arriba,
+     cerca de la bisagra, oscureciéndose hacia el frente. Antes tapa y
+     base eran el mismo color liso y todo el conjunto se leía como un
+     bloque chato sin volumen. */
+  background:linear-gradient(180deg,#1a1a1a 0%,var(--ink) 55%,#0a0a0a 100%);
   overflow:hidden;
 }
 /* Red de seguridad, además del ajuste de arriba: una tira plana, SIN
@@ -590,7 +693,7 @@ a{color:inherit;text-decoration:none}
    cualquier resto de huequito de redondeo que pueda quedar entre la
    tapa y la base ya rotadas, venga de donde venga. */
 .laptop__seam{
-  position:absolute;left:0;right:0;bottom:0;
+  position:absolute;left:0;width:100%;bottom:0;
   height:3px;background:var(--ink);
   pointer-events:none;
 }
@@ -601,22 +704,79 @@ a{color:inherit;text-decoration:none}
    .laptop__lid), así que el orden de dibujado es inequívoco y el teclado
    puede quedarse donde está, simplemente tapado. */
 /* Teclas: dos tramas cruzadas, sin imágenes */
+/* Mismo trapecio que la base, para que el teclado se lea siguiendo la
+   misma línea de perspectiva y no como un rectángulo perfecto flotando
+   dentro de una base que sí se angosta. Esto solo recorta el CONTORNO;
+   las líneas de las teclas van en las dos mitades de abajo. */
+/* Las líneas horizontales (filas de teclas) van derechas — en esta
+   perspectiva no convergen, solo se comprimen verticalmente, y eso ya
+   lo hace el rotateX de más arriba. Las verticales (separan teclas a
+   lo largo de la profundidad) SÍ tienen que converger — se generan con
+   un ÚNICO repeating-conic-gradient centrado bien arriba del teclado,
+   simulando el punto de fuga. Un cono es un abanico de líneas que
+   irradian desde un punto: es UN SOLO fondo, no dos piezas superpuestas
+   — por eso no hay forma de que se vean "duplicadas" (eso pasaba con un
+   intento anterior que usaba dos mitades con skew espejado).
+   El punto de fuga NO es arbitrario: tiene que ser el punto donde los
+   dos lados del trapecio de acá abajo (3% 0% / 97% 0% / 100% 100% /
+   0% 100%), si se extienden hacia arriba, se cruzan — si no, las líneas
+   del medio no siguen la misma inclinación que el borde y se nota
+   distinto ángulo entre el contorno y las teclas de la orilla.
+   Con un inset de 3% arriba, ese cruce da en Y = alto·(1 − 1/(2×0.03))
+   = −15.667 alturas por encima del borde de arriba → -1566.7%.
+   Ojo con el alto que se usa para calcular el período del abanico: NO es
+   el alto ya renderizado (achicado por el rotateX), es el alto LOCAL del
+   elemento antes de rotar — el ancho no cambia con rotateX (solo achica
+   Y), así que local = 528×167px acá (offsetWidth/offsetHeight), no los
+   528×43px que se miden ya en pantalla.
+   El período de 0.185deg daba celdas cuadradas de verdad (~9px, el
+   mismo alto que una fila ya comprimida) pero eso son ~58 columnas —
+   mucho más "tecla" de lo que lee bien en un dibujo chico y estilizado.
+   0.677deg apunta a ~16 columnas (10.836deg de abanico total / 16), un
+   número más creíble para un teclado, con el mismo punto de fuga de
+   arriba (eso ya quedó bien, no tocar).
+   Los stops están centrados en 270deg, NO en 0deg — ojo con esto, es
+   contraintuitivo: "from -90deg" no hace que el ángulo 0 del gradiente
+   apunte "para abajo", lo rota -90deg desde arriba (norte), o sea que
+   el ángulo 0 del gradiente apunta para la IZQUIERDA (oeste). El
+   ángulo que de verdad apunta para abajo (hacia el teclado) es
+   -90+ángulo=180(sur) → ángulo=270. Centrar la tecla del medio en 0
+   (como se hizo en un intento anterior) la ponía mirando para el
+   costado, no hacia el teclado, y por eso no se veía centrado por más
+   que la cuenta de la mitad-para-cada-lado estuviera bien.
+   Con el centro real en 270 (mitad para cada lado, 269.925/270.075 de
+   los 0.15 pintados) el patrón sí queda simétrico en los dos bordes. */
 .laptop__keys{
   position:absolute;top:11%;left:7%;right:7%;height:44%;
+  clip-path:polygon(3% 0%,97% 0%,100% 100%,0% 100%);
+  overflow:hidden;
   background-image:
-    repeating-linear-gradient(90deg,rgba(250,250,248,.13) 0 4.1%,transparent 4.1% 5.25%),
-    repeating-linear-gradient(0deg,rgba(250,250,248,.13) 0 17%,transparent 17% 21%);
-  opacity:.9;
+    repeating-conic-gradient(from -90deg at 50% -1566.7%,
+      rgba(250,250,248,.16) 269.925deg 270.075deg,
+      transparent 270.075deg 270.602deg),
+    repeating-linear-gradient(0deg,rgba(250,250,248,.14) 0 17%,transparent 17% 21%),
+    linear-gradient(180deg,rgba(250,250,248,.06),transparent 45%);
+  opacity:.92;
 }
 .laptop__pad{
   position:absolute;bottom:11%;left:50%;translate:-50% 0;
   width:27%;height:27%;border-radius:3px;
   border:1px solid rgba(250,250,248,.14);
   background:rgba(250,250,248,.05);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.35);
 }
 .laptop__hinge{
   position:absolute;top:0;left:12%;right:12%;height:3px;
   background:rgba(250,250,248,.14);border-radius:0 0 4px 4px;
+}
+/* Misma bisagra del lado de la tapa, justo donde pivotea (transform-origin
+   de .laptop__lid es 50% 100%, o sea su propio borde de abajo): acá se ve
+   como sombra en vez de brillo, porque es el lado que queda "hundido"
+   contra el mecanismo, no el que recibe luz. */
+.laptop__lid-hinge{
+  position:absolute;bottom:0;left:10%;right:10%;height:5px;z-index:3;
+  background:rgba(0,0,0,.6);border-radius:5px 5px 0 0;
+  box-shadow:0 -1px 0 rgba(250,250,248,.12);
 }
 /* Sombra en el piso */
 .laptop__shadow{
@@ -636,6 +796,7 @@ a{color:inherit;text-decoration:none}
   background:var(--paper);display:flex;flex-direction:column;
   backface-visibility:hidden;
   transform:translateZ(1px);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.4),inset 0 2px 8px rgba(0,0,0,.2);
 }
 .laptop__chrome{
   display:flex;align-items:center;gap:5px;flex:none;
@@ -657,9 +818,33 @@ a{color:inherit;text-decoration:none}
 .laptop__view > img{object-fit:cover;object-position:top;cursor:zoom-in}
 
 /* Tapa cerrada, con el logo grabado */
+/* Ancho 110% y el trapecio espejado del deck: así, cuando la tapa se
+   cierra, la contratapa cubre exactamente la forma ancha de la base —
+   sin esto, las puntas del trapecio de la base quedarían asomando por
+   los costados de una tapa rectangular. */
 .laptop__back{
-  position:absolute;inset:0;background:var(--ink);
-  border-radius:9px 9px 2px 2px;
+  position:absolute;top:0;bottom:0;left:-5%;width:110%;
+  background:linear-gradient(155deg,#1c1c1c 0%,var(--ink) 45%,#080808 100%);
+/* La primera vez espejé esto verticalmente asumiendo que el rotateX(180deg)
+     propio + el giro del padre invertían el sentido — resultó al revés (la
+     bisagra se ensanchaba en vez de quedar angosta). La forma correcta es
+     la MISMA que la base, sin espejar: angosta en el y=0% de su propia
+     caja (que es donde queda la bisagra) y ancha+redondeada en el y=100%
+     (el frente). */
+  clip-path:polygon(
+    4.545% 0%,95.455% 0%,
+    100% 84.55%,99.86% 88.55%,99.46% 92.27%,98.83% 95.47%,98% 97.93%,97.04% 99.47%,96% 100%,
+    4% 100%,2.96% 99.47%,2% 97.93%,1.17% 95.47%,0.54% 92.27%,0.14% 88.55%,0% 84.55%
+  );
+  /* transform-origin por defecto (50% 50%, el centro): NO tocarlo. La
+     tapa cerrada (ver .laptop.is-closed .laptop__lid) baja lo suficiente
+     como para que esta cara quede tapando casi toda la base — con esa
+     superposición grande, la única curva que se termina viendo es la de
+     ESTA pieza (la de la base queda escondida debajo), así que no hace
+     falta hacer coincidir un pivote con el de la tapa para que "fusione"
+     con la base: alcanza con que las dos usen el mismo trapecio (ver
+     clip-path arriba) y listo. Cambiar el origin acá vuelve a levantar
+     esta cara y deja de tapar el teclado. */
   transform:translateZ(-1px) rotateX(180deg);backface-visibility:hidden;
   display:grid;place-items:center;
 }
@@ -669,6 +854,174 @@ a{color:inherit;text-decoration:none}
 }
 .laptop__mark::first-letter{color:var(--lime)}
 .laptop__mark i{font-style:normal;color:var(--lime)}
+
+/* Pista de que se puede tocar el dispositivo: un iconito de cursor que
+   flota AFUERA del marco (no encima — eso se leía como un botón verde
+   suelto) y se hamaca despacito. Puramente decorativo (aria-hidden): lo
+   accesible es el role="button" + aria-label del propio dispositivo. */
+/* pointer-events:auto (no none, como estaba): es un hijo de .laptop/
+   .phone, así que un click acá ya burbujea al listener del dispositivo
+   y abre/cierra igual que tocar el marco — no hace falta código nuevo,
+   solo dejar de bloquearle el click al propio ícono. */
+.device__hint{
+  position:absolute;top:-9px;right:-9px;z-index:3;
+  width:27px;height:27px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--mist);
+  box-shadow:0 8px 18px -8px rgba(13,13,13,.4);
+  display:grid;place-items:center;
+  cursor:pointer;
+  animation:hintBob 2.4s ease-in-out infinite;
+}
+.laptop.is-closed .device__hint,.phone.is-locked .device__hint{opacity:.5}
+.device__hint svg{width:18px;height:18px;overflow:visible}
+/* Ícono nuevo: paths ya rellenos (no separa mano/destello en piezas
+   con trazo distinto como el anterior), así que alcanza con un solo
+   color de relleno acorde al sistema de color. */
+.device__hint svg path{fill:var(--ink)}
+@keyframes hintBob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+/* El destello: un anillo lima que nace del borde del globito y se expande
+   parejo hacia afuera (no un puntito disparado en diagonal) — como una
+   onda que sale del círculo, en loop. El acento verde vive en ese anillo
+   que se mueve, no en el globito en sí. */
+.device__hint::after{
+  content:'';position:absolute;inset:-1px;border-radius:50%;
+  border:1.5px solid var(--lime);opacity:0;
+  animation:hintRing 2.4s ease-out infinite;
+}
+@keyframes hintRing{
+  0%{transform:scale(.9);opacity:0}
+  18%{opacity:.9}
+  100%{transform:scale(1.6);opacity:0}
+}
+
+/* ── Teléfono ──
+   Silueta simple (sin escena 3D como la notebook: un teléfono no tiene
+   bisagra que animar). "Bloquear" es un crossfade a una pantalla de
+   candado con el logo, no un giro físico — así lo pidieron. */
+.phone{
+  position:relative;width:min(100%,232px);margin-inline:auto;align-self:center;
+  display:flex;flex-direction:column;align-items:center;
+}
+/* Proporción de un teléfono real (9/19), no la relación de la captura.
+   Antes achicaba esto a 9/16 para que coincidiera con la imagen y no se
+   recortara el ancho — pero el recorte de ancho ya está resuelto en
+   .phone__view > img de otra forma (width:100%;height:auto, ver más abajo),
+   así que el marco puede volver a tener forma de teléfono sin que vuelva
+   el recorte lateral. Lo que sobra de la imagen de más se recorta abajo,
+   nunca a los costados; y se ve entera al abrirla en grande. */
+.phone__frame{
+  position:relative;width:100%;aspect-ratio:9/18;
+  background:var(--ink);border-radius:13%/6%;
+  padding:2.2% 1.9%;
+  box-shadow:0 30px 56px -34px rgba(13,13,13,.6);
+}
+/* El borde es lo que pediste para que la pantalla se lea como un borde
+   definido y no se "pierda" contra el marco negro — un aro clarito, sutil
+   contra la captura (blanca) pero bien visible contra el negro del marco. */
+.phone__screen{
+  position:relative;height:100%;overflow:hidden;
+  border-radius:9%/4%;background:var(--paper);
+  border:1px solid rgba(250,250,248,.16);
+  display:flex;flex-direction:column;
+}
+
+/* Franja color crema arriba (no negra): reserva el lugar de la isla para
+   que la captura arranque SIEMPRE debajo, nunca detrás — así la isla no
+   tapa el logo/menú de arriba de la página. Va del mismo color que la
+   pantalla (no del negro del marco) porque así se ve la isla "flotando"
+   sobre el fondo de la app, como en un teléfono real. */
+.phone__statusbar{position:relative;flex:none;height:6.4%;background:var(--paper)}
+.phone__notch{
+  position:absolute;top:50%;left:50%;translate:-50% -50%;
+  width:27%;height:44%;border-radius:100px;
+  background:#000;
+}
+
+/* flex:1 le da el resto del alto (lo que queda debajo de la franja); el
+   min-height:0 es necesario para que ese "resto" sea un tope real y no
+   se estire para acomodar una imagen más alta (el bug clásico de
+   flexbox con min-height:auto). Ahí adentro sigue recortando por abajo
+   con overflow:hidden, igual que antes. */
+.phone__view{position:relative;flex:1;min-height:0;overflow:hidden}
+
+/* Barra de abajo tipo Safari mobile (la de iOS va abajo, no arriba como en
+   desktop): mismo trato que .laptop__url — refuerza que es el mismo sitio
+   que se ve en la notebook, solo que en formato celular. */
+.phone__urlbar{
+  flex:none;display:flex;align-items:center;justify-content:center;gap:7%;
+  height:7.2%;background:var(--paper);border-top:1px solid var(--mist);
+  padding:0 4%;
+}
+.phone__urlpill{
+  display:flex;align-items:center;gap:4px;
+  font-size:7.5px;color:#8d8d8d;background:var(--mist);
+  border-radius:100px;padding:3px 8px 3px 10px;
+  /* width fijo, no max-width: si no, con una URL corta (como en "Web
+     app") la píldora se achica para acompañar el texto, y salta de
+     tamaño servicio a servicio. Así queda siempre igual, y el texto
+     largo sigue truncando con "…" adentro. */
+  width:60%;
+}
+#phoneUrl{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* Compartir / pestañas a los costados de la barra, y recargar pegado a
+   la URL (adentro de la píldora): como en Safari mobile, refuerza que
+   es un navegador de verdad, no solo un cartel con la URL. */
+.phone__urlbar-ico{width:11px;height:11px;flex:none;color:#8d8d8d}
+.phone__urlbar-reload{width:9px;height:9px;flex:none;color:#8d8d8d}
+.phone__view > svg,.phone__view > img{
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;transition:opacity .45s var(--ease);
+}
+.phone__view > svg.is-in,.phone__view > img.is-in{opacity:1}
+/* A diferencia de la notebook (que sí recorta con cover), acá el ANCHO
+   nunca se recorta: width:100% + height:auto mantiene la proporción real
+   de la imagen, entra de costado a costado completa, y si es más alta
+   que el marco lo que sobra se recorta abajo (con overflow:hidden del
+   padre) — nunca a los lados. Al abrirla en grande (el lightbox) se ve
+   la imagen entera, sin este recorte. */
+.phone__view > img{
+  top:0;left:0;right:0;bottom:auto;
+  width:100%;height:auto;
+  cursor:zoom-in;
+}
+
+/* Pantalla de bloqueo: mismo logo grabado que la tapa de la notebook,
+   con el cursor titilando, así las dos "vistas cerradas" se leen como
+   parte del mismo sistema. */
+.phone__lock{
+  position:absolute;inset:0;z-index:1;
+  background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s var(--ease);
+}
+.phone.is-locked .phone__lock{opacity:1;pointer-events:auto}
+.phone__lock-mark{
+  font-weight:700;font-size:15px;letter-spacing:-.045em;
+  color:rgba(250,250,248,.85);
+}
+.phone__lock-mark::first-letter{color:var(--lime)}
+.phone__lock-mark i{font-style:normal;color:var(--lime)}
+.phone__lock-hint{
+  font-size:9px;letter-spacing:.06em;color:rgba(250,250,248,.4);
+  opacity:0;transition:opacity .4s var(--ease) .15s;
+}
+.phone.is-locked .phone__lock-hint{opacity:1}
+
+/* Botones laterales, de puro detalle */
+.phone__btn{position:absolute;background:#000;border-radius:2px 0 0 2px}
+.phone__btn--power{right:-1.5%;top:19%;width:1.6%;height:8%;border-radius:0 2px 2px 0}
+.phone__btn--vol1{left:-1.5%;top:16%;width:1.6%;height:5%}
+.phone__btn--vol2{left:-1.5%;top:23%;width:1.6%;height:5%}
+
+.phone__shadow{
+  display:block;width:70%;height:22px;margin-top:14px;
+  background:radial-gradient(ellipse at center,rgba(13,13,13,.28),transparent 72%);
+  filter:blur(6px);
+}
 
 .laptop__tools{
   display:flex;align-items:center;justify-content:space-between;
@@ -681,12 +1034,21 @@ a{color:inherit;text-decoration:none}
   padding:8px 15px;cursor:pointer;transition:.25s var(--ease);
 }
 .laptop__toggle:hover{border-color:var(--ink);color:var(--ink)}
-.laptop__toggle-ico{
-  width:15px;height:10px;flex:none;
-  border:1.5px solid currentColor;border-bottom-width:3px;border-radius:2px;
-  transition:.35s var(--ease);
+
+/* Pictograma del switcher: un rectángulo ancho (desktop) y uno angosto
+   (mobile) lado a lado. El que representa la vista actual va sólido en
+   ink, el otro queda apenas insinuado — así el ícono mismo dice "estás acá,
+   tocá para pasar al otro" sin necesitar texto. */
+.laptop__toggle-ico{width:26px;height:14px;flex:none}
+.laptop__toggle-ico svg{width:100%;height:100%}
+.ti-desktop,.ti-mobile{
+  fill:none;stroke:currentColor;stroke-width:1.3;
+  transition:opacity .3s var(--ease);
 }
-.laptop-wrap.is-closed .laptop__toggle-ico{height:4px;border-bottom-width:1.5px}
+.ti-mobile{opacity:.32}
+.laptop__toggle[data-mode="mobile"] .ti-desktop{opacity:.32}
+.laptop__toggle[data-mode="mobile"] .ti-mobile{opacity:1}
+
 .laptop__now{font-family:var(--font-mono);font-size:11px;color:var(--stone);text-align:right}
 
 /* ══════════════ LIGHTBOX (ver captura en grande) ══════════════ */
@@ -1037,6 +1399,19 @@ a{color:inherit;text-decoration:none}
   .laptop-wrap{grid-column:1;grid-row:2;width:100%;max-width:540px;margin-inline:auto}
   .rail-wrap{grid-column:1;grid-row:3}
   .baseline{grid-template-columns:1fr;gap:16px}
+
+  /* En desktop, notebook y teléfono comparten fila (grid-row:1 los dos)
+     para que el botón de abajo no salte de posición al cambiar de vista
+     — la fila queda fija a la altura del más alto de los dos. Acá abajo
+     eso se vuelve en contra: a este ancho el teléfono (232px fijos) es
+     MÁS alto que la notebook (que se achica con el viewport), así que
+     la fila se agranda a la altura del teléfono y deja un hueco enorme
+     debajo de la notebook cuando es ella la que se muestra. En mobile
+     ese acoplamiento no compensa (nadie está comparando el salto), así
+     que acá se vuelve a display:none clásico: solo ocupa lugar el que
+     se está mostrando, y el botón queda pegado a lo que sea. */
+  .laptop-wrap{display:block}
+  .laptop.is-off,.phone.is-off{display:none}
 }
 
 @media (max-width:900px){

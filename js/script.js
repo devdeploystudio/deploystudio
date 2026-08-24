@@ -331,23 +331,26 @@ function startReveals(){
   }, 2600);
 })();
 
-/* ─────────── 9. SERVICIOS: carrusel + notebook ─────────── */
+/* ─────────── 9. SERVICIOS: carrusel + notebook + teléfono ─────────── */
 (function servicios(){
   const rail = document.getElementById('svcRail');
   const tabsEl = document.getElementById('svcTabs');
   if(!rail || typeof SERVICIOS === 'undefined') return;
 
-  const lapView = document.getElementById('lapView');
-  const lapUrl  = document.getElementById('lapUrl');
-  const lapNow  = document.getElementById('lapNow');
-  const laptop  = document.getElementById('laptop');
-  const lapWrap = document.querySelector('.laptop-wrap');
-  const toggle  = document.getElementById('lapToggle');
-  const togTxt  = document.getElementById('lapToggleTxt');
-  const count   = document.getElementById('railCount');
-  const bar     = document.getElementById('railBar');
-  const prev    = document.getElementById('railPrev');
-  const next    = document.getElementById('railNext');
+  const lapView  = document.getElementById('lapView');
+  const lapUrl   = document.getElementById('lapUrl');
+  const phoneUrl = document.getElementById('phoneUrl');
+  const lapNow   = document.getElementById('lapNow');
+  const laptop   = document.getElementById('laptop');
+  const phoneView = document.getElementById('phoneView');
+  const phone    = document.getElementById('phone');
+  const lapWrap  = document.querySelector('.laptop-wrap');
+  const devToggle = document.getElementById('deviceToggle');
+  const devToggleTxt = document.getElementById('deviceToggleTxt');
+  const count    = document.getElementById('railCount');
+  const bar      = document.getElementById('railBar');
+  const prev     = document.getElementById('railPrev');
+  const next     = document.getElementById('railNext');
 
   const GRUPOS = [
     { id: 'web',   label: 'Sitios web' },
@@ -356,15 +359,20 @@ function startReveals(){
 
   let lista = [];
   let activo = 0;
+  let deviceMode = 'desktop';   // 'desktop' muestra la notebook · 'mobile' muestra el teléfono
   const dosDig = (n) => String(n).padStart(2, '0');
 
-  // Precarga las capturas para que el cambio de tarjeta no espere a que
-  // la imagen baje de la red (eso era lo que se veía "trucho").
-  SERVICIOS.forEach(s => { if(s.imagen) new Image().src = s.imagen; });
+  // Precarga las capturas (las dos versiones de cada servicio) para que
+  // el cambio de tarjeta o de dispositivo no espere a que baje de la red.
+  SERVICIOS.forEach(s => {
+    if(s.imagen) new Image().src = s.imagen;
+    if(s.imagenMobile) new Image().src = s.imagenMobile;
+  });
 
-  /* Lightbox: ver la captura de la notebook en grande, con flechas para
-     recorrer todas las fotos del grupo actual y un título que indica cuál
-     es cada una. */
+  /* Lightbox: ver la captura en grande, con flechas para recorrer todas
+     las fotos del grupo actual. La galería se arma según qué pantalla
+     tocaron (la de la notebook o la del teléfono), así "siguiente foto"
+     no mezcla capturas desktop con mobile. */
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   const lightboxTitle = document.getElementById('lightboxTitle');
@@ -386,8 +394,10 @@ function startReveals(){
     galIdx = (galIdx + delta + galeria.length) % galeria.length;
     pintarLightbox();
   };
-  const abrirLightbox = (imagenActual) => {
-    galeria = lista.filter(s => s.imagen).map(s => ({ imagen: s.imagen, nombre: s.nombre }));
+  const abrirLightbox = (imagenActual, tipo) => {
+    galeria = lista
+      .map(s => ({ imagen: tipo === 'mobile' ? (s.imagenMobile || s.imagen) : s.imagen, nombre: s.nombre }))
+      .filter(g => g.imagen);
     const idx = galeria.findIndex(g => g.imagen === imagenActual);
     galIdx = idx >= 0 ? idx : 0;
     const multi = galeria.length > 1;
@@ -444,31 +454,25 @@ function startReveals(){
       <span class="svc-card__see mono">ver en la pantalla</span>
     </article>`;
 
-  /* Pinta la pantalla de la notebook con un crossfade real: la captura
-     anterior se desvanece mientras entra la nueva, en vez de cortarse
-     de golpe (con las capturas ya precargadas, entra al toque). */
-  let mostrando = null;   // índice ya pintado en la pantalla, para no repetir
-  const mostrar = (i) => {
-    const s = lista[i];
-    if(!s || i === mostrando) return;
-    mostrando = i;
-
-    const viejos = [...lapView.children];
+  /* Pinta una pantalla (notebook o teléfono) con un crossfade real: la
+     captura anterior se desvanece mientras entra la nueva, en vez de
+     cortarse de golpe (con las capturas ya precargadas, entra al toque).
+     Se llama una vez por dispositivo cada vez que cambia la tarjeta, así
+     las dos quedan siempre listas y cambiar de vista es instantáneo. */
+  const pintarVista = (el, imagenSrc, s) => {
+    const viejos = [...el.children];
     const temp = document.createElement('div');
-    temp.innerHTML = s.imagen
-      ? `<img src="${esc(s.imagen)}" alt="Ejemplo de ${esc(s.nombre)}" />`
+    temp.innerHTML = imagenSrc
+      ? `<img src="${esc(imagenSrc)}" alt="Ejemplo de ${esc(s.nombre)}" />`
       : `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice"
             role="img" aria-label="Ejemplo de ${esc(s.nombre)}">${s.pantalla}</svg>`;
     const nuevo = temp.firstElementChild;
-    lapView.appendChild(nuevo);
+    el.appendChild(nuevo);
     // Fuerza el reflow para que el navegador registre opacity:0 ANTES de
     // pasar a is-in — si no, no hay transición de la que colgarse.
     void nuevo.offsetHeight;
     nuevo.classList.add('is-in');
 
-    // Desvanece TODO lo que hubiera antes (normalmente una sola captura) y
-    // lo saca del DOM. El setTimeout es una red de seguridad: si por lo
-    // que sea transitionend no llega a disparar, igual se limpia solo.
     viejos.forEach(anterior => {
       anterior.classList.remove('is-in');
       let sacado = false;
@@ -476,17 +480,33 @@ function startReveals(){
       anterior.addEventListener('transitionend', sacar, { once: true });
       setTimeout(sacar, 600);
     });
+  };
+
+  let mostrando = null;   // índice ya pintado, para no repetir
+  const mostrar = (i) => {
+    const s = lista[i];
+    if(!s || i === mostrando) return;
+    mostrando = i;
+
+    pintarVista(lapView, s.imagen, s);
+    pintarVista(phoneView, s.imagenMobile || s.imagen, s);
 
     lapUrl.textContent = s.url;
+    phoneUrl.textContent = s.url;
     lapNow.textContent = s.nombre;
   };
 
-  // Click en la captura de la notebook: verla en grande, con flechas
-  // para pasar a la foto anterior / siguiente del mismo grupo.
+  // Click en la captura: verla en grande, con flechas para pasar a la
+  // foto anterior / siguiente del mismo grupo y del mismo dispositivo.
   lapView.addEventListener('click', () => {
     if(laptop.classList.contains('is-closed')) return;
     const img = lapView.querySelector('img.is-in') || lapView.querySelector('img');
-    if(img) abrirLightbox(img.getAttribute('src'));
+    if(img) abrirLightbox(img.getAttribute('src'), 'desktop');
+  });
+  phoneView.addEventListener('click', () => {
+    if(phone.classList.contains('is-locked')) return;
+    const img = phoneView.querySelector('img.is-in') || phoneView.querySelector('img');
+    if(img) abrirLightbox(img.getAttribute('src'), 'mobile');
   });
 
   const marcar = (i) => {
@@ -520,6 +540,48 @@ function startReveals(){
     rail.scrollBy({ left: delta, behavior: REDUCED ? 'auto' : 'smooth' });
   };
 
+  /* Abrir / cerrar la notebook, bloquear / desbloquear el teléfono.
+     Los dos se manejan tocando el marco del dispositivo (no la pantalla:
+     eso abre la foto en grande) — con la tapa cerrada o el teléfono
+     bloqueado, tocar cualquier parte lo despierta. El puntito lima de
+     la esquina (.device__hint) es la única pista visual de que se puede
+     tocar; el resto de la accesibilidad va por aria-label/aria-pressed. */
+  const setTapaLaptop = (cerrada) => {
+    laptop.classList.toggle('is-closed', cerrada);
+    laptop.setAttribute('aria-pressed', String(cerrada));
+    laptop.setAttribute('aria-label', cerrada ? 'Abrir notebook' : 'Cerrar notebook');
+  };
+  const abrirLaptop = () => { if(laptop.classList.contains('is-closed')) setTapaLaptop(false); };
+
+  laptop.addEventListener('click', e => {
+    if(laptop.classList.contains('is-closed')){ setTapaLaptop(false); return; }
+    if(e.target.closest('.laptop__screen')) return;   // eso ya abrió (o no) el lightbox
+    setTapaLaptop(true);
+  });
+  laptop.addEventListener('keydown', e => {
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    setTapaLaptop(!laptop.classList.contains('is-closed'));
+  });
+
+  const setLockPhone = (bloqueado) => {
+    phone.classList.toggle('is-locked', bloqueado);
+    phone.setAttribute('aria-pressed', String(bloqueado));
+    phone.setAttribute('aria-label', bloqueado ? 'Ver teléfono' : 'Bloquear teléfono');
+  };
+  const desbloquearPhone = () => { if(phone.classList.contains('is-locked')) setLockPhone(false); };
+
+  phone.addEventListener('click', e => {
+    if(phone.classList.contains('is-locked')){ setLockPhone(false); return; }
+    if(e.target.closest('.phone__screen')) return;    // eso ya abrió (o no) el lightbox
+    setLockPhone(true);
+  });
+  phone.addEventListener('keydown', e => {
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    setLockPhone(!phone.classList.contains('is-locked'));
+  });
+
   /* Da la vuelta en los extremos, así el pase automático nunca se traba */
   const ir = (i, dePersona = true) => {
     if(!lista.length) return;
@@ -528,26 +590,31 @@ function startReveals(){
     traer(n);
     if(dePersona){
       esperaHasta = Date.now() + ESPERA;   // pausa el pase automático
-      abrir();                             // y si estaba cerrada, la abre
+      abrirLaptop();                       // si el dispositivo activo estaba
+      desbloquearPhone();                  // "cerrado", se despierta para mostrar
     }
   };
 
-  /* Abrir / cerrar la notebook */
-  const setTapa = (cerrada) => {
-    laptop.classList.toggle('is-closed', cerrada);
-    lapWrap.classList.toggle('is-closed', cerrada);
-    toggle.setAttribute('aria-pressed', String(cerrada));
-    togTxt.textContent = cerrada ? 'abrir notebook' : 'cerrar notebook';
+  /* Switch desktop ⇄ mobile: intercambia qué dispositivo se ve, sin
+     tocar el estado abierto/cerrado de ninguno de los dos (así, si
+     volvés a un dispositivo que habías cerrado, lo encontrás como lo
+     dejaste). Las dos pantallas ya están pintadas de antes (mostrar()
+     las actualiza siempre a la vez), así que el cambio es instantáneo. */
+  const setDevice = (modo) => {
+    deviceMode = modo;
+    const mobile = modo === 'mobile';
+    // is-off (visibility:hidden), no hidden/display:none: el que está
+    // apagado sigue ocupando su lugar en el grid, así el alto de la fila
+    // (y la posición del botón de abajo) no cambia al cambiar de vista.
+    laptop.classList.toggle('is-off', mobile);
+    phone.classList.toggle('is-off', !mobile);
+    devToggle.dataset.mode = modo;
+    devToggle.setAttribute('aria-pressed', String(mobile));
+    devToggle.setAttribute('aria-label',
+      mobile ? 'Ver la versión desktop de este servicio' : 'Ver la versión mobile de este servicio');
+    devToggleTxt.textContent = mobile ? 'Versión desktop' : 'Versión mobile';
   };
-  const abrir = () => { if(laptop.classList.contains('is-closed')) setTapa(false); };
-
-  toggle.addEventListener('click', () =>
-    setTapa(!laptop.classList.contains('is-closed')));
-
-  // Con la tapa cerrada, tocar la notebook la abre
-  laptop.addEventListener('click', () => {
-    if(laptop.classList.contains('is-closed')) setTapa(false);
-  });
+  devToggle.addEventListener('click', () => setDevice(deviceMode === 'desktop' ? 'mobile' : 'desktop'));
 
   /* Render de un grupo */
   const render = (grupoId) => {
@@ -604,18 +671,13 @@ function startReveals(){
 
   /* ── Pase automático ──
      Se frena cuando el mouse o el foco están encima, cuando el bloque
-     no está en pantalla, cuando la notebook está cerrada (si no, cambia
-     la pantalla sin que se vea, y al abrir podía verse un resto de la
-     transición) y por 12 segundos después de cada clic. */
+     no está en pantalla, cuando el dispositivo que se está mostrando
+     está "cerrado" (si no, cambia la pantalla sin que se vea, y al
+     abrir podía verse un resto de la transición) y por 12 segundos
+     después de cada clic. */
   if(!REDUCED){
-    ['pointerenter', 'focusin'].forEach(ev => {
-      rail.addEventListener(ev, () => encima = true);
-      lapWrap.addEventListener(ev, () => encima = true);
-    });
-    ['pointerleave', 'focusout'].forEach(ev => {
-      rail.addEventListener(ev, () => encima = false);
-      lapWrap.addEventListener(ev, () => encima = false);
-    });
+    ['pointerenter', 'focusin'].forEach(ev => lapWrap.addEventListener(ev, () => encima = true));
+    ['pointerleave', 'focusout'].forEach(ev => lapWrap.addEventListener(ev, () => encima = false));
 
     if('IntersectionObserver' in window){
       new IntersectionObserver(([e]) => { aLaVista = e.isIntersecting; },
@@ -624,11 +686,13 @@ function startReveals(){
 
     setInterval(() => {
       if(encima || !aLaVista || Date.now() < esperaHasta) return;
-      if(laptop.classList.contains('is-closed')) return;
+      if(deviceMode === 'desktop' && laptop.classList.contains('is-closed')) return;
+      if(deviceMode === 'mobile' && phone.classList.contains('is-locked')) return;
       ir(activo + 1, false);
     }, PASO);
   }
 
+  setDevice('desktop');
   render('web');
 })();
 

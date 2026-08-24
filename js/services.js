@@ -14,12 +14,19 @@
    plazo    → tiempo estimado
    ajustes  → rondas de ajuste incluidas
    url      → lo que se ve en la barra de la notebook
-   imagen   → (opcional) captura real en img/servicios/, se muestra en
-              la notebook en vez del dibujo SVG si está presente
-   pantalla → dibujo que aparece en la notebook cuando no hay "imagen"
-              (SVG 320×180). Clases disponibles: s-fg (negro) · s-mut
-              (gris claro) · s-stone (gris medio) · s-lime (verde) ·
-              s-line (contorno) · s-txt (texto mono)
+   imagen       → (opcional) captura real en img/servicios/, se muestra
+                  en la notebook en vez del dibujo SVG si está presente
+   imagenMobile → (opcional) la misma captura pero en formato celular,
+                  en img/servicios/mobile/. Se muestra en el teléfono.
+                  Si no está, el teléfono usa "imagen" (la desktop),
+                  recortada — sirve para no dejar la pantalla vacía,
+                  pero lo ideal es sacar la mobile real (ver
+                  tools/captura.js o tools/optimizar-imagen.js si es
+                  una imagen que ya tenés, tipo un export de una IA).
+   pantalla     → dibujo que aparece en la notebook cuando no hay
+                  "imagen" (SVG 320×180). Clases disponibles: s-fg
+                  (negro) · s-mut (gris claro) · s-stone (gris medio) ·
+                  s-lime (verde) · s-line (contorno) · s-txt (texto mono)
    ═══════════════════════════════════════════════════════════ */
 
 const SERVICIOS = [
@@ -41,7 +48,8 @@ const SERVICIOS = [
     plazo: '2 semanas',
     ajustes: '2 rondas',
     url: 'tumarca.com/landing-page',
-    imagen: 'img/servicios/landing-page.png',
+    imagen: 'img/servicios/landing-page.jpg',
+    imagenMobile: 'img/servicios/mobile/landing-page.jpg',
     pantalla: `
       <rect class="s-fg" x="26" y="28" width="146" height="15"/>
       <rect class="s-fg" x="26" y="49" width="98" height="15"/>
@@ -72,7 +80,8 @@ const SERVICIOS = [
     plazo: '3 a 4 semanas',
     ajustes: '3 rondas',
     url: 'tumarca.com/sitio-institucional',
-    imagen: 'img/servicios/sitio-institucional.png',
+    imagen: 'img/servicios/sitio-institucional.jpg',
+    imagenMobile: 'img/servicios/mobile/sitio-institucional.jpg',
     pantalla: `
       <rect class="s-mut" x="0" y="0" width="320" height="26"/>
       <rect class="s-fg" x="18" y="9" width="38" height="9"/>
@@ -110,7 +119,8 @@ const SERVICIOS = [
     plazo: '4 a 6 semanas',
     ajustes: '3 rondas',
     url: 'tumarca.com/e-commerce',
-    imagen: 'img/servicios/tienda-online.png',
+    imagen: 'img/servicios/tienda-online.jpg',
+    imagenMobile: 'img/servicios/mobile/tienda-online.jpg',
     pantalla: `
       <rect class="s-mut" x="0" y="0" width="320" height="26"/>
       <rect class="s-fg" x="18" y="9" width="32" height="9"/>
@@ -147,7 +157,8 @@ const SERVICIOS = [
     plazo: 'desde 6 semanas',
     ajustes: 'por etapas',
     url: 'tumarca.com/web-app',
-    imagen: 'img/servicios/sistema-de-gestion.png',
+    imagen: 'img/servicios/sistema-de-gestion.jpg',
+    imagenMobile: 'img/servicios/mobile/sistema-de-gestion.jpg',
     pantalla: `
       <rect class="s-fg" x="0" y="0" width="62" height="180"/>
       <rect class="s-lime" x="12" y="18" width="38" height="7"/>
@@ -187,7 +198,8 @@ const SERVICIOS = [
     plazo: '2 a 3 semanas',
     ajustes: '2 rondas',
     url: 'tumarca.com/portfolio',
-    imagen: 'img/servicios/portfolio.png',
+    imagen: 'img/servicios/portfolio.jpg',
+    imagenMobile: 'img/servicios/mobile/portfolio.jpg',
     pantalla: `
       <rect class="s-fg" x="20" y="16" width="52" height="8"/>
       <rect class="s-stone" x="238" y="17" width="26" height="5"/>
@@ -216,7 +228,8 @@ const SERVICIOS = [
     plazo: '1 a 2 semanas',
     ajustes: '2 rondas',
     url: 'informe-de-mejoras.pdf',
-    imagen: 'img/servicios/pagina-existente.png',
+    imagen: 'img/servicios/pagina-existente.jpg',
+    imagenMobile: 'img/servicios/mobile/pagina-existente.jpg',
     pantalla: `
       <text class="s-txt" x="24" y="34">ANTES</text>
       <rect class="s-mut" x="24" y="42" width="240" height="20"/>
@@ -252,7 +265,8 @@ const SERVICIOS = [
     plazo: '2 a 3 semanas',
     ajustes: '2 rondas',
     url: 'propuestas-de-logo.pdf',
-    imagen: 'img/servicios/logo-identidad-basica.png',
+    imagen: 'img/servicios/logo-identidad-basica.jpg',
+    imagenMobile: 'img/servicios/mobile/logo-identidad-basica.jpg',
     pantalla: `
       <rect class="s-line" x="20" y="30" width="76" height="56"/>
       <circle class="s-fg-f" cx="58" cy="58" r="17"/>
@@ -283,7 +297,7 @@ const SERVICIOS = [
     plazo: '3 a 4 semanas',
     ajustes: '3 rondas',
     url: 'manual-de-marca.pdf',
-    imagen: 'img/servicios/identidad-completa.png',
+    imagen: 'img/servicios/identidad-completa.jpg',
     pantalla: `
       <rect class="s-lime" x="24" y="24" width="62" height="62"/>
       <rect class="s-fg" x="94" y="24" width="62" height="62"/>

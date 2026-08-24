@@ -12,11 +12,15 @@ Se puede abrir directo con doble clic en `index.html`.
 │   └── styles.css       Sistema de diseño completo (colores, tipografía, componentes)
 ├── js/
 │   ├── script.js         Interacciones: cursor titilante, boot, terminal, scroll, filtros, formulario
-│   ├── services.js       Base de servicios (tarjetas + notebook)
+│   ├── services.js       Base de servicios (tarjetas + notebook/teléfono)
 │   └── projects.js       Base de proyectos — el único archivo que vas a editar seguido
+├── tools/
+│   ├── captura.js         Saca una captura de un sitio en vivo (Chrome headless)
+│   └── optimizar-imagen.js  Redimensiona/comprime una imagen pesada a JPG liviano
 └── img/
     ├── logo.png / favicon.png
-    ├── servicios/         Capturas reales que se muestran en la notebook
+    ├── servicios/         Capturas desktop que se muestran en la notebook
+    │   └── mobile/         Las mismas, en formato celular, para el teléfono
     └── proyectos/         Capturas de los proyectos (opcional, ver más abajo)
 ```
 
@@ -99,7 +103,7 @@ clickearlo una sola vez para activarlo.
 
 ## Secciones de la página
 
-1. **Qué hacemos** — carrusel de tarjetas + notebook interactiva. Sale todo de
+1. **Qué hacemos** — carrusel de tarjetas + notebook/teléfono interactivos. Sale todo de
    `js/services.js`. Ver abajo.
 2. **Proceso** — las 4 etapas del trabajo.
 3. **Proyectos** — la grilla que se llena desde `js/projects.js`.
@@ -108,27 +112,109 @@ clickearlo una sola vez para activarlo.
 ## El bloque de servicios
 
 Dos pestañas (*Sitios web* / *Identidad de marca*) y, dentro de cada una, una
-tarjeta por servicio con lo que incluye, el plazo y las rondas de ajuste.
+tarjeta por servicio con lo que incluye, el plazo y las rondas de ajuste. Al
+lado, un mockup del servicio elegido — una notebook o un teléfono, según qué
+versión estés mirando.
 
 - Se ve **una tarjeta a la vez** y van **pasando solas cada 5,5 segundos**.
 - El pase se frena mientras tenés el mouse encima, cuando el bloque no está en
-  pantalla, y por 12 segundos después de que toques algo.
+  pantalla, cuando el dispositivo que se está mostrando está "cerrado"
+  (notebook) o "bloqueado" (teléfono), y por 12 segundos después de que
+  toques algo.
 - Al final vuelve a la primera, así que nunca se traba.
 - En celular y tablet **no hay flechas**: las tarjetas se pasan deslizando con
   el dedo (el riel usa scroll horizontal con `scroll-snap`). El contador y la
   barra de progreso se quedan para saber en cuál estás. La regla está atada a
   `(hover:none) and (pointer:coarse)` más un corte en 760px, así que depende
   del tipo de dispositivo y no solo del ancho de la ventana.
-- La **notebook** de al lado muestra un ejemplo dibujado de ese servicio y
-  cambia junto con la tarjeta. Se abre y cierra con el botón (o tocándola):
-  cerrada muestra el logo grabado en la tapa.
+
+### Notebook y teléfono: dos vistas del mismo servicio
+
+El botón de abajo del mockup (**"Versión mobile" / "Versión desktop"**)
+intercambia cuál de los dos dispositivos se ve. Las dos pantallas están
+siempre pintadas por detrás (`mostrar()` actualiza las dos juntas cada vez que
+cambiás de tarjeta), así que el cambio es instantáneo, sin esperar a que
+cargue nada.
+
+**El botón y la etiqueta de abajo (`.laptop__tools`) nunca se mueven**, sin
+importar cuál de los dos dispositivos se esté mostrando ni cuánto midan entre
+sí. Notebook y teléfono ocupan la misma celda de grid, superpuestos
+(`grid-column:1;grid-row:1` los dos), y el que no se muestra usa
+`visibility:hidden` — no `hidden`/`display:none` — a propósito: así sigue
+ocupando su lugar en el cálculo de alto de esa celda, que queda fijo (lo
+define el más alto de los dos), y todo lo que viene después en el flujo
+normal (el botón) no salta de posición al cambiar de vista.
+
+Los dos se abren/cierran **tocando el marco del dispositivo, no la pantalla**
+— tocar la pantalla abre la foto en grande (el lightbox); tocar el resto (el
+teclado, los bordes, la tapa cerrada) abre o cierra. La pista de que se puede
+tocar es un globito con un ícono de mano fuera del marco (`.device__hint`,
+arriba a la derecha), con un destello lima que sale disparado de la esquina
+cada tanto — el globito en sí es neutro (papel + ink), el color de marca
+vive solo en ese detalle que se mueve. Es decorativo (`aria-hidden`) — la
+accesibilidad real va por `role="button"` + `aria-label`/`aria-pressed` en
+el propio `.laptop`/`.phone`, que también se manejan con teclado (foco +
+Enter/Espacio).
+
+- **Notebook cerrada** → tapa abajo, muestra el logo `/deploy_` grabado.
+- **Teléfono bloqueado** → pantalla de bloqueo negra con el mismo logo y el
+  cursor titilando, más un "tocá para ver". Elegí esto (bloqueo, no un giro
+  físico) porque un teléfono no tiene tapa que cerrar — pedirle una animación
+  de "cerrarse" hubiera quedado raro; bloquearse es lo que hace un teléfono
+  de verdad.
+
+Elegir una tarjeta nueva siempre despierta el dispositivo que esté activo en
+ese momento (si estaba cerrado/bloqueado, se abre), para que se vea el cambio.
+
+### La captura del teléfono nunca se recorta a lo ancho
+
+A diferencia de la notebook (que sí usa `object-fit:cover` — las capturas de
+escritorio son anchas y el recorte ahí no pierde nada importante), la del
+teléfono usa `width:100%; height:auto`: la imagen entra de costado a costado
+completa siempre, sea cual sea su relación de aspecto, y si es más alta que el
+espacio disponible lo que sobra se recorta **abajo** (nunca a los lados). Al
+abrirla en grande en el lightbox se ve la imagen entera, sin este recorte.
+
+El marco (`aspect-ratio: 9/18`) ya no necesita coincidir con la relación de
+la imagen para evitar el recorte lateral — eso ya lo garantiza la técnica de
+arriba, no importa qué relación de aspecto tenga la próxima captura que
+subas. El valor de 9/18 es puramente estético (una proporción de teléfono
+real, ni achatada ni exagerada) y está calibrado a ojo contra las capturas
+actuales para que el recorte de abajo sea mínimo — si notás que con una
+imagen nueva queda un borde blanco abajo (la captura no llega a cubrir todo
+el alto), el arreglo es hacer el marco **más bajo** — 9/17, 9/16 — no al
+revés.
+
+Arriba de la captura, un `.phone__statusbar` color crema reserva el lugar de
+la isla (el notch): así la isla nunca queda flotando sobre el logo o el menú
+de la captura, que arranca siempre debajo. Abajo, un `.phone__urlbar` con la
+misma URL que muestra la notebook (estilo Safari mobile, que la lleva abajo
+y no arriba como los navegadores de escritorio) — refuerza que es el mismo
+sitio en las dos vistas.
+
+### Cómo agregar la versión mobile de un servicio
+
+Cada servicio en `js/services.js` puede tener un campo `imagenMobile`
+
+Cada servicio en `js/services.js` puede tener un campo `imagenMobile`
+(ruta a `img/servicios/mobile/`). Si no lo tiene, el teléfono muestra la
+captura de escritorio (`imagen`) como respaldo, recortada — sirve para no
+dejar la pantalla vacía, pero lo ideal es sacar la mobile real:
+
+- Si es un sitio en vivo: `node tools/captura.js <url> img/servicios/mobile/<nombre>.jpg`
+  con la ventana angosta, por ejemplo `... 700 6000 390 900` (ancho 390px).
+- Si ya tenés la imagen (un export de una IA, una captura de otro lado) y
+  pesa mucho: `node tools/optimizar-imagen.js <entrada> <salida.jpg> [anchoMax] [calidad]`
+  — la redimensiona y la recomprime a JPG liviano sin perder nitidez visible.
+  Así se armaron las capturas mobile actuales: bajaron de ~1,5MB cada una a
+  ~90KB.
 
 Para editar los textos, los plazos o lo que se ve en la pantalla, todo está en
-`js/services.js` — cada servicio es un bloque. Si tiene el campo `imagen`
-(ruta a una captura en `img/servicios/`), se muestra esa foto real; si no,
-se dibuja el `pantalla` (un SVG de 320×180 con las clases `s-*` del sistema
-de color). Hoy los 6 servicios de "Sitios web" y los 2 de "Identidad de
-marca" ya tienen su captura real.
+`js/services.js` — cada servicio es un bloque. Si no tiene el campo `imagen`
+(ni el de respaldo), se dibuja el `pantalla` (un SVG de 320×180 con las
+clases `s-*` del sistema de color) tanto en la notebook como en el teléfono.
+Hoy los 6 servicios de "Sitios web" y los 2 de "Identidad de marca" ya tienen
+su captura real, desktop y mobile.
 
 ### Cómo está hecha la notebook
 
@@ -154,6 +240,10 @@ navegadores. El giro y el orden de dibujado siguen funcionando, porque
 misma profundidad que el alto de la tapa (68% del ancho), como una notebook
 real. Si cambiás una, cambiá la otra o la tapa va a sobrepasar la base.
 
+El teléfono, en cambio, **no tiene escena 3D** — es un marco plano (sin
+bisagra que animar), porque un teléfono no se abre como una notebook.
+
+## Sistema de diseño
 ## Sistema de diseño
 
 **Colores** (los cinco oficiales, sin agregados)
