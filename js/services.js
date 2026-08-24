@@ -298,6 +298,7 @@ const SERVICIOS = [
     ajustes: '3 rondas',
     url: 'manual-de-marca.pdf',
     imagen: 'img/servicios/identidad-completa.jpg',
+    imagenMobile: 'img/servicios/mobile/identidad-completa.jpg',
     pantalla: `
       <rect class="s-lime" x="24" y="24" width="62" height="62"/>
       <rect class="s-fg" x="94" y="24" width="62" height="62"/>

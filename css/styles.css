@@ -1410,8 +1410,55 @@ a{color:inherit;text-decoration:none}
      ese acoplamiento no compensa (nadie está comparando el salto), así
      que acá se vuelve a display:none clásico: solo ocupa lugar el que
      se está mostrando, y el botón queda pegado a lo que sea. */
-  .laptop-wrap{display:block}
+  /* padding-inline:5%: .laptop__deck/.laptop__back son 110% del ancho de
+     .laptop (el trapecio de la base, ver comentarios más abajo) — a este
+     ancho angosto ese 5% de sobra por lado ya no entra en el padding del
+     .section y la notebook se pasaba del margen izquierdo/derecho. Con
+     este padding en el wrap, .laptop (100% de ESE contenido, ya más
+     angosto) deja justo el margen que el trapecio necesita para no
+     asomarse — 5% y no menos, porque el desborde del trapecio es
+     justamente 5% del ancho de .laptop. */
+  /* display:flex + order:-1 en .laptop__tools (ver más abajo): con el
+     teléfono mostrado (mucho más alto que la notebook), el botón de
+     abajo quedaba empujado bien lejos, fuera de la pantalla — para
+     encontrarlo había que scrollear. Poniéndolo ARRIBA del dispositivo
+     en vez de abajo, su posición ya no depende de cuál de los dos es más
+     alto: siempre está a mano apenas se entra a esta sección. */
+  .laptop-wrap{display:flex;flex-direction:column;padding-inline:5%}
   .laptop.is-off,.phone.is-off{display:none}
+  .laptop__tools{order:-1;margin:0 0 16px}
+
+  /* Las líneas verticales del teclado (el repeating-conic-gradient de
+     .laptop__keys) no hay que sacarlas en mobile: el punto de fuga y el
+     ángulo del abanico son % y deg puros (no px), así que ya son
+     independientes del tamaño — a este ancho .laptop__keys mide 317×100
+     local aprox., casi la misma proporción que los 528×167 de escritorio
+     (3.17 vs 3.16), así que el punto de fuga sigue sirviendo tal cual.
+     Lo que SÍ hay que cambiar es cuántas columnas entran: con las mismas
+     16 de escritorio comprimidas en un ancho ~40% menor, cada tecla
+     queda angosta de más y se lee como rayas estiradas en vez de teclas.
+     Con un período de 0.903deg (en vez de 0.677deg en desktop) quedan 12
+     columnas acá — más angostas que las 9 de la primera prueba, que
+     pidieron 2-3 más, pero bastante más anchas que las 16 de escritorio. */
+  .laptop__keys{
+    background-image:
+      repeating-conic-gradient(from -90deg at 50% -1566.7%,
+        rgba(250,250,248,.16) 269.925deg 270.075deg,
+        transparent 270.075deg 270.828deg),
+      repeating-linear-gradient(0deg,rgba(250,250,248,.14) 0 17%,transparent 17% 21%),
+      linear-gradient(180deg,rgba(250,250,248,.06),transparent 45%);
+  }
+
+  /* Cámara y led: tamaños fijos en px, pensados para el ancho de
+     escritorio (donde el bisel de arriba mide ~10.8px). Acá el bisel se
+     achica junto con la notebook (es 2% de su ancho) y con los mismos
+     6px+borde la cámara volvía a pasarse del borde de la pantalla — el
+     mismo bug que ya se había arreglado, pero a otra escala. Achicando
+     cámara y led (y su offset) en proporción al bisel más chico de este
+     rango de anchos, quedan adentro con margen otra vez. */
+  .laptop__camera{top:.55%}
+  .laptop__cam{width:4px;height:4px;border-width:.75px}
+  .laptop__cam-led{width:1.5px;height:1.5px;left:4px;top:1.25px}
 }
 
 @media (max-width:900px){
