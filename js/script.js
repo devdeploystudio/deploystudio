@@ -352,6 +352,28 @@ function startReveals(){
   const prev     = document.getElementById('railPrev');
   const next     = document.getElementById('railNext');
 
+  /* Botón desktop/mobile: en mobile va arriba, a la par de las pestañas
+     (sitios web/identidad de marca), no abajo del dispositivo — así no
+     depende de si el teléfono (bien alto) empujó todo hacia abajo y hay
+     que scrollear para encontrarlo. En desktop tiene que seguir DENTRO de
+     .laptop-wrap (ver el comentario de más abajo, en la media query):
+     ahí es donde .laptop-wrap arma su propia fila con la notebook/celu
+     así el botón no salta de posición al cambiar de vista. Como es el
+     mismo nodo movido de lugar (no una copia), el resto del código
+     (setDevice, el listener de click, etc.) no se entera del cambio. */
+  const railHead = document.querySelector('.rail__head');
+  const laptopTools = document.querySelector('.laptop__tools');
+  const toolsHome = document.createComment('laptop__tools-home');
+  if(laptopTools) laptopTools.after(toolsHome);
+  const mqToolsArriba = window.matchMedia('(max-width:1000px)');
+  const ubicarTools = () => {
+    if(!laptopTools) return;
+    if(mqToolsArriba.matches) railHead?.appendChild(laptopTools);
+    else toolsHome.after(laptopTools);
+  };
+  ubicarTools();
+  mqToolsArriba.addEventListener('change', ubicarTools);
+
   const GRUPOS = [
     { id: 'web',   label: 'Sitios web' },
     { id: 'marca', label: 'Identidad de marca' }
@@ -529,7 +551,7 @@ function startReveals(){
   let scrollProgramatico = false;
   let scrollLockTimer = null;
 
-  const traer = (i) => {
+  const traer = (i, instant = false) => {
     const c = rail.children[i];
     if(!c) return;
     const delta = c.getBoundingClientRect().left - rail.getBoundingClientRect().left;
@@ -537,8 +559,25 @@ function startReveals(){
     scrollProgramatico = true;
     clearTimeout(scrollLockTimer);
     scrollLockTimer = setTimeout(() => { scrollProgramatico = false; }, 500);
-    rail.scrollBy({ left: delta, behavior: REDUCED ? 'auto' : 'smooth' });
+    rail.scrollBy({ left: delta, behavior: instant ? 'instant' : (REDUCED ? 'auto' : 'smooth') });
   };
+
+  /* El scrollLeft del riel es un número de píxeles fijo — cuando cambia el
+     ancho de la ventana, el ANCHO DE CADA TARJETA cambia con él, pero
+     scrollLeft se queda con el valor viejo (el navegador solo lo clampea
+     si se pasa del máximo, no lo re-alinea). Resultado: si redimensionás
+     la ventana estando en, digamos, la tarjeta 3, esa tarjeta deja de
+     estar alineada con el borde del riel — a veces por decenas de
+     píxeles, no un problema de redondeo — y se le corta el borde. Este
+     listener re-trae la tarjeta activa (sin animación, instant) cada vez
+     que el viewport cambia de tamaño, así siempre queda encuadrada bien
+     sea cual sea el ancho final. Debounce de 120ms para no recalcular en
+     cada frame mientras se arrastra el borde de la ventana. */
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => traer(activo, true), 120);
+  });
 
   /* Abrir / cerrar la notebook, bloquear / desbloquear el teléfono.
      Los dos se manejan tocando el marco del dispositivo (no la pantalla:

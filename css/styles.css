@@ -423,19 +423,46 @@ a{color:inherit;text-decoration:none}
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:2px solid var(--lime);outline-offset:-2px}
 
+/* El borde va en un ::before separado, para adentro del borde real de la
+   tarjeta (no como border directo en .svc-card) — .svc-card es el item
+   que hace scroll-snap dentro de un contenedor con overflow-x:auto, y con
+   6 tarjetas de ancho fraccionario (flex:0 0 100% de un ancho que rara
+   vez es un entero de px) el borde de ALGUNAS tarjetas (no todas: depende
+   del redondeo acumulado según el índice) terminaba a fracciones de
+   pixel del límite visible del scroll — a veces por afuera, y esa fina
+   línea de 1px se recortaba (se veía la tarjeta sin borde izquierdo o
+   derecho). Metiendo el borde para adentro queda a salvo de ese margen
+   de error aunque el borde EXTERIOR de la tarjeta ande impreciso.
+   4px (no 2px): medido en este navegador el peor caso da ~0.3-2px de
+   margen con 2px — bastante para ESTE motor de render, pero un
+   navegador/zoom/escalado de pantalla distinto (devicePixelRatio
+   fraccionario tipo 1.5, común en Android) puede redondear el borde a
+   otro pixel físico y comerse ese margen. 4px da el doble de colchón sin
+   notarse (la tarjeta ya tiene 20-22px de padding).
+   El fondo (que si se recorta ese pelin no se nota, a diferencia de una
+   línea fina) se queda en .svc-card sin cambios — y como .svc-card__* usa
+   el padding/gap de acá, mover solo el borde a un pseudo-elemento no
+   obliga a envolver el contenido en un wrapper nuevo. */
 .svc-card{
+  position:relative;
   flex:0 0 100%;scroll-snap-align:start;
   display:flex;flex-direction:column;gap:10px;
   padding:22px 20px;background:var(--paper);
-  border:1px solid var(--mist);border-radius:var(--r);cursor:pointer;
+  border-radius:var(--r);cursor:pointer;
   text-align:left;font-family:var(--font-sans);
-  transition:border-color .3s var(--ease),background .3s var(--ease),box-shadow .4s var(--ease);
+  transition:background .3s var(--ease),box-shadow .4s var(--ease);
 }
-.svc-card:hover{border-color:var(--stone)}
+.svc-card::before{
+  content:'';position:absolute;inset:4px;z-index:1;pointer-events:none;
+  border:1px solid var(--mist);border-radius:calc(var(--r) - 4px);
+  transition:border-color .3s var(--ease);
+}
+.svc-card:hover::before{border-color:var(--stone)}
 .svc-card.is-active{
-  border-color:var(--ink);background:#fff;
+  background:#fff;
   box-shadow:0 20px 48px -32px rgba(13,13,13,.45);
 }
+.svc-card.is-active::before{border-color:var(--ink)}
 .svc-card__top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .svc-card__n{font-size:11px;color:var(--stone);transition:color .3s}
 .svc-card.is-active .svc-card__n{color:var(--lime)}
@@ -1418,15 +1445,30 @@ a{color:inherit;text-decoration:none}
      angosto) deja justo el margen que el trapecio necesita para no
      asomarse — 5% y no menos, porque el desborde del trapecio es
      justamente 5% del ancho de .laptop. */
-  /* display:flex + order:-1 en .laptop__tools (ver más abajo): con el
-     teléfono mostrado (mucho más alto que la notebook), el botón de
-     abajo quedaba empujado bien lejos, fuera de la pantalla — para
-     encontrarlo había que scrollear. Poniéndolo ARRIBA del dispositivo
-     en vez de abajo, su posición ya no depende de cuál de los dos es más
-     alto: siempre está a mano apenas se entra a esta sección. */
   .laptop-wrap{display:flex;flex-direction:column;padding-inline:5%}
   .laptop.is-off,.phone.is-off{display:none}
-  .laptop__tools{order:-1;margin:0 0 16px}
+
+  /* El botón desktop/mobile (.laptop__tools) se saca de acá y se mete
+     dentro de .rail__head con un poco de JS (ver script.js, ubicarTools):
+     con el teléfono mostrado (bastante más alto que la notebook) el botón
+     quedaba empujado lejos, fuera de la pantalla — para encontrarlo de
+     nuevo había que scrollear. Alineado junto a las pestañas (sitios web
+     / identidad de marca) queda siempre a mano apenas se entra a la
+     sección, sin depender de cuál de los dos dispositivos es más alto.
+     rail__head pasa a wrap porque a este ancho pestañas + contador +
+     botón ya no entran en una sola línea — el botón cae en su propio
+     renglón, pero pegado a las pestañas (mismo bloque), no allá abajo
+     del dispositivo como antes. */
+  .rail__head{flex-wrap:wrap;row-gap:10px}
+  /* padding-top+border, no solo el row-gap del wrap: alineado pero sin
+     nada más, el botón se leía como parte del mismo grupo que las
+     pestañas (mismo bloque de golpe). La línea + aire de más lo separan
+     lo justo para que se entienda que es un control aparte, aunque
+     comparta el mismo renglón/bloque de encabezado. */
+  .laptop__tools{
+    flex:1 1 100%;order:1;justify-content:flex-start;gap:12px;
+    margin:2px 0 0;padding-top:14px;border-top:1px solid var(--mist);
+  }
 
   /* Las líneas verticales del teclado (el repeating-conic-gradient de
      .laptop__keys) no hay que sacarlas en mobile: el punto de fuga y el
@@ -1437,14 +1479,29 @@ a{color:inherit;text-decoration:none}
      Lo que SÍ hay que cambiar es cuántas columnas entran: con las mismas
      16 de escritorio comprimidas en un ancho ~40% menor, cada tecla
      queda angosta de más y se lee como rayas estiradas en vez de teclas.
-     Con un período de 0.903deg (en vez de 0.677deg en desktop) quedan 12
+     Con un período de 0.838deg (en vez de 0.677deg en desktop) quedan 13
      columnas acá — más angostas que las 9 de la primera prueba, que
      pidieron 2-3 más, pero bastante más anchas que las 16 de escritorio. */
+  /* Ojo con el período: no cualquier valor que dé más o menos la
+     cantidad de columnas pedida sirve — el abanico total (de punta a
+     punta) mide ~10.7-10.9deg según el ancho (varía un poco porque la
+     proporción de .laptop__keys no es idéntica en todo el rango mobile,
+     320-1000px), y si el período no entra un número entero+medio de
+     veces en la MITAD de ese abanico, la última columna de una punta
+     queda a mitad recortar por el clip-path — se ve como una tecla
+     rota o de plano un hueco más grande que el resto (eso pasaba con
+     0.903deg: quedaba una tecla casi pegada al límite, apenas adentro
+     en algunos anchos y apenas afuera en otros, según el redondeo).
+     0.838deg = (mitad del abanico, ~5.45deg en el peor caso) / 6.5 —
+     con el 6.5 (no 6 ni 7) la última línea de cada lado queda a mitad
+     de camino del límite, con margen de sobra en TODO el rango mobile,
+     así que ninguna tecla de la punta se corta nunca, sea cual sea el
+     ancho exacto de pantalla. */
   .laptop__keys{
     background-image:
       repeating-conic-gradient(from -90deg at 50% -1566.7%,
         rgba(250,250,248,.16) 269.925deg 270.075deg,
-        transparent 270.075deg 270.828deg),
+        transparent 270.075deg 270.763deg),
       repeating-linear-gradient(0deg,rgba(250,250,248,.14) 0 17%,transparent 17% 21%),
       linear-gradient(180deg,rgba(250,250,248,.06),transparent 45%);
   }
