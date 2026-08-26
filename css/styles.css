@@ -1279,7 +1279,11 @@ a{color:inherit;text-decoration:none}
   gap:24px;margin-bottom:var(--gap-head);
 }
 .audience__ctrl{display:flex;gap:10px;flex:none}
-.audience__viewport{overflow:hidden}
+.audience__viewport{
+  overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;
+  -webkit-user-select:none;
+}
+.audience__viewport.is-dragging{cursor:grabbing}
 .audience__track{
   list-style:none;display:flex;gap:clamp(16px,2vw,24px);width:max-content;
 }

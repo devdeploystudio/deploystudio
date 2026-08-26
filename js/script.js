@@ -802,6 +802,38 @@ function startReveals(){
     mover();
   });
 
+  /* Arrastre táctil (o con mouse): igual que el rail de servicios, pero
+     ahí el scroll es nativo (overflow-x) — acá la tira se mueve con
+     transform vía JS (para el loop infinito), así que no hay scroll
+     nativo que aproveche el dedo solo. Lo simulamos a mano: mientras se
+     arrastra, "encima" se pone true (mismo flag que el hover, pausa el
+     autoplay) y pos sigue el delta del dedo/mouse; al soltar, el
+     autoplay retoma solo desde ahí — no vuelve a acomodarse a una card,
+     sigue "empujada" a donde la dejaste. touch-action:pan-y en el CSS
+     deja pasar el scroll vertical de la página; el horizontal lo toma
+     este listener. */
+  let arrastrando = false, startX = 0, startPos = 0;
+  const clampPos = p => ((p % setW) + setW) % setW;
+
+  viewport.addEventListener('pointerdown', e => {
+    arrastrando = true; encima = true;
+    startX = e.clientX; startPos = pos;
+    viewport.setPointerCapture(e.pointerId);
+    viewport.classList.add('is-dragging');
+  });
+  viewport.addEventListener('pointermove', e => {
+    if(!arrastrando) return;
+    pos = clampPos(startPos + (startX - e.clientX));
+    mover();
+  });
+  const soltar = () => {
+    if(!arrastrando) return;
+    arrastrando = false; encima = false;
+    viewport.classList.remove('is-dragging');
+  };
+  viewport.addEventListener('pointerup', soltar);
+  viewport.addEventListener('pointercancel', soltar);
+
   if(REDUCED) return;
 
   let last = performance.now();
@@ -1032,5 +1064,29 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if(href.includes('mail.google.com/')){
       gtag('event', 'click_email');
     }
+  });
+
+  /* Navegación interna: navbar + footer */
+  document.addEventListener('click', e => {
+    const link = e.target.closest('nav a[href^="#"], footer a[href^="#"]');
+
+    if(!link || typeof gtag !== 'function') return;
+
+    const href = link.getAttribute('href');
+
+    const sectionName =
+      href === '#' || href === '#inicio'
+        ? 'inicio'
+        : href.replace('#', '');
+
+    const navigationArea =
+      link.closest('footer')
+        ? 'footer'
+        : 'navbar';
+
+    gtag('event', 'navigation_click', {
+      navigation_area: navigationArea,
+      section_name: sectionName
+    });
   });
 })();
