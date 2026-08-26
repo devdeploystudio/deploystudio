@@ -399,13 +399,6 @@ function startReveals(){
   let deviceMode = 'desktop';   // 'desktop' muestra la notebook · 'mobile' muestra el teléfono
   const dosDig = (n) => String(n).padStart(2, '0');
 
-  // Precarga las capturas (las dos versiones de cada servicio) para que
-  // el cambio de tarjeta o de dispositivo no espere a que baje de la red.
-  SERVICIOS.forEach(s => {
-    if(s.imagen) new Image().src = s.imagen;
-    if(s.imagenMobile) new Image().src = s.imagenMobile;
-  });
-
   /* Lightbox: ver la captura en grande, con flechas para recorrer todas
      las fotos del grupo actual. La galería se arma según qué pantalla
      tocaron (la de la notebook o la del teléfono), así "siguiente foto"
@@ -500,7 +493,7 @@ function startReveals(){
     const viejos = [...el.children];
     const temp = document.createElement('div');
     temp.innerHTML = imagenSrc
-      ? `<img src="${esc(imagenSrc)}" alt="Ejemplo de ${esc(s.nombre)}" />`
+      ? `<img src="${esc(imagenSrc)}" alt="Ejemplo de ${esc(s.nombre)}" loading="lazy" decoding="async" />`
       : `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice"
             role="img" aria-label="Ejemplo de ${esc(s.nombre)}">${s.pantalla}</svg>`;
     const nuevo = temp.firstElementChild;
