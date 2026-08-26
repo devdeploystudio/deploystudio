@@ -814,29 +814,51 @@ function startReveals(){
      transform vía JS (para el loop infinito), así que no hay scroll
      nativo que aproveche el dedo solo. Lo simulamos a mano: mientras se
      arrastra, "encima" se pone true (mismo flag que el hover, pausa el
-     autoplay) y pos sigue el delta del dedo/mouse; al soltar, el
-     autoplay retoma solo desde ahí — no vuelve a acomodarse a una card,
-     sigue "empujada" a donde la dejaste. touch-action:pan-y en el CSS
-     deja pasar el scroll vertical de la página; el horizontal lo toma
-     este listener. */
+     autoplay) y pos sigue el delta del dedo/mouse. touch-action:pan-y en
+     el CSS deja pasar el scroll vertical de la página; el horizontal lo
+     toma este listener.
+     Al soltar sin inercia quedaba tosco — el dedo se despega y la tira
+     frena en seco, nada que ver con un scroll nativo. Ahora se mide la
+     velocidad de los últimos pointermove (px/ms) y, al soltar, esa
+     velocidad "sigue" unos frames más con fricción hasta apagarse (coast
+     de abajo) — recién ahí retoma el autoplay, desde donde haya quedado. */
   let arrastrando = false, startX = 0, startPos = 0;
+  let velX = 0, lastMoveX = 0, lastMoveT = 0;
   const clampPos = p => ((p % setW) + setW) % setW;
 
   viewport.addEventListener('pointerdown', e => {
     arrastrando = true; encima = true;
     startX = e.clientX; startPos = pos;
+    lastMoveX = e.clientX; lastMoveT = performance.now(); velX = 0;
     viewport.setPointerCapture(e.pointerId);
     viewport.classList.add('is-dragging');
   });
   viewport.addEventListener('pointermove', e => {
     if(!arrastrando) return;
+    const now = performance.now();
+    const dt = now - lastMoveT;
+    if(dt > 0) velX = (lastMoveX - e.clientX) / dt; // px/ms, + = va hacia la izquierda
+    lastMoveX = e.clientX; lastMoveT = now;
     pos = clampPos(startPos + (startX - e.clientX));
     mover();
   });
+  const inercia = () => {
+    let v = velX, last = performance.now();
+    (function coast(now){
+      const dt = now - last; last = now;
+      v *= Math.pow(0.94, dt / 16);
+      if(Math.abs(v) < 0.02){ encima = false; return; }
+      pos = clampPos(pos + v * dt);
+      mover();
+      requestAnimationFrame(coast);
+    })(last);
+  };
   const soltar = () => {
     if(!arrastrando) return;
-    arrastrando = false; encima = false;
+    arrastrando = false;
     viewport.classList.remove('is-dragging');
+    if(Math.abs(velX) > 0.02) inercia();
+    else encima = false;
   };
   viewport.addEventListener('pointerup', soltar);
   viewport.addEventListener('pointercancel', soltar);
