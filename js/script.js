@@ -341,6 +341,7 @@ function startReveals(){
   const lapUrl   = document.getElementById('lapUrl');
   const phoneUrl = document.getElementById('phoneUrl');
   const lapNow   = document.getElementById('lapNow');
+  const lapNowGroup = document.getElementById('lapNowGroup');
   const laptop   = document.getElementById('laptop');
   const phoneView = document.getElementById('phoneView');
   const phone    = document.getElementById('phone');
@@ -365,17 +366,31 @@ function startReveals(){
   const laptopTools = document.querySelector('.laptop__tools');
   const toolsHome = document.createComment('laptop__tools-home');
   if(laptopTools) laptopTools.after(toolsHome);
+  /* El contador "01/06" se suma al mismo renglón del botón (adentro de
+     .laptop__tools, primero) en vez de quedarse solo en .rail__nav: así
+     no le queda un renglón aparte, casi vacío, arriba (las flechas de al
+     lado ya están ocultas en táctil) mientras el botón y el nombre del
+     servicio quedan abajo en el suyo. Mismo truco que .laptop__tools:
+     se mueve el nodo real, no una copia, así el resto del código
+     (setCount, etc.) no se entera. */
+  const countHome = document.createComment('rail-count-home');
+  if(count) count.after(countHome);
   const mqToolsArriba = window.matchMedia('(max-width:1000px)');
   const ubicarTools = () => {
     if(!laptopTools) return;
-    if(mqToolsArriba.matches) railHead?.appendChild(laptopTools);
-    else toolsHome.after(laptopTools);
+    if(mqToolsArriba.matches){
+      railHead?.appendChild(laptopTools);
+      if(count && lapNowGroup) lapNowGroup.appendChild(count);
+    } else {
+      toolsHome.after(laptopTools);
+      if(count) countHome.after(count);
+    }
   };
   ubicarTools();
   mqToolsArriba.addEventListener('change', ubicarTools);
 
   const GRUPOS = [
-    { id: 'web',   label: 'Sitios web' },
+    { id: 'web',   label: 'Presencia digital' },
     { id: 'marca', label: 'Identidad de marca' }
   ];
 
@@ -470,10 +485,10 @@ function startReveals(){
       <span class="svc-card__k mono">Qué incluye</span>
       <ul class="svc-card__list">${s.incluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <div class="svc-card__meta mono">
-        <div><b>Plazo</b>${esc(s.plazo)}</div>
+        <div><b>Plazo estimado</b>${esc(s.plazo)}</div>
         <div><b>Ajustes</b>${esc(s.ajustes)}</div>
       </div>
-      <span class="svc-card__see mono">ver en la pantalla</span>
+      <p class="svc-card__disclaimer">Plazo y ajustes estimados: empiezan a contar una vez que tenemos todo el material necesario para arrancar.</p>
     </article>`;
 
   /* Pinta una pantalla (notebook o teléfono) con un crossfade real: la
@@ -715,8 +730,13 @@ function startReveals(){
      abrir podía verse un resto de la transición) y por 12 segundos
      después de cada clic. */
   if(!REDUCED){
-    ['pointerenter', 'focusin'].forEach(ev => lapWrap.addEventListener(ev, () => encima = true));
-    ['pointerleave', 'focusout'].forEach(ev => lapWrap.addEventListener(ev, () => encima = false));
+    /* rail (las tarjetas), no solo lapWrap (la notebook/celu): antes
+       apoyar el mouse en una tarjeta no frenaba el pase automático, así
+       que podía cambiar de tarjeta mientras la estabas leyendo. */
+    [lapWrap, rail].forEach(el => {
+      ['pointerenter', 'focusin'].forEach(ev => el.addEventListener(ev, () => encima = true));
+      ['pointerleave', 'focusout'].forEach(ev => el.addEventListener(ev, () => encima = false));
+    });
 
     if('IntersectionObserver' in window){
       new IntersectionObserver(([e]) => { aLaVista = e.isIntersecting; },
@@ -735,7 +755,68 @@ function startReveals(){
   render('web');
 })();
 
-/* ─────────── 10. PROYECTOS: render + filtros ─────────── */
+/* ─────────── 10. A QUIÉN APUNTAMOS: carrusel infinito ─────────── */
+(function audienceCarousel(){
+  const viewport = document.querySelector('.audience__viewport');
+  const track = document.getElementById('audienceTrack');
+  const prevBtn = document.getElementById('audiencePrev');
+  const nextBtn = document.getElementById('audienceNext');
+  if(!viewport || !track) return;
+
+  // Clonamos las cards originales una vez y las sumamos al final de la
+  // tira: así, cuando el scroll llega a la mitad (setW), podemos restar
+  // setW a la posición sin que se note el salto — el loop es infinito.
+  const originales = Array.from(track.children);
+  originales.forEach(li => {
+    const clon = li.cloneNode(true);
+    clon.classList.remove('reveal', 'is-in');
+    clon.setAttribute('aria-hidden', 'true');
+    clon.setAttribute('tabindex', '-1');
+    track.appendChild(clon);
+  });
+
+  const VELOCIDAD = 34; // px/s
+  let setW = 0, paso = 0, pos = 0, encima = false, aLaVista = true;
+
+  function medir(){
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    paso = originales[0].getBoundingClientRect().width + gap;
+    setW = originales.reduce((sum, li) => sum + li.getBoundingClientRect().width + gap, 0);
+  }
+  medir();
+  window.addEventListener('resize', medir);
+
+  const mover = () => { track.style.transform = `translateX(${-pos}px)`; };
+
+  new IntersectionObserver(([e]) => { aLaVista = e.isIntersecting; }, { threshold: .1 }).observe(viewport);
+
+  ['pointerenter', 'focusin'].forEach(ev => viewport.addEventListener(ev, () => encima = true));
+  ['pointerleave', 'focusout'].forEach(ev => viewport.addEventListener(ev, () => encima = false));
+
+  prevBtn?.addEventListener('click', () => {
+    pos = (pos - paso + setW) % setW;
+    mover();
+  });
+  nextBtn?.addEventListener('click', () => {
+    pos = (pos + paso) % setW;
+    mover();
+  });
+
+  if(REDUCED) return;
+
+  let last = performance.now();
+  requestAnimationFrame(function tick(now){
+    const dt = (now - last) / 1000;
+    last = now;
+    if(!encima && aLaVista){
+      pos = (pos + VELOCIDAD * dt) % setW;
+      mover();
+    }
+    requestAnimationFrame(tick);
+  });
+})();
+
+/* ─────────── 11. PROYECTOS: render + filtros ─────────── */
 (function projects(){
   const grid = document.getElementById('projGrid');
   const filtersEl = document.getElementById('filters');
@@ -846,7 +927,7 @@ function startReveals(){
   render('Todos');
 })();
 
-/* ─────────── 11. FORMULARIO ─────────── */
+/* ─────────── 12. FORMULARIO ─────────── */
 (function form(){
   const form = document.getElementById('form');
   const note = document.getElementById('formNote');
@@ -925,5 +1006,5 @@ function startReveals(){
   });
 })();
 
-/* ─────────── 12. AÑO EN EL FOOTER ─────────── */
+/* ─────────── 13. AÑO EN EL FOOTER ─────────── */
 document.getElementById('year').textContent = new Date().getFullYear();

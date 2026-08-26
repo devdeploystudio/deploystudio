@@ -7,8 +7,8 @@
    Campos:
    nombre    → título del proyecto                        (obligatorio)
    categoria → una de: "Landing page" | "Sitio institucional" |
-               "E-commerce" | "Web app" | "Portfolio" |
-               "Rediseño" | "Logo / identidad"             (obligatorio)
+               "Tienda online" | "Web app" | "Portfolio" |
+               "Rediseño web" | "Logo / identidad"          (obligatorio)
                Los filtros se arman solos con lo que uses acá. Usá
                los mismos nombres que las tarjetas de "Qué hacemos"
                (js/services.js) y los botones del formulario de
@@ -40,10 +40,10 @@ const PROYECTOS = [
   },
   {
     nombre: "NOEMA",
-    categoria: "E-commerce",
+    categoria: "Tienda online",
     anio: "2026",
     desc: "Tienda de indumentaria y accesorios de autor. Catálogo por categoría, carrito, guía de talles, lista de deseados, seguimiento de envío y captación de suscriptores con descuento de bienvenida.",
-    tags: ["E-commerce", "Favoritos", "Seguimiento de envío", "Guía de talles"],
+    tags: ["Tienda online", "Favoritos", "Seguimiento de envío", "Guía de talles"],
     url: "https://devdeploystudio.github.io/noema-indumentaria/",
     imagen: "img/proyectos/noema.jpg",
     mock: "shop"

@@ -42,7 +42,7 @@ Abrí `js/projects.js` y pegá un bloque nuevo **arriba** de la lista:
 ```js
 {
   nombre: "Nombre del cliente",
-  categoria: "Landing page",     // Landing page | Sitio institucional | E-commerce | Web app | Portfolio | Rediseño | Logo / identidad
+  categoria: "Landing page",     // Landing page | Sitio institucional | Tienda online | Web app | Portfolio | Rediseño web | Logo / identidad
   anio: "2026",
   desc: "Una o dos oraciones sobre qué se hizo.",
   tags: ["Diseño UI", "Desarrollo", "SEO"],

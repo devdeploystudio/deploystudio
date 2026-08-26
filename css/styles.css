@@ -16,8 +16,12 @@
 
   --max:1280px;
   --pad:clamp(20px,5vw,64px);
-  /* Ritmo vertical. Ojo: el padding de dos secciones vecinas se SUMA,
-     así que el hueco real entre bloques es el doble de este valor. */
+  /* Ritmo vertical entre secciones. Solo padding-top (ver .section):
+     así el hueco entre dos bloques vecinos es un único --sec, no la
+     suma del padding-bottom de uno más el padding-top del otro. La
+     última sección (.contact) suma su propio padding-bottom antes
+     del footer, que no tiene otra sección después para "prestarle" el
+     hueco. */
   --sec:clamp(32px,4vw,48px);
   --gap-head:clamp(32px,3.6vw,44px);   /* título de sección → contenido */
   --r:2px;                 /* radios mínimos: estética técnica */
@@ -212,11 +216,13 @@ a{color:inherit;text-decoration:none}
 }
 .hero__inner{position:relative;z-index:2;max-width:1000px}
 
+/* Sin caja/píldora alrededor a propósito — con el borde redondeado se leía
+   como el típico badge de landing generada por IA. Texto suelto, mismo
+   tratamiento mono que el resto de las etiquetas del sitio (eyebrow, etc). */
 .hero__tag{
   display:inline-flex;align-items:center;gap:9px;
   font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;
-  color:var(--ink);border:1px solid var(--mist);background:rgba(255,255,255,.6);
-  padding:8px 14px;border-radius:100px;margin-bottom:34px;
+  color:var(--stone);margin-bottom:34px;
 }
 .dot{
   width:7px;height:7px;border-radius:50%;background:var(--lime);
@@ -353,8 +359,9 @@ a{color:inherit;text-decoration:none}
 .section{
   position:relative;z-index:1;
   max-width:var(--max);margin-inline:auto;
-  padding:var(--sec) var(--pad);
+  padding:var(--sec) var(--pad) 0;
 }
+.section.contact{padding-bottom:var(--sec)}
 .section__head{max-width:760px;margin-bottom:var(--gap-head)}
 .section__head--row{
   display:flex;justify-content:space-between;align-items:flex-end;
@@ -370,7 +377,7 @@ a{color:inherit;text-decoration:none}
   line-height:.98;letter-spacing:-.05em;margin-bottom:22px;
 }
 .section__title em{font-style:normal}
-.section__lead{font-size:clamp(15.5px,1.35vw,18.5px);color:#4d4d4d;max-width:52ch}
+.section__lead{font-size:15px;color:var(--stone);max-width:52ch}
 
 /* ══════════════ SERVICIOS ══════════════ */
 /* Pestañas: sitios web / identidad */
@@ -388,16 +395,27 @@ a{color:inherit;text-decoration:none}
 /* Escenario: tarjetas a la izquierda, notebook a la derecha */
 .svcs__stage{
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.04fr);
-  gap:0 clamp(24px,3.2vw,52px);align-items:start;
+  gap:0 clamp(24px,3.2vw,52px);align-items:stretch;
   margin-bottom:clamp(36px,4vw,56px);
 }
-/* Posiciones explícitas: el header y las tarjetas van en la columna 1,
-   la notebook en la columna 2 pero SOLO en la fila de las tarjetas (no
-   en la del header) — así arranca a la misma altura que ellas, y el
-   header (con las flechas) no se estira a todo el ancho. */
-.rail__head{grid-column:1;grid-row:1}
+/* Posiciones explícitas, 3 filas: header+bajada arriba, tarjetas+notebook
+   en el medio, nota+botón mobile/desktop abajo.
+   Fila 1: antes dependía del align-items:start del contenedor para que
+   la bajada arrancara en la MISMA línea que las pestañas; ahora que el
+   contenedor pasó a stretch (fila 2 lo necesita, ver .laptop-wrap más
+   abajo) ese comportamiento hay que pedirlo acá a mano en cada uno, así
+   no cambia nada para esta fila. */
+.rail__head{grid-column:1;grid-row:1;align-self:start}
+.svcs__lead{grid-column:2;grid-row:1;margin:0;align-self:start}
 .rail-wrap{grid-column:1;grid-row:2}
+/* stretch (heredado del contenedor): .laptop-wrap pasa a medir tan alto
+   como la tarjeta activa cuando esta es más alta que la notebook —
+   .laptop no se deforma (aspect-ratio + width:100% gana por sobre el
+   stretch, ver comentario de más abajo) pero .phone sí lo aprovecha para
+   crecer, que es lo que se pidió. */
 .laptop-wrap{grid-column:2;grid-row:2}
+.svcs__note{grid-column:1;grid-row:3;align-self:center;margin-top:18px}
+.laptop__tools{grid-column:2;grid-row:3;align-self:center}
 
 /* ── Carrusel ── */
 .rail-wrap{min-width:0}
@@ -496,18 +514,10 @@ a{color:inherit;text-decoration:none}
   display:block;font-weight:400;font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--stone);margin-bottom:4px;
 }
-.svc-card__see{
-  display:flex;align-items:center;gap:7px;margin-top:12px;
-  font-family:var(--font-mono);font-size:10.5px;color:var(--stone);
-  transition:color .3s;
+.svc-card__disclaimer{
+  font-family:var(--font-mono);font-size:11.5px;font-style:italic;
+  line-height:1.5;color:var(--stone);margin-top:0;
 }
-.svc-card.is-active .svc-card__see{color:var(--ink)}
-.svc-card__see::before{
-  content:'';width:6px;height:6px;border-radius:50%;background:var(--mist);
-  transition:background .3s;
-}
-.svc-card.is-active .svc-card__see::before{background:var(--lime)}
-
 /* Controles */
 .rail__ctrl{display:flex;align-items:center}
 .rail__track{flex:1;height:2px;background:var(--mist);position:relative;overflow:hidden}
@@ -541,7 +551,7 @@ a{color:inherit;text-decoration:none}
    mostrando usa visibility:hidden (no display:none/[hidden]) a propósito:
    sigue ocupando su lugar en el layout, por eso la fila no se achica. */
 .laptop-wrap{
-  min-width:0;display:grid;grid-template-columns:minmax(0,1fr);
+  position:relative;min-width:0;display:grid;grid-template-columns:minmax(0,1fr);
 }
 .laptop,.phone{grid-column:1;grid-row:1}
 .laptop.is-off,.phone.is-off{visibility:hidden;pointer-events:none}
@@ -550,7 +560,7 @@ a{color:inherit;text-decoration:none}
 .laptop,.phone{cursor:pointer}
 .laptop:focus-visible,.phone:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
 .laptop{
-  position:relative;width:100%;aspect-ratio:1 / .87;
+  position:relative;width:100%;aspect-ratio:1 / .87;align-self:start;
   /* SIN perspective, a propósito. Con perspectiva, el borde más cercano a
      la cámara (el frente del teclado) se agranda, y cuánto se agranda lo
      decide cada motor: Chrome lo deja en ~2% y WebKit lo exagera bastante.
@@ -928,9 +938,23 @@ a{color:inherit;text-decoration:none}
    Silueta simple (sin escena 3D como la notebook: un teléfono no tiene
    bisagra que animar). "Bloquear" es un crossfade a una pantalla de
    candado con el logo, no un giro físico — así lo pidieron. */
+/* position:absolute (en vez de compartir la fila del grid como .laptop)
+   para que el celu no dependa del alto "auto" de esa fila — que es el de
+   la notebook, no el de la tarjeta — sino que directamente ocupe todo el
+   alto real de .laptop-wrap (que sí queda tan alto como la tarjeta más
+   alta, por el stretch del grid de más arriba). Así el celu crece hasta
+   ese alto en vez de quedar chico con espacio vacío alrededor; el ancho
+   sale solo de aspect-ratio en .phone__frame.
+   top/bottom:0 (no inset:0) + width:auto + left:50%/translateX(-50%):
+   si el ancho fuera 100% (como con inset:0), .phone quedaría tan ancho
+   como .laptop-wrap ENTERO, no como el marco angosto que resulta de su
+   propio alto — y el padding en % de .phone__frame (el bisel) se calcula
+   contra el ancho del contenedor (.phone), así que con ese 100% de sobra
+   el bisel se veía gigante. Con width:auto, .phone se achica al ancho
+   real del marco (shrink-to-fit) y el bisel vuelve a quedar proporcional. */
 .phone{
-  position:relative;width:min(100%,232px);margin-inline:auto;align-self:center;
-  display:flex;flex-direction:column;align-items:center;
+  position:absolute;top:0;bottom:0;left:50%;translate:-50% 0;width:auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
 /* Proporción de un teléfono real (9/19), no la relación de la captura.
    Antes achicaba esto a 9/16 para que coincidiera con la imagen y no se
@@ -938,11 +962,16 @@ a{color:inherit;text-decoration:none}
    .phone__view > img de otra forma (width:100%;height:auto, ver más abajo),
    así que el marco puede volver a tener forma de teléfono sin que vuelva
    el recorte lateral. Lo que sobra de la imagen de más se recorta abajo,
-   nunca a los costados; y se ve entera al abrirla en grande. */
+   nunca a los costados; y se ve entera al abrirla en grande.
+   height:100% (no width:100%): el marco crece con el alto disponible y el
+   ancho lo calcula solo aspect-ratio — al revés que antes, que tenía un
+   ancho fijo (min(100%,232px) en .phone) y por eso no aprovechaba el alto
+   de más que dejaba una tarjeta larga. max-width evita que se pase del
+   ancho de la columna en el caso contrario (tarjeta corta / alto grande). */
 .phone__frame{
-  position:relative;width:100%;aspect-ratio:9/18;
+  position:relative;height:100%;width:auto;max-width:100%;aspect-ratio:9/18;
   background:var(--ink);border-radius:13%/6%;
-  padding:2.2% 1.9%;
+  padding:1.9% 1.7%;
   box-shadow:0 30px 56px -34px rgba(13,13,13,.6);
 }
 /* El borde es lo que pediste para que la pantalla se lea como un borde
@@ -965,6 +994,29 @@ a{color:inherit;text-decoration:none}
   position:absolute;top:50%;left:50%;translate:-50% -50%;
   width:27%;height:44%;border-radius:100px;
   background:#000;
+}
+/* Cámara + led DENTRO de la isla (no al costado, como un iPhone real con
+   Dynamic Island): el lente va hacia la derecha de la píldora y la
+   lucecita lima hacia la izquierda, las dos ancladas a % del ANCHO de la
+   isla (no px fijos) para que no se salgan de ella si el celu achica o
+   agranda. Mismo criterio de color que .laptop__cam/.laptop__cam-led. */
+/* height:% (no width:%): el ancla real de una píldora es su alto —bien
+   chico, 44% de un statusbar ya angosto— así que el lente y el led se
+   miden contra ESE alto (con aspect-ratio:1 para el ancho) en vez de
+   contra el ancho de la isla, que es mucho mayor y los hacía enormes,
+   más altos que la propia píldora. */
+.phone__cam{
+  position:absolute;top:50%;left:84%;translate:-50% -50%;
+  height:62%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,#5a5a5a 0%,#2a2a2a 45%,#000 100%);
+  border:1px solid rgba(250,250,248,.2);
+}
+.phone__cam-led{
+  position:absolute;top:50%;left:16%;translate:-50% -50%;
+  height:32%;aspect-ratio:1;border-radius:50%;
+  background:var(--lime);
+  box-shadow:0 0 3px rgba(132,230,0,.8);
+  animation:cam-led-blink 3.2s ease-in-out infinite;
 }
 
 /* flex:1 le da el resto del alto (lo que queda debajo de la franja); el
@@ -1077,6 +1129,11 @@ a{color:inherit;text-decoration:none}
 .laptop__toggle[data-mode="mobile"] .ti-mobile{opacity:1}
 
 .laptop__now{font-family:var(--font-mono);font-size:11px;color:var(--stone);text-align:right}
+/* Envuelve a .laptop__now (y, en mobile, al contador que se suma adentro
+   vía JS): display:flex para que ambos queden pegados y el conjunto
+   pase a un renglón nuevo COMO UNIDAD si no entra, en vez de separarse
+   el uno del otro por el wrap del flex de más afuera. */
+.laptop__now-group{display:flex;align-items:baseline;gap:8px}
 
 /* ══════════════ LIGHTBOX (ver captura en grande) ══════════════ */
 .lightbox{
@@ -1147,12 +1204,97 @@ a{color:inherit;text-decoration:none}
 .baseline__list li{font-size:12.5px;color:#4d4d4d;padding-left:17px;position:relative}
 .baseline__list li::before{content:'/';position:absolute;left:0;color:var(--lime)}
 
-/* La bajada y la nota van juntas, en la misma columna del encabezado */
-.svcs__intro{display:flex;flex-direction:column;gap:16px;max-width:52ch}
+/* Itálica y tamaño/color propios (no el clamp 15.5-18.5px ni el
+   #4d4d4d de .section__lead): acá "Explorá..." ya no es la bajada
+   grande de un título al lado — quedó como un texto suelto, a la par
+   de las pestañas (12px), y con el tamaño y el gris oscuro de siempre
+   se leía grande y pesado contra ellas. La itálica la distingue de
+   párrafos comunes y la acerca un poco al tono de nota/comentario de
+   .svcs__note, que está justo abajo.
+   max-width:none anula el 52ch heredado de .section__lead (a diferencia
+   de .svcs__note, que sí mantiene el suyo): así ocupa todo el ancho de
+   la columna, el mismo que la notebook de abajo, en vez de cortarse
+   antes por las dudas. */
+.svcs__lead{max-width:none;font-size:15px;font-style:italic;color:var(--stone)}
+.projects__lead{max-width:none;font-size:15px;font-style:italic;color:var(--stone)}
 .svcs__note{
   font-size:12.5px;line-height:1.6;color:var(--stone);
   padding-left:14px;border-left:1px solid var(--lime);
+  max-width:46ch;
 }
+
+/* ══════════════ A QUIÉN APUNTAMOS ══════════════ */
+/* Mismo tratamiento que .svcs__note (nota chica, mono, con el filo lime) —
+   la diferencia es que acá va suelta después de .steps, no en un grid
+   compartido con otro elemento, así que solo necesita margin-top. */
+.audience__note{
+  font-size:12.5px;line-height:1.6;color:var(--stone);
+  padding-left:14px;border-left:1px solid var(--lime);
+  max-width:46ch;margin-top:clamp(24px,3vw,36px);
+}
+
+/* ══════════════ NOSOTROS ══════════════ */
+/* La columna de texto ahora incluye "Cómo trabajamos" (antes era una barra
+   aparte, abajo de todo): así ocupa un alto parecido al de la foto, en vez
+   de quedar un párrafo cortito flotando al lado de una imagen mucho más
+   alta. align-items:stretch (default de grid) + la media al 100% de alto
+   hacen que la foto se acomode a esa altura en vez de imponer la suya. */
+/* Mismas columnas y gap que .contact__inner (1fr 1fr, clamp(40px,5vw,80px))
+   para que el texto de acá quede alineado en horizontal con el recuadro
+   blanco del formulario de Contacto, justo abajo — ambos son hijos
+   directos de .section con el mismo max-width/padding, así que ratios
+   iguales = mismo borde de columna en los dos. */
+.about__row{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,5vw,80px);
+}
+.about__body{display:flex;flex-direction:column;gap:16px}
+.about__body p{font-size:16px;line-height:1.65;color:#3a3a3a}
+.about__media{
+  border:1px solid var(--mist);border-radius:var(--r);overflow:hidden;
+  min-height:280px;
+}
+.about__media img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .7s var(--ease);
+}
+.about__media:hover img{transform:scale(1.045)}
+
+/* Versión angosta de .baseline (la de abajo de todo sigue igual: bloque
+   suelto de ancho completo con su propia barra). Acá, al vivir adentro de
+   la columna de texto, la barra ink de arriba pesaba demasiado para el
+   ancho disponible — queda como una nota más discreta con el filo lime,
+   en línea con .svcs__note / .audience__note. */
+.about__body .baseline{
+  display:flex;flex-direction:column;gap:10px;
+  padding:0 0 0 14px;border:none;border-left:1px solid var(--lime);
+  margin-top:4px;
+}
+.about__body .baseline__k{padding-top:0}
+.about__body .baseline__list{grid-template-columns:1fr;gap:7px}
+
+/* ══════════════ A QUIÉN APUNTAMOS ══════════════ */
+.audience .section__head{margin-bottom:0}
+.audience__lead-row{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px;margin-bottom:var(--gap-head);
+}
+.audience__ctrl{display:flex;gap:10px;flex:none}
+.audience__viewport{overflow:hidden}
+.audience__track{
+  list-style:none;display:flex;gap:clamp(16px,2vw,24px);width:max-content;
+}
+.audience__card{
+  flex:0 0 clamp(240px,32vw,300px);
+  border:1px solid var(--mist);border-radius:var(--r);padding:28px;
+  transition:border-color .3s,box-shadow .35s var(--ease);
+}
+.audience__card:hover{
+  border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4);
+}
+.audience__n{display:block;font-size:13px;color:var(--stone);margin-bottom:14px}
+.audience__card h3{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.25;margin-bottom:8px}
+.audience__card p{font-size:14px;color:#5a5a5a;line-height:1.5;margin-bottom:14px}
+.audience__tag{font-size:11.5px;color:var(--stone)}
 
 /* ══════════════ PROCESO ══════════════ */
 .steps{list-style:none;counter-reset:s}
@@ -1338,6 +1480,7 @@ a{color:inherit;text-decoration:none}
 .chip input:checked + span{background:var(--lime);border-color:var(--lime);color:var(--ink)}
 .chip input:focus-visible + span{outline:2px solid var(--ink);outline-offset:2px}
 .form__note{font-size:12px;color:var(--stone);min-height:18px}
+.form__note:empty{display:none}
 .form__note.ok{color:var(--ink)}
 .form__note.ok::before{content:'✓ ';color:var(--lime)}
 .form__note.err::before{content:'! ';color:var(--lime)}
@@ -1412,6 +1555,11 @@ a{color:inherit;text-decoration:none}
 @media (hover:none) and (pointer:coarse), (max-width:760px){
   .rail__btn{display:none}
   .rail__count{margin-right:0}
+  /* El carrusel de "a quién apuntamos" no tiene scroll nativo (la tira se
+     mueve con transform vía JS para el autoplay infinito), así que acá
+     las flechas no sobran como en el rail de servicios: son la única
+     forma de pasarlo a mano en táctil. */
+  .audience__ctrl .rail__btn{display:grid}
 }
 
 @media (max-width:1000px){
@@ -1421,11 +1569,19 @@ a{color:inherit;text-decoration:none}
      unos con otros en vez de apilarse. El orden va por fila, no por
      "order" (eso solo reordena el auto-flow, y acá las filas ya están
      fijas a mano). */
-  .svcs__stage{grid-template-columns:1fr;gap:34px}
+  /* La bajada pasa a ir DESPUÉS de la notebook/celu (no antes, como en
+     desktop): en mobile conviene mostrar el dispositivo apenas se
+     eligen las pestañas — es lo más visual e inmediato — y recién
+     después el texto que explica qué estás viendo, antes de las
+     tarjetas con el detalle. */
+  .svcs__stage{grid-template-columns:1fr;gap:24px}
   .rail__head{grid-column:1;grid-row:1}
   .laptop-wrap{grid-column:1;grid-row:2;width:100%;max-width:540px;margin-inline:auto}
-  .rail-wrap{grid-column:1;grid-row:3}
+  .svcs__lead{grid-column:1;grid-row:3;margin:0}
+  .rail-wrap{grid-column:1;grid-row:4}
+  .svcs__note{grid-column:1;grid-row:5;margin-top:0}
   .baseline{grid-template-columns:1fr;gap:16px}
+  .about__row{grid-template-columns:1fr;gap:24px}
 
   /* En desktop, notebook y teléfono comparten fila (grid-row:1 los dos)
      para que el botón de abajo no salte de posición al cambiar de vista
@@ -1447,6 +1603,25 @@ a{color:inherit;text-decoration:none}
      justamente 5% del ancho de .laptop. */
   .laptop-wrap{display:flex;flex-direction:column;padding-inline:5%}
   .laptop.is-off,.phone.is-off{display:none}
+  /* Acá abajo el celu y la notebook ya no comparten fila (van uno debajo
+     del otro, apilados con el rail-wrap) — no hay una tarjeta al lado con
+     la que igualar el alto, así que el celu vuelve a su ancho fijo de
+     siempre en vez de position:absolute (que en este layout de column
+     dejaría a .laptop-wrap sin alto cuando el celu es lo único visible). */
+  /* translate:-50% (no es "position", así que position:static NO lo
+     desactiva solo) venía de la versión desktop, pensada para centrar
+     junto con left:50%. Sin resetearla acá el celu quedaba corrido medio
+     ancho propio hacia la izquierda, bien afuera de la pantalla. */
+  /* position:relative (no static): sigue participando del flujo normal
+     igual que static, pero además vuelve a ser el ancla de posición para
+     sus hijos absolutos (.device__hint, .phone__shadow) — con static
+     esos quedaban posicionados contra .laptop-wrap (el ancestro
+     posicionado más cercano), bien lejos de donde tenían que estar. */
+  .phone{
+    position:relative;height:auto;width:min(100%,232px);
+    left:auto;top:auto;bottom:auto;translate:none;margin-inline:auto;
+  }
+  .phone__frame{height:auto;width:100%;max-width:none}
 
   /* El botón desktop/mobile (.laptop__tools) se saca de acá y se mete
      dentro de .rail__head con un poco de JS (ver script.js, ubicarTools):
@@ -1465,10 +1640,14 @@ a{color:inherit;text-decoration:none}
      pestañas (mismo bloque de golpe). La línea + aire de más lo separan
      lo justo para que se entienda que es un control aparte, aunque
      comparta el mismo renglón/bloque de encabezado. */
+  /* flex-wrap: el contador, el botón y el nombre del servicio comparten
+     renglón mientras entren — solo pasan a uno nuevo si no hay lugar
+     (no siempre, como antes con el nombre forzado a su propia línea). */
   .laptop__tools{
-    flex:1 1 100%;order:1;justify-content:flex-start;gap:12px;
+    flex:1 1 100%;order:1;flex-wrap:wrap;justify-content:flex-start;gap:8px 12px;
     margin:2px 0 0;padding-top:14px;border-top:1px solid var(--mist);
   }
+  .laptop__now{text-align:left}
 
   /* Las líneas verticales del teclado: en desktop son un
      repeating-conic-gradient (ver .laptop__keys más arriba), pero ACÁ en
@@ -1533,7 +1712,11 @@ a{color:inherit;text-decoration:none}
   .footer__cols{grid-template-columns:1fr;gap:28px}
   .totop{bottom:18px;right:18px}
   .svc-card{padding:20px 18px}
-  .laptop__tools{flex-direction:column;align-items:flex-start;gap:10px}
+  /* flex-wrap (no flex-direction:column): el contador y el botón entran
+     de sobra en un renglón a este ancho — solo el nombre del servicio,
+     si es largo, salta a uno propio. Columna entera los separaba más de
+     lo necesario. */
+  .laptop__tools{align-items:center}
   .laptop__now{text-align:left}
 }
 
