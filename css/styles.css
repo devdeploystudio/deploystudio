@@ -11,8 +11,8 @@
   --mist:#EDEDED;
   --paper:#FAFAF8;
 
-  --font-sans:'Geist Sans','Geist',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
-  --font-mono:'Geist Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --font-sans:'Geist Variable','Geist',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  --font-mono:'Geist Mono Variable','SFMono-Regular',ui-monospace,'Cascadia Mono',Consolas,monospace;
 
   --max:1280px;
   --pad:clamp(20px,5vw,64px);
@@ -1559,11 +1559,6 @@ a{color:inherit;text-decoration:none}
 @media (hover:none) and (pointer:coarse), (max-width:760px){
   .rail__btn{display:none}
   .rail__count{margin-right:0}
-  /* El carrusel de "a quién apuntamos" no tiene scroll nativo (la tira se
-     mueve con transform vía JS para el autoplay infinito), así que acá
-     las flechas no sobran como en el rail de servicios: son la única
-     forma de pasarlo a mano en táctil. */
-  .audience__ctrl .rail__btn{display:grid}
 }
 
 @media (max-width:1000px){
