@@ -47,6 +47,7 @@ const SERVICIOS = [
     ajustes: '2 rondas',
     url: 'tumarca.com/landing-page',
     imagen: 'img/servicios/landing-page.jpg',
+    imagenSmall: 'img/servicios/landing-page-640.jpg',
     imagenMobile: 'img/servicios/mobile/landing-page.jpg',
     pantalla: `
       <rect class="s-fg" x="26" y="28" width="146" height="15"/>

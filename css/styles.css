@@ -1265,6 +1265,13 @@ a{color:inherit;text-decoration:none}
 }
 .about__body{display:flex;flex-direction:column;gap:16px}
 .about__body p{font-size:16px;line-height:1.65;color:#3a3a3a}
+/* Justificado solo a partir de los ~700px donde la columna ya tiene
+   ancho de sobra: por debajo de eso (mobile) con pocas palabras por
+   línea el espaciado se volvía irregular — "ríos" de blanco bastante
+   feos — así que ahí se queda alineado a la izquierda, normal. */
+@media (min-width:700px){
+  .about__body p{text-align:justify}
+}
 .about__media{
   border:1px solid var(--mist);border-radius:var(--r);overflow:hidden;
   min-height:280px;

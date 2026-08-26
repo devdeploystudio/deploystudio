@@ -492,8 +492,20 @@ function startReveals(){
   const pintarVista = (el, imagenSrc, s) => {
     const viejos = [...el.children];
     const temp = document.createElement('div');
+    const esDesktop = imagenSrc === s.imagen;
+    const srcset = esDesktop && s.imagenSmall
+      ? `srcset="${esc(s.imagenSmall)} 640w, ${esc(imagenSrc)} 1300w"
+         sizes="(max-width: 760px) 320px, 561px"`
+      : '';
+
     temp.innerHTML = imagenSrc
-      ? `<img src="${esc(imagenSrc)}" alt="Ejemplo de ${esc(s.nombre)}" loading="lazy" decoding="async" />`
+      ? `<img
+           src="${esc(imagenSrc)}"
+           ${srcset}
+           alt="Ejemplo de ${esc(s.nombre)}"
+           loading="lazy"
+           decoding="async"
+         />`
       : `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice"
             role="img" aria-label="Ejemplo de ${esc(s.nombre)}">${s.pantalla}</svg>`;
     const nuevo = temp.firstElementChild;
