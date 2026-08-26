@@ -466,8 +466,12 @@ function startReveals(){
 
   /* Tarjeta */
   const card = (s, i) => `
-    <article class="svc-card" data-i="${i}" tabindex="0" role="button"
-             aria-label="Ver ${esc(s.nombre)} en la pantalla">
+    <article class="svc-card" data-i="${i}">
+      <button
+        type="button"
+        class="svc-card__trigger"
+        aria-label="Ver ${esc(s.nombre)} en la pantalla">
+      </button>
       <div class="svc-card__top">
         <span class="svc-card__n mono">${dosDig(i + 1)}</span>
         <span class="svc-card__sub mono">${esc(s.sub)}</span>
@@ -704,8 +708,6 @@ function startReveals(){
   rail.addEventListener('keydown', e => {
     if(e.key === 'ArrowRight'){ e.preventDefault(); ir(activo + 1); }
     if(e.key === 'ArrowLeft'){ e.preventDefault(); ir(activo - 1); }
-    const c = e.target.closest('.svc-card');
-    if(c && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); ir(+c.dataset.i); }
   });
 
   prev.addEventListener('click', () => ir(activo - 1));
