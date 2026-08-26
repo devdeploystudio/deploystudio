@@ -82,7 +82,14 @@ a{color:inherit;text-decoration:none}
 .boot__log b{color:var(--lime);font-weight:400}
 .boot__log em{color:var(--paper);font-style:normal}
 .boot__bar{height:2px;background:#242424;margin-top:22px;overflow:hidden}
-.boot__bar span{display:block;height:100%;width:0;background:var(--lime);transition:width .25s linear}
+/* transform:scaleX (no width): mismo relleno visual de siempre, pero
+   animando una propiedad que el compositor puede mover en su propio
+   hilo — width dispara layout en cada paso, scaleX no. */
+.boot__bar span{
+  display:block;height:100%;width:100%;background:var(--lime);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .25s linear;
+}
 
 /* ══════════════ SPOTLIGHT GLOBAL ══════════════
    Vive a nivel de página (position:fixed) para que no lo recorte
@@ -240,13 +247,24 @@ a{color:inherit;text-decoration:none}
   font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;
   color:var(--stone);margin-bottom:34px;
 }
+/* El anillo que "explota" y se desvanece era un box-shadow animado (spread
+   0→9px + alpha .7→0): mismo efecto exacto, pero moviendo un ::after con
+   transform:scale + opacity en vez de recalcular la sombra en cada frame
+   — eso es lo que el compositor puede correr en su propio hilo. La escala
+   final (3.57) es la misma proporción que el spread de 9px tenía contra
+   el radio del punto (3.5px), así que el anillo termina del mismo tamaño. */
 .dot{
+  position:relative;
   width:7px;height:7px;border-radius:50%;background:var(--lime);
-  box-shadow:0 0 0 0 rgba(166,255,0,.7);animation:pulse 2.2s infinite;
+}
+.dot::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:rgba(166,255,0,.7);
+  animation:pulse 2.2s infinite;
 }
 @keyframes pulse{
-  70%{box-shadow:0 0 0 9px rgba(166,255,0,0)}
-  100%{box-shadow:0 0 0 0 rgba(166,255,0,0)}
+  0%{transform:scale(1);opacity:.7}
+  70%,100%{transform:scale(3.57);opacity:0}
 }
 
 .hero__title{
@@ -552,9 +570,12 @@ a{color:inherit;text-decoration:none}
 /* Controles */
 .rail__ctrl{display:flex;align-items:center}
 .rail__track{flex:1;height:2px;background:var(--mist);position:relative;overflow:hidden}
+/* scaleX (no width): mismo relleno de siempre, animando una propiedad
+   compositor-only en vez de una que dispara layout en cada tarjeta. */
 .rail__track span{
-  position:absolute;left:0;top:0;height:100%;width:20%;
-  background:var(--ink);transition:width .35s var(--ease),transform .35s var(--ease);
+  position:absolute;left:0;top:0;height:100%;width:100%;
+  background:var(--ink);transform:scaleX(.2);transform-origin:left;
+  transition:transform .35s var(--ease);
 }
 .rail__count{font-size:11px;color:var(--stone);flex:none;margin-right:6px}
 .rail__btn{
@@ -1279,14 +1300,7 @@ a{color:inherit;text-decoration:none}
   display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,5vw,80px);
 }
 .about__body{display:flex;flex-direction:column;gap:16px}
-.about__body p{font-size:16px;line-height:1.65;color:#3a3a3a}
-/* Justificado solo a partir de los ~700px donde la columna ya tiene
-   ancho de sobra: por debajo de eso (mobile) con pocas palabras por
-   línea el espaciado se volvía irregular — "ríos" de blanco bastante
-   feos — así que ahí se queda alineado a la izquierda, normal. */
-@media (min-width:700px){
-  .about__body p{text-align:justify}
-}
+.about__body p{font-size:16px;line-height:1.65;color:#3a3a3a;text-align:justify}
 .about__media{
   border:1px solid var(--mist);border-radius:var(--r);overflow:hidden;
   min-height:280px;

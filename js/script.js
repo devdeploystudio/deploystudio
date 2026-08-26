@@ -57,7 +57,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
   const step = () => {
     if(i < lines.length){
       log.insertAdjacentHTML('beforeend', `<div>${lines[i]}</div>`);
-      bar.style.width = `${((i + 1) / lines.length) * 100}%`;
+      bar.style.transform = `scaleX(${(i + 1) / lines.length})`;
       i++;
       setTimeout(step, i === 1 ? 300 : 240);
     } else {
@@ -563,7 +563,7 @@ function startReveals(){
       c.setAttribute('aria-current', on ? 'true' : 'false');
     });
     count.textContent = `${dosDig(i + 1)}/${dosDig(lista.length)}`;
-    bar.style.width = `${((i + 1) / lista.length) * 100}%`;
+    bar.style.transform = `scaleX(${(i + 1) / lista.length})`;
     mostrar(i);
   };
 
