@@ -1301,6 +1301,7 @@ a{color:inherit;text-decoration:none}
 }
 .about__body{display:flex;flex-direction:column;gap:16px}
 .about__body p{font-size:16px;line-height:1.65;color:#3a3a3a;text-align:justify}
+.about__body strong{font-style:italic}
 .about__media{
   border:1px solid var(--mist);border-radius:var(--r);overflow:hidden;
   min-height:280px;
@@ -1816,4 +1817,16 @@ a{color:inherit;text-decoration:none}
   .reveal{opacity:1;transform:none}
   .hero__title em::before,.hero__title em::after{transform:none}
   .dots i{opacity:1}          /* sin animación, los tres puntos quedan fijos */
+}
+
+/* El h1 es el candidato a LCP más grande y visible de la página: en
+   mobile (Slow 4G en el test de Lighthouse) que dependa de la animación
+   de entrada por scroll lo dejaba pintando recién después del reveal.
+   Solo mobile — desktop mantiene la animación tal cual. */
+@media (max-width: 760px) {
+  .hero__title .line.reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
