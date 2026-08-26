@@ -992,6 +992,10 @@ function startReveals(){
       });
       if(!res.ok) throw new Error('submit failed');
 
+      if(typeof gtag === 'function'){
+        gtag('event', 'generate_lead');
+      }
+
       form.reset();
       note.textContent = 'Listo, recibimos tu consulta. Te respondemos a la brevedad.';
       note.classList.add('ok');
@@ -1008,3 +1012,25 @@ function startReveals(){
 
 /* ─────────── 13. AÑO EN EL FOOTER ─────────── */
 document.getElementById('year').textContent = new Date().getFullYear();
+
+/* ─────────── 14. ANALYTICS ─────────── */
+(function analytics(){
+  document.addEventListener('click', e => {
+    const link = e.target.closest('a[href]');
+    if(!link || typeof gtag !== 'function') return;
+
+    const href = link.href;
+
+    if(href.includes('wa.me/')){
+      gtag('event', 'click_whatsapp');
+    }
+
+    if(href.includes('instagram.com/')){
+      gtag('event', 'click_instagram');
+    }
+
+    if(href.includes('mail.google.com/')){
+      gtag('event', 'click_email');
+    }
+  });
+})();
