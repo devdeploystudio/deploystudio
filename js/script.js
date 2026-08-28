@@ -1119,3 +1119,32 @@ document.getElementById('year').textContent = new Date().getFullYear();
     });
   });
 })();
+
+/* ─────────── 15. PREGUNTAS (ACORDEÓN) ─────────── */
+(function faq(){
+  const list = document.querySelector('.faq__list');
+  if(!list) return;
+
+  const items = [...list.querySelectorAll('.faq__item')];
+
+  const cerrar = item => {
+    item.classList.remove('is-open');
+    item.querySelector('.faq__q').setAttribute('aria-expanded', 'false');
+    item.querySelector('.faq__a').style.maxHeight = null;
+  };
+
+  const abrir = item => {
+    item.classList.add('is-open');
+    item.querySelector('.faq__q').setAttribute('aria-expanded', 'true');
+    const panel = item.querySelector('.faq__a');
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+  };
+
+  items.forEach(item => {
+    item.querySelector('.faq__q').addEventListener('click', () => {
+      const yaAbierto = item.classList.contains('is-open');
+      items.forEach(cerrar);
+      if(!yaAbierto) abrir(item);
+    });
+  });
+})();

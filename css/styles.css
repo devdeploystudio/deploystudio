@@ -24,7 +24,7 @@
   --lime:#84E600;
   --ink:#0D0D0D;
   --stone:#B7B7B7;
-  --mist:#EDEDED;
+  --mist:#DDDDDD;
   --paper:#FAFAF8;
 
   --font-sans:'Geist Variable','Geist',system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
@@ -519,17 +519,23 @@ a{color:inherit;text-decoration:none}
   outline:2px solid var(--lime);
   outline-offset:3px;
 }
+/* inset:2px (no 0, pegado del todo al filo): es el mismo margen de
+   seguridad que .rail usa en su padding — a 0 el borde derecho de la
+   tarjeta activa quedaba justo en el límite del área con scroll y el
+   redondeo de subpíxeles a veces lo recortaba (se veía la tarjeta sin
+   ese borde). Con 2px queda mucho más pegado al filo que antes (4px)
+   sin reabrir ese problema. */
 .svc-card::before{
-  content:'';position:absolute;inset:4px;z-index:1;pointer-events:none;
-  border:1px solid var(--mist);border-radius:calc(var(--r) - 4px);
+  content:'';position:absolute;inset:2px;z-index:1;pointer-events:none;
+  border:1px solid var(--mist);border-radius:calc(var(--r) - 2px);
   transition:border-color .3s var(--ease);
 }
 .svc-card:hover::before{border-color:var(--stone)}
 .svc-card.is-active{
-  background:#fff;
+  background:rgba(255,255,255,.7);
   box-shadow:0 20px 48px -32px rgba(13,13,13,.45);
 }
-.svc-card.is-active::before{border-color:var(--ink)}
+.svc-card.is-active::before{border-color:var(--stone)}
 .svc-card__top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .svc-card__n{font-size:11px;color:var(--stone);transition:color .3s}
 .svc-card.is-active .svc-card__n{color:var(--lime)}
@@ -1291,13 +1297,15 @@ a{color:inherit;text-decoration:none}
    de quedar un párrafo cortito flotando al lado de una imagen mucho más
    alta. align-items:stretch (default de grid) + la media al 100% de alto
    hacen que la foto se acomode a esa altura en vez de imponer la suya. */
-/* Mismas columnas y gap que .contact__inner (1fr 1fr, clamp(40px,5vw,80px))
-   para que el texto de acá quede alineado en horizontal con el recuadro
-   blanco del formulario de Contacto, justo abajo — ambos son hijos
-   directos de .section con el mismo max-width/padding, así que ratios
-   iguales = mismo borde de columna en los dos. */
+/* Mismo gap que .team__grid (clamp(20px,2.5vw,32px), no el clamp(40-80)
+   que usa .contact__inner): el pedido fue ensanchar la foto y el texto
+   para que ocupen lo mismo que las cards de arriba, no al revés — ojo
+   que esto ya NO coincide con el ancho de columna del form de Contacto
+   (antes sí, a propósito). Si en algún momento hay que elegir entre las
+   dos alineaciones, avisar. */
 .about__row{
-  display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,5vw,80px);
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.5vw,32px);
+  margin-top:clamp(28px,3vw,40px);
 }
 .about__body{display:flex;flex-direction:column;gap:16px}
 .about__body p{font-size:16px;line-height:1.65;color:#3a3a3a;text-align:justify}
@@ -1325,6 +1333,44 @@ a{color:inherit;text-decoration:none}
 .about__body .baseline__k{padding-top:0}
 .about__body .baseline__list{grid-template-columns:1fr;gap:7px}
 
+/* Quiénes somos: foto + nombre/rol/bajada. Mismo trato de borde que
+   .audience__card / .support__card (consistencia con el resto del
+   sitio), no la estética oscura/con acento azul de la referencia que
+   trajo el cliente — acá el rol usa el mismo gris chico en mayúscula que
+   .eyebrow/.audience__tag, no lima (el lima queda para acentos
+   puntuales, no para un renglón entero de texto).
+   .about__row usa este mismo gap (clamp 20-32px) para que las dos filas
+   queden alineadas — la card de Ignacio con la foto, la de Mariana con
+   el texto — ensanchando la foto+texto a esto en vez de angostar las
+   cards.
+   Ahora que el bloque va DESPUÉS de .about__row (antes iba arriba de
+   todo), necesita su propio margin-top — antes esa separación con
+   .section__head la ponía .about__row solo, y .team__grid quedaba
+   pegado a .about__row sin nada en el medio. */
+.team__grid{
+  list-style:none;display:grid;grid-template-columns:repeat(2,1fr);
+  gap:clamp(20px,2.5vw,32px);margin-top:clamp(28px,3vw,40px);
+}
+.team__card{
+  display:flex;gap:18px;align-items:flex-start;
+  border:1px solid var(--mist);border-radius:var(--r);padding:24px;
+  background:rgba(255,255,255,.7);
+  transition:border-color .3s,box-shadow .35s var(--ease);
+}
+.team__card:hover{
+  border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4);
+}
+.team__photo{
+  width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;
+  border:1px solid var(--mist);
+}
+.team__info h3{font-size:17px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px}
+.team__role{
+  display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--stone);margin-bottom:8px;
+}
+.team__info p{font-size:13.5px;line-height:1.55;color:#5a5a5a}
+
 /* ══════════════ A QUIÉN APUNTAMOS ══════════════ */
 .audience .section__head{margin-bottom:0}
 .audience__lead-row{
@@ -1343,12 +1389,17 @@ a{color:inherit;text-decoration:none}
 .audience__card{
   flex:0 0 clamp(240px,32vw,300px);
   border:1px solid var(--mist);border-radius:var(--r);padding:28px;
+  background:rgba(255,255,255,.7);
   transition:border-color .3s,box-shadow .35s var(--ease);
 }
 .audience__card:hover{
   border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4);
 }
-.audience__n{display:block;font-size:13px;color:var(--stone);margin-bottom:14px}
+.audience__n{
+  display:block;font-size:13px;color:var(--stone);margin-bottom:14px;
+  transition:color .35s;
+}
+.audience__card:hover .audience__n{color:var(--lime)}
 .audience__card h3{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.25;margin-bottom:8px}
 .audience__card p{font-size:14px;color:#5a5a5a;line-height:1.5;margin-bottom:14px}
 .audience__tag{font-size:11.5px;color:var(--stone)}
@@ -1389,12 +1440,17 @@ a{color:inherit;text-decoration:none}
 }
 .support__card{
   border:1px solid var(--mist);border-radius:var(--r);padding:32px;
+  background:rgba(255,255,255,.7);
   transition:border-color .3s,box-shadow .35s var(--ease);
 }
 .support__card:hover{
   border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4);
 }
-.support__n{display:block;font-size:13px;color:var(--stone);margin-bottom:14px}
+.support__n{
+  display:block;font-size:13px;color:var(--stone);margin-bottom:14px;
+  transition:color .35s;
+}
+.support__card:hover .support__n{color:var(--lime)}
 .support__card h3{
   font-size:19px;font-weight:600;letter-spacing:-.02em;line-height:1.25;
   margin-bottom:10px;
@@ -1420,7 +1476,7 @@ a{color:inherit;text-decoration:none}
 
 .proj{
   position:relative;display:flex;flex-direction:column;
-  border:1px solid var(--mist);border-radius:var(--r);background:var(--paper);
+  border:1px solid var(--mist);border-radius:var(--r);background:rgba(255,255,255,.7);
   overflow:hidden;
   transition:transform .45s var(--ease),box-shadow .45s var(--ease),border-color .3s;
   animation:fadeUp .55s var(--ease) both;
@@ -1498,10 +1554,55 @@ a{color:inherit;text-decoration:none}
 
 .proj-empty{padding:60px 0;text-align:center;color:var(--stone)}
 
+/* ══════════════ PREGUNTAS ══════════════ */
+.faq__list{list-style:none}
+.faq__item{border-top:1px solid var(--mist)}
+.faq__item:last-child{border-bottom:1px solid var(--mist)}
+.faq__q{
+  display:flex;align-items:center;gap:20px;width:100%;
+  padding:24px 0;background:none;border:none;
+  font-family:inherit;text-align:left;color:var(--ink);cursor:pointer;
+}
+.faq__q:focus-visible{outline:2px solid var(--lime);outline-offset:-2px}
+.faq__n{
+  flex:none;width:26px;font-size:13px;color:var(--stone);
+  transition:color .3s;
+}
+.faq__item:hover .faq__n,.faq__item.is-open .faq__n{color:var(--lime)}
+.faq__q-text{
+  flex:1;font-size:clamp(16px,1.7vw,19px);font-weight:600;
+  letter-spacing:-.02em;line-height:1.3;
+}
+.faq__icon{position:relative;flex:none;width:16px;height:16px}
+.faq__icon::before,.faq__icon::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:100%;height:1px;background:var(--ink);
+  transform:translate(-50%,-50%);transition:transform .35s var(--ease);
+}
+.faq__icon::after{transform:translate(-50%,-50%) rotate(90deg)}
+.faq__item.is-open .faq__icon::after{transform:translate(-50%,-50%) rotate(0deg)}
+.faq__a{max-height:0;overflow:hidden;transition:max-height .4s var(--ease)}
+.faq__a-inner{max-width:66ch;padding-bottom:26px}
+.faq__a-inner p{font-size:14.5px;line-height:1.65;color:#5a5a5a;text-align:justify}
+.faq__a-inner p + p{margin-top:12px}
+.faq__a-inner strong{font-style:normal;font-weight:400}
+.faq__note{
+  font-size:12.5px;line-height:1.6;color:var(--stone);
+  padding-left:14px;border-left:1px solid var(--lime);
+  max-width:46ch;margin-top:clamp(24px,3vw,36px);
+}
+.faq__note a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.faq__note a:hover{color:var(--lime)}
+
 /* ══════════════ CONTACTO ══════════════ */
 .contact{max-width:var(--max)}
+/* Mismo gap que .about__row/.team__grid (clamp 20-32px, no el clamp
+   40-80 de antes): así el form queda del mismo ancho que la columna de
+   texto de Nosotros, justo arriba — se ensancha el form hacia la
+   izquierda (y de paso .contact__left también, al ser 1fr/1fr) en vez
+   de angostar lo de Nosotros para volver al gap viejo. */
 .contact__inner{
-  display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,5vw,80px);
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.5vw,32px);
   align-items:start;
 }
 .contact__inner > *{min-width:0}
@@ -1531,7 +1632,7 @@ a{color:inherit;text-decoration:none}
 /* FORM */
 .form{
   border:1px solid var(--mist);border-radius:var(--r);
-  padding:clamp(24px,3vw,36px);background:#fff;
+  padding:clamp(24px,3vw,36px);background:rgba(255,255,255,.7);
   display:flex;flex-direction:column;gap:20px;
 }
 .form__row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -1671,6 +1772,7 @@ a{color:inherit;text-decoration:none}
   .baseline{grid-template-columns:1fr;gap:16px}
   .about__row{grid-template-columns:1fr;gap:24px}
   .support__grid{grid-template-columns:1fr}
+  .team__grid{grid-template-columns:1fr}
 
   /* En desktop, notebook y teléfono comparten fila (grid-row:1 los dos)
      para que el botón de abajo no salte de posición al cambiar de vista
