@@ -700,7 +700,9 @@ function startReveals(){
     render(btn.dataset.grupo);
   });
 
+  let dragged = false;
   rail.addEventListener('click', e => {
+    if(dragged){ dragged = false; return; }
     const c = e.target.closest('.svc-card');
     if(c) ir(+c.dataset.i);
   });
@@ -712,6 +714,49 @@ function startReveals(){
 
   prev.addEventListener('click', () => ir(activo - 1));
   next.addEventListener('click', () => ir(activo + 1));
+
+  /* Arrastre unificado (mouse en desktop y dedo en táctil) en vez de
+     dejarle el eje horizontal al scroll nativo: así el gesto sigue el
+     dedo/cursor 1 a 1 mientras se arrastra, igual que en el carrusel de
+     "A quién apuntamos", en vez del scroll+snap del navegador (que en
+     tarjetas de 100% de ancho a veces se siente más "saltado" que
+     fluido). touch-action:pan-y en el CSS le deja al navegador el eje
+     vertical (para no trabarle el scroll de la página) y nos deja a
+     nosotros el horizontal. Al soltar, un flick corto alcanza para pasar
+     de tarjeta (18% del ancho del riel); si no, vuelve a la actual — en
+     los dos casos con la misma animación suave de ir()/traer(). Umbral
+     de 6px antes de considerarlo "arrastre" para no interferir con un
+     tap normal sobre la tarjeta; ese mismo flag (dragged) frena al
+     listener de click de arriba para que soltar no dispare su ir(). */
+  let arrastrando = false, startX = 0, startScroll = 0, lastDelta = 0;
+  rail.addEventListener('pointerdown', e => {
+    arrastrando = true;
+    startX = e.clientX;
+    startScroll = rail.scrollLeft;
+    lastDelta = 0;
+    try { rail.setPointerCapture(e.pointerId); } catch {}
+  });
+  rail.addEventListener('pointermove', e => {
+    if(!arrastrando) return;
+    lastDelta = e.clientX - startX;
+    if(!dragged && Math.abs(lastDelta) > 6){
+      dragged = true;
+      rail.classList.add('is-dragging');
+    }
+    if(dragged) rail.scrollLeft = startScroll - lastDelta;
+  });
+  const soltarRail = () => {
+    if(!arrastrando) return;
+    arrastrando = false;
+    rail.classList.remove('is-dragging');
+    if(!dragged) return;
+    const umbral = rail.clientWidth * 0.18;
+    if(lastDelta < -umbral) ir(activo + 1);
+    else if(lastDelta > umbral) ir(activo - 1);
+    else ir(activo);
+  };
+  rail.addEventListener('pointerup', soltarRail);
+  rail.addEventListener('pointercancel', soltarRail);
 
   // Al arrastrar / scrollear el riel, se activa la tarjeta más a la izquierda
   let raf = null;
