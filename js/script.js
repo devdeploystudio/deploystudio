@@ -715,21 +715,18 @@ function startReveals(){
   prev.addEventListener('click', () => ir(activo - 1));
   next.addEventListener('click', () => ir(activo + 1));
 
-  /* Arrastre unificado (mouse en desktop y dedo en táctil) en vez de
-     dejarle el eje horizontal al scroll nativo: así el gesto sigue el
-     dedo/cursor 1 a 1 mientras se arrastra, igual que en el carrusel de
-     "A quién apuntamos", en vez del scroll+snap del navegador (que en
-     tarjetas de 100% de ancho a veces se siente más "saltado" que
-     fluido). touch-action:pan-y en el CSS le deja al navegador el eje
-     vertical (para no trabarle el scroll de la página) y nos deja a
-     nosotros el horizontal. Al soltar, un flick corto alcanza para pasar
-     de tarjeta (18% del ancho del riel); si no, vuelve a la actual — en
-     los dos casos con la misma animación suave de ir()/traer(). Umbral
+  /* Arrastre con mouse en desktop. El táctil queda afuera (pointerType
+     === 'touch') y usa el scroll nativo del navegador: con
+     scroll-snap-type:x mandatory el propio navegador ya garantiza que
+     el swipe encaje una tarjeta entera, de forma mucho más confiable
+     que reimplementarlo a mano con pointer events (probado en
+     dispositivo real: a veces no respondía en ningún sentido). Umbral
      de 6px antes de considerarlo "arrastre" para no interferir con un
-     tap normal sobre la tarjeta; ese mismo flag (dragged) frena al
+     click normal sobre la tarjeta; ese mismo flag (dragged) frena al
      listener de click de arriba para que soltar no dispare su ir(). */
   let arrastrando = false, startX = 0, startScroll = 0, lastDelta = 0;
   rail.addEventListener('pointerdown', e => {
+    if(e.pointerType === 'touch') return;
     arrastrando = true;
     startX = e.clientX;
     startScroll = rail.scrollLeft;

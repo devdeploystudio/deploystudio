@@ -471,7 +471,7 @@ a{color:inherit;text-decoration:none}
      borde derecho). */
   padding:2px 2px 18px;
   scrollbar-width:none;-ms-overflow-style:none;
-  cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y;
+  cursor:grab;user-select:none;-webkit-user-select:none;
 }
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:2px solid var(--lime);outline-offset:-2px}
