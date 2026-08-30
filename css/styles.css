@@ -1733,6 +1733,13 @@ a{color:inherit;text-decoration:none}
 
 /* ══════════════ RESPONSIVE ══════════════ */
 @media (max-width:1080px){
+  /* En tablet (más angosto pero casi tan alto que un desktop, sobre todo
+     en vertical) el 100svh forzado deja un montón de espacio vacío arriba
+     y abajo del contenido, que acá nunca llega a ocupar toda la pantalla
+     como sí pasa en desktop. auto deja que el alto lo defina el padding
+     + el contenido, como ya pasa naturalmente en mobile. */
+  .hero{min-height:auto}
+
   .stats{grid-template-columns:repeat(2,1fr)}
   /* 2 columnas: los impares abren a la izquierda, los pares cierran a la derecha */
   .stat{padding:34px 26px}
