@@ -479,7 +479,7 @@ function startReveals(){
       <h3>${esc(s.nombre)}</h3>
       <p class="svc-card__desc">${esc(s.desc)}</p>
       <p class="svc-card__ex mono"><span>ej.</span>${esc(s.ej)}</p>
-      <span class="svc-card__k mono">Qué incluye</span>
+      <span class="svc-card__k mono">Qué incluye la base (se pueden agregar extras)</span>
       <ul class="svc-card__list">${s.incluye.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <div class="svc-card__meta mono">
         <div><b>Plazo estimado</b>${esc(s.plazo)}</div>

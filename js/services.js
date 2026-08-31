@@ -39,8 +39,9 @@ const SERVICIOS = [
     desc: 'Una sola página para scrollear, pensada para llevar a una acción concreta, sin vueltas ni distracciones.',
     ej: 'lanzamiento de un producto, campaña de Instagram, un servicio puntual',
     incluye: [
-      'Diseño completo de una página de hasta 6 secciones',
+      'Hasta 6 secciones',
       'Redacción y organización de los textos',
+      'Generación de imágenes adaptadas al diseño completo',
       'Formulario de contacto y botón de WhatsApp'
     ],
     plazo: '2 semanas',
@@ -70,10 +71,11 @@ const SERVICIOS = [
     desc: 'Un sitio completo con varias páginas y menú, pensado para presentar tu negocio, lo que hacés y toda la información que necesitan encontrar.',
     ej: 'un estudio contable, una clínica, una constructora, una escuela',
     incluye: [
-      'Diseño completo de un sitio de entre 5 y 8 páginas',
+      'Hasta 5 secciones (Inicio, Nosotros, Servicios, Contacto, etc.)',
       'Redacción y organización de los textos',
+      'Generación de imágenes adaptadas al diseño completo',
       'Formulario de contacto y botón de WhatsApp',
-      'Panel para actualizar textos e imágenes'
+      'Panel para actualizar textos e imágenes (opcional)'
     ],
     plazo: '3 a 4 semanas',
     ajustes: '3 rondas',
@@ -105,12 +107,13 @@ const SERVICIOS = [
     desc: 'Tu propia tienda online: tus clientes encuentran lo que buscan, lo suman al carrito y pagan desde la web. Vos gestionás productos, pedidos y stock desde un mismo lugar.',
     ej: 'indumentaria, cosmética, alimentos, librería, vivero',
     incluye: [
-      'Diseño completo de la tienda online',
       'Catálogo con categorías, buscador y filtros',
-      'Fichas de producto con fotos, variantes y stock',
+      'Fichas de hasta 30 productos, con fotos, variantes y stock',
       'Carrito, cobros online con Mercado Pago y opciones de envío o retiro',
-      'Panel para administrar productos, pedidos y descuentos',
-      'Mails automáticos de compra y estado del pedido'
+      'Cálculo automático de envíos',
+      'Sistema de cupones de descuento',
+      'Mails automáticos de compra y estado del pedido',
+      'Panel para administrar productos, pedidos y descuentos (opcional)'
     ],
     plazo: '4 a 6 semanas',
     ajustes: '3 rondas',
@@ -142,12 +145,11 @@ const SERVICIOS = [
     desc: 'Una aplicación online donde cada usuario puede entrar y hacer lo que necesita: pedir un turno, cargar datos, hacer una reserva o consultar información. Menos planillas, menos tareas manuales.',
     ej: 'turnos de un consultorio, reservas de canchas, portal de clientes',
     incluye: [
-      'Diseño y desarrollo de la aplicación a medida',
       'Registro e ingreso de usuarios con distintos permisos',
       'Base de datos para guardar y organizar la información',
-      'Panel de administración para gestionar la actividad',
       'Avisos y mails automáticos según lo que necesite el sistema',
-      'Exportación de información a Excel y PDF'
+      'Exportación de información a Excel y PDF',
+      'Panel de administración para gestionar la actividad (opcional)'
     ],
     plazo: 'desde 6 semanas',
     ajustes: 'por etapas',
@@ -183,12 +185,11 @@ const SERVICIOS = [
     desc: 'Una galería pensada para que tu trabajo sea el protagonista: cada proyecto con su propio espacio y la libertad de sumar nuevos trabajos cuando quieras.',
     ej: 'fotógrafa, arquitecta, ilustradora, músico, estudio de diseño',
     incluye: [
-      'Diseño completo del portfolio',
       'Galería principal con proyectos destacados',
       'Página individual para cada proyecto, con imágenes y contenido',
-      'Panel para cargar y actualizar nuevos trabajos',
       'Optimización de imágenes para mantener buena calidad y velocidad',
-      'Página de presentación y contacto'
+      'Página de presentación y contacto',
+      'Panel para cargar y actualizar nuevos trabajos (opcional)'
     ],
     plazo: '2 a 3 semanas',
     ajustes: '2 rondas',
