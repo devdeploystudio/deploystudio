@@ -1,0 +1,156 @@
+/* ═══════════════════════════════════════════════
+   /analiticas — devolución de Google Analytics
+   Hereda variables y reset de css/styles.css
+   ═══════════════════════════════════════════════ */
+
+body.dash{overflow-x:hidden}
+
+/* ══════════════ HEADER ══════════════ */
+.dash-header{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:20px var(--pad);
+  border-bottom:1px solid var(--mist);
+}
+.dash-back{
+  font-size:13px;color:var(--stone);transition:color .25s var(--ease);
+}
+.dash-back:hover{color:var(--ink)}
+
+/* ══════════════ HERO ══════════════ */
+.dash-main{max-width:840px;margin-inline:auto;padding:0 var(--pad)}
+.dash-hero{padding:var(--sec) 0 0}
+.dash-hero h1{
+  font-size:clamp(30px,4.2vw,46px);font-weight:700;
+  letter-spacing:-.03em;line-height:1.08;margin-bottom:16px;
+}
+.dash-hero__sub{max-width:56ch;color:#4d4d4d;font-size:15.5px}
+
+/* ══════════════ UPLOAD ══════════════ */
+.dash-upload{padding:var(--gap-head) 0 var(--sec)}
+
+.dash-upload__zone{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  padding:56px 24px;border:1.5px dashed var(--stone);border-radius:var(--r);
+  cursor:pointer;transition:border-color .25s var(--ease),background .25s var(--ease);
+}
+.dash-upload__zone:hover,
+.dash-upload__zone:focus-visible,
+.dash-upload__zone.is-dragover{
+  border-color:var(--lime);background:rgba(132,230,0,.05);
+}
+.dash-upload__icon{width:38px;height:38px;color:var(--stone);transition:color .25s var(--ease)}
+.dash-upload__zone:hover .dash-upload__icon,
+.dash-upload__zone.is-dragover .dash-upload__icon{color:var(--lime)}
+.dash-upload__title{font-size:16.5px;font-weight:600}
+.dash-upload__hint{font-size:12.5px;color:var(--stone)}
+
+.dash-upload__status{
+  margin-top:16px;padding:12px 16px;font-size:13px;
+  border:1px solid var(--mist);border-radius:var(--r);color:#4d4d4d;
+}
+.dash-upload__status.is-error{border-color:#c0392b;color:#c0392b}
+.dash-upload__status.is-ok{border-color:var(--lime);color:#4d4d4d}
+
+/* ══════════════ INSTRUCCIONES (details) ══════════════ */
+.dash-instructions{margin-top:22px;font-size:14px}
+.dash-instructions summary{
+  cursor:pointer;color:var(--ink);font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.08em;
+  padding-bottom:6px;border-bottom:1px solid var(--mist);
+  list-style:none;
+}
+.dash-instructions summary::-webkit-details-marker{display:none}
+.dash-instructions summary::before{content:'+ ';color:var(--lime)}
+.dash-instructions[open] summary::before{content:'− '}
+.dash-instructions__body{padding-top:16px;color:#4d4d4d}
+.dash-instructions__body p{margin-bottom:12px;max-width:64ch}
+.dash-instructions__body ol{padding-left:20px;display:flex;flex-direction:column;gap:12px}
+.dash-instructions__body strong{color:var(--ink)}
+
+/* ══════════════ AVISO (archivo que no es un Resumen) ══════════════ */
+.dash-warning{
+  margin-top:16px;padding:18px 20px;
+  background:var(--paper);border:1px solid var(--ink);
+  border-radius:var(--r);
+}
+.dash-warning__text{font-size:13.5px;color:#333;margin-bottom:14px;max-width:64ch;overflow-wrap:break-word}
+.dash-warning__actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ══════════════ GLOSARIO (dentro de un gráfico) ══════════════ */
+.dash-glossary{margin-top:18px;font-size:13px}
+.dash-glossary summary{
+  cursor:pointer;color:var(--stone);font-size:12px;
+  text-transform:uppercase;letter-spacing:.06em;list-style:none;
+}
+.dash-glossary summary::-webkit-details-marker{display:none}
+.dash-glossary summary::before{content:'+ ';color:var(--lime)}
+.dash-glossary[open] summary::before{content:'− '}
+.dash-glossary__list{padding:14px 0 0 18px;color:#4d4d4d;display:flex;flex-direction:column;gap:8px}
+.dash-glossary__list strong{color:var(--ink);font-family:var(--font-mono);font-weight:400}
+
+/* ══════════════ RESULTADOS ══════════════ */
+.dash-results{padding-bottom:var(--sec)}
+
+.dash-summary{
+  padding:22px 24px;margin-bottom:32px;
+  background:var(--ink);color:var(--paper);border-radius:var(--r);
+  font-size:15.5px;line-height:1.6;
+}
+.dash-summary b{color:var(--lime);font-weight:600}
+
+/* ══════════════ KPIs ══════════════ */
+.dash-kpis{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;background:var(--mist);
+  border:1px solid var(--mist);margin-bottom:var(--gap-head);
+}
+.dash-kpi{background:var(--paper);padding:22px 20px}
+.dash-kpi__num{
+  display:flex;align-items:baseline;gap:8px;
+  font-size:clamp(26px,3.2vw,36px);font-weight:600;
+  letter-spacing:-.04em;line-height:1;margin-bottom:10px;
+}
+.dash-kpi__delta{font-size:12px;font-weight:600}
+.dash-kpi__delta.is-up{color:#4d8a00}
+.dash-kpi__delta.is-down{color:#c0392b}
+.dash-kpi__label{font-size:12.5px;color:var(--stone)}
+.dash-kpi__hint{display:block;font-size:11.5px;color:#8a8a8a;margin-top:4px;line-height:1.4}
+
+/* ══════════════ CHARTS ══════════════ */
+.dash-charts{display:flex;flex-direction:column;gap:var(--gap-head)}
+.dash-chart__title{
+  font-size:13px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--stone);margin-bottom:6px;
+}
+.dash-chart__desc{font-size:13px;color:#6b6b6b;max-width:56ch;margin-bottom:18px}
+
+.dash-bars{display:flex;flex-direction:column;gap:14px}
+/* El valor tiene un ancho FIJO (no auto): cada .dash-bar es su propia
+   grilla independiente, así que si el ancho de esta columna dependiera
+   del texto, una fila con un número más largo (ej. con coma decimal)
+   le robaría espacio a la barra de esa fila puntual y quedaría más
+   corta que las demás sin motivo real. */
+.dash-bar{display:grid;grid-template-columns:minmax(90px,180px) 1fr 7ch;align-items:center;gap:14px}
+.dash-bar__label{
+  font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.dash-bar__track{height:22px;border-radius:1px;overflow:hidden}
+.dash-bar__track svg{display:block;width:100%;height:100%}
+.dash-bar__value{font-size:13px;font-variant-numeric:tabular-nums;color:#4d4d4d;white-space:nowrap}
+
+.dash-reset{margin-top:var(--gap-head)}
+
+/* ══════════════ FOOTER ══════════════ */
+.dash-footer{
+  max-width:var(--max);margin:0 auto;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  padding:24px var(--pad) 40px;border-top:1px solid var(--mist);
+  font-size:11px;color:var(--stone);
+}
+.dash-footer .footer__status{display:inline-flex;align-items:center;gap:8px}
+.dash-footer .footer__status .dot{width:6px;height:6px}
+
+@media (max-width:560px){
+  .dash-bar{grid-template-columns:1fr;gap:4px}
+  .dash-bar__value{justify-self:start}
+}

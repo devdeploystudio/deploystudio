@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analíticas | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/analiticas.css" />
+
+</head>
+<body class="dash">
+
+<!-- ══════════════ HEADER LIVIANO ══════════════ -->
+<header class="dash-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="index.html" class="dash-back mono">← Volver al sitio</a>
+</header>
+
+<main class="dash-main">
+
+  <!-- ══════════════ INTRO ══════════════ -->
+  <section class="dash-hero">
+    <span class="eyebrow mono">— Analíticas</span>
+    <h1>Tus métricas, en palabras simples</h1>
+    <p class="dash-hero__sub">
+      Subí los archivos que exportaste de Google Analytics y te devolvemos
+      un resumen fácil de leer, con los números que más importan para tu
+      negocio.
+    </p>
+  </section>
+
+  <!-- ══════════════ CARGA DE ARCHIVOS ══════════════ -->
+  <section class="dash-upload" id="dashUpload">
+    <div class="dash-upload__zone" id="dashDropzone" tabindex="0" role="button"
+         aria-label="Subir archivos CSV de Google Analytics">
+      <svg class="dash-upload__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M24 6v24M24 6l-9 9M24 6l9 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 32v6a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p class="dash-upload__title">Arrastrá tus CSV acá</p>
+      <p class="dash-upload__hint mono">o hacé clic para elegir los archivos</p>
+      <input type="file" id="dashFileInput" accept=".csv" multiple hidden />
+    </div>
+
+    <div class="dash-upload__status mono" id="dashStatus" hidden></div>
+
+    <div class="dash-warning" id="dashWarning" hidden>
+      <p class="dash-warning__text" id="dashWarningText"></p>
+      <div class="dash-warning__actions">
+        <button class="btn btn--lime btn--sm" id="dashWarningContinue">Continuar igual</button>
+        <button class="btn btn--ghost btn--sm" id="dashWarningIgnore">Ignorar esos archivos</button>
+      </div>
+    </div>
+
+    <details class="dash-instructions">
+      <summary class="mono">¿Cómo exporto los datos de Google Analytics?</summary>
+      <div class="dash-instructions__body">
+        <p>Entrá a <strong>analytics.google.com</strong> con el mail que te dimos acceso. En el menú de la izquierda vas a ver varias secciones (Generar oportunidades de venta, Conocer el tráfico, Ver la interacción y la retención, Tecnología, etc.). Entrá a cada una, quedate en su <strong>"Resumen"</strong> (la pantalla que aparece de entrada) y exportalo:</p>
+        <ol>
+          <li>Arriba a la derecha de la pantalla, ícono de <strong>compartir este informe</strong>.</li>
+          <li><strong>Descargar archivo</strong> → <strong>CSV</strong>.</li>
+          <li>Repetí lo mismo en cada sección del menú que tengas disponible.</li>
+        </ol>
+        <p>No hace falta que sean todas ni en un orden particular — subilas juntas o de a una, la página reconoce sola qué trae cada archivo.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ══════════════ RESULTADOS ══════════════ -->
+  <section class="dash-results" id="dashResults" hidden>
+
+    <div class="dash-summary" id="dashSummary"></div>
+
+    <div class="dash-kpis" id="dashKpis"></div>
+
+    <div class="dash-charts">
+      <div class="dash-chart" id="dashChartTraffic" hidden>
+        <h2 class="dash-chart__title">Fuentes de tráfico</h2>
+        <p class="dash-chart__desc">De dónde llegó la gente a tu sitio: escribiendo tu web directamente, desde redes sociales o buscándote en Google.</p>
+        <div class="dash-bars"></div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada canal?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>Direct</strong> — escribieron tu web directamente o la tenían guardada.</li>
+            <li><strong>Organic Social</strong> — llegaron desde una red social, sin publicidad paga.</li>
+            <li><strong>Organic Search</strong> — te buscaron en Google u otro buscador.</li>
+            <li><strong>Paid Search</strong> — vinieron de un anuncio pago en un buscador (Google Ads).</li>
+            <li><strong>Paid Social</strong> — vinieron de un anuncio pago en redes sociales.</li>
+            <li><strong>Referral</strong> — llegaron con un link desde otro sitio web.</li>
+            <li><strong>Email</strong> — llegaron desde un link en un mail.</li>
+            <li><strong>Unassigned</strong> — Google no pudo identificar de dónde vinieron.</li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="dash-chart" id="dashChartPages" hidden>
+        <h2 class="dash-chart__title">Páginas más visitadas</h2>
+        <p class="dash-chart__desc">Qué partes de tu sitio mira más la gente. Te sirve para saber qué contenido despierta más interés.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartDevice" hidden>
+        <h2 class="dash-chart__title">Dispositivo</h2>
+        <p class="dash-chart__desc">Si entran desde el celular o la computadora. Si la mayoría es celular, priorizá que todo se vea perfecto ahí.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartEvents" hidden>
+        <h2 class="dash-chart__title">Acciones de contacto</h2>
+        <p class="dash-chart__desc">Cuántas veces tocaron un botón para contactarte (WhatsApp, Instagram, mail, formulario). Es lo más importante de todo: mide gente que quiso hablar con vos, no solo que miró la página.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartNewReturning" hidden>
+        <h2 class="dash-chart__title">Visitantes nuevos vs. recurrentes</h2>
+        <p class="dash-chart__desc">Cuánta gente entró por primera vez y cuánta ya te conocía y volvió. Más recurrentes es buena señal: significa que se acuerdan de vos.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartCountry" hidden>
+        <h2 class="dash-chart__title">Países desde donde te visitan</h2>
+        <p class="dash-chart__desc">De qué país es la gente que entra a tu sitio.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartCity" hidden>
+        <h2 class="dash-chart__title">Ciudades desde donde te visitan</h2>
+        <p class="dash-chart__desc">Más al detalle que el país: de qué ciudad es tu público. Sirve para campañas locales o entregas.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartOs" hidden>
+        <h2 class="dash-chart__title">Sistema operativo</h2>
+        <p class="dash-chart__desc">Con qué sistema navegan tu sitio (iPhone/iOS, Android, Windows, Mac). Dato técnico, útil si en algún momento hay que revisar cómo se ve en un equipo en particular.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartBrowser" hidden>
+        <h2 class="dash-chart__title">Navegador</h2>
+        <p class="dash-chart__desc">Con qué navegador entran (Chrome, Safari, Edge). También es un dato técnico, útil para saber dónde probar el sitio.</p>
+        <div class="dash-bars"></div>
+      </div>
+
+      <div class="dash-chart" id="dashChartLanguage" hidden>
+        <h2 class="dash-chart__title">Idioma</h2>
+        <p class="dash-chart__desc">En qué idioma tienen configurado el celular o la computadora tus visitantes.</p>
+        <div class="dash-bars"></div>
+      </div>
+    </div>
+
+    <button class="btn btn--ghost btn--sm dash-reset" id="dashReset">
+      Cargar otros archivos
+    </button>
+  </section>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script src="js/analiticas.js" defer></script>
+</body>
+</html>
