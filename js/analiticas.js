@@ -42,17 +42,21 @@
   const warningContinueBtn = document.getElementById('dashWarningContinue');
   const warningIgnoreBtn   = document.getElementById('dashWarningIgnore');
 
+  // Cards de barras (rankings): tráfico, páginas, acciones de contacto.
   const chartBoxes = {
     traffic:  document.getElementById('dashChartTraffic'),
     pages:    document.getElementById('dashChartPages'),
-    device:   document.getElementById('dashChartDevice'),
-    country:  document.getElementById('dashChartCountry'),
-    city:     document.getElementById('dashChartCity'),
     events:   document.getElementById('dashChartEvents'),
-    os:       document.getElementById('dashChartOs'),
-    browser:  document.getElementById('dashChartBrowser'),
-    language: document.getElementById('dashChartLanguage'),
-    newReturning: document.getElementById('dashChartNewReturning'),
+  };
+  const deviceBox   = document.getElementById('dashChartDevice');
+  const splitBox    = document.getElementById('dashChartNewReturning');
+  const detailPanel = document.getElementById('dashDetailPanel');
+  const detailBoxes = {
+    country:  document.getElementById('dashDetailCountry'),
+    city:     document.getElementById('dashDetailCity'),
+    os:       document.getElementById('dashDetailOs'),
+    browser:  document.getElementById('dashDetailBrowser'),
+    language: document.getElementById('dashDetailLanguage'),
   };
 
   // Un bloque elegido por categoría (el primero que matchea, ver §5).
@@ -341,6 +345,82 @@
     });
   }
 
+  /* ─────────── 7b. Dona (dispositivo) — SVG a mano ─────────── */
+  // Color fijo por categoría de dispositivo (no por orden), así el
+  // celular siempre es lima sin importar si es la categoría más grande
+  // o no — coherente con el resto de la página, donde lima = celular.
+  const DEVICE_COLORS = { mobile: 'var(--lime)', desktop: 'var(--ink)', tablet: 'var(--stone)' };
+  const DONUT_FALLBACK = ['#8a8a8a', '#c7c7c7'];
+  function renderDonut(container, items){
+    container.innerHTML = '';
+    if (!items || !items.length) return;
+    const total = items.reduce((a, i) => a + i.value, 0);
+    if (total <= 0) return;
+
+    const r = 40, cx = 50, cy = 50, circumference = 2 * Math.PI * r;
+    let acc = 0, fallbackIdx = 0;
+    const segments = items.map(item => {
+      const known = DEVICE_COLORS[item.label.toLowerCase()];
+      const color = known || DONUT_FALLBACK[fallbackIdx++ % DONUT_FALLBACK.length];
+      const dash = (item.value / total) * circumference;
+      const seg = { item, color, dash, offset: acc };
+      acc += dash;
+      return seg;
+    });
+
+    const circles = segments.map(s => `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}"
+        stroke-width="16" stroke-dasharray="${s.dash} ${(circumference - s.dash).toFixed(2)}"
+        stroke-dashoffset="${(-s.offset).toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"></circle>
+    `).join('');
+
+    const legend = segments.map(s => `
+      <div class="dash-donut__item">
+        <span class="dash-donut__dot" style="background:${s.color}"></span>
+        <span class="dash-donut__label">${escapeHtml(s.item.label)}</span>
+        <span class="dash-donut__value mono">${formatPct((s.item.value / total) * 100)}%</span>
+      </div>
+    `).join('');
+
+    container.innerHTML = `<svg viewBox="0 0 100 100">${circles}</svg><div class="dash-donut__legend">${legend}</div>`;
+  }
+
+  /* ─────────── 7c. Barra partida (nuevos vs. recurrentes) ─────────── */
+  const SPLIT_COLORS = { Nuevos: 'var(--lime)', Recurrentes: 'var(--ink)' };
+  function renderSplit(container, items){
+    container.innerHTML = '';
+    if (!items || !items.length) return;
+    const total = items.reduce((a, i) => a + i.value, 0);
+    if (total <= 0) return;
+
+    const segs = items.map(item => {
+      const pct = (item.value / total) * 100;
+      const color = SPLIT_COLORS[item.label] || 'var(--stone)';
+      return `<div class="dash-split__seg" style="width:${pct}%;background:${color}">${pct >= 14 ? formatPct(pct) + '%' : ''}</div>`;
+    }).join('');
+
+    const labels = items.map(item => {
+      const pct = (item.value / total) * 100;
+      return `<span><b>${escapeHtml(item.label)}</b> · ${formatNumber(item.value)} (${formatPct(pct)}%)</span>`;
+    }).join('');
+
+    container.innerHTML = `<div class="dash-split__track">${segs}</div><div class="dash-split__labels">${labels}</div>`;
+  }
+
+  /* ─────────── 7d. Lista compacta (datos secundarios/técnicos) ─────────── */
+  function renderMini(container, items, opts){
+    opts = opts || {};
+    container.innerHTML = '';
+    if (!items || !items.length) return;
+    const top = items.slice(0, opts.limit || 5);
+    container.innerHTML = top.map(item => `
+      <div class="dash-mini__row">
+        <span class="dash-mini__label" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</span>
+        <span class="dash-mini__value mono">${formatNumber(item.value)}</span>
+      </div>
+    `).join('');
+  }
+
   function escapeHtml(str){
     const div = document.createElement('div');
     div.textContent = str;
@@ -440,17 +520,29 @@
       ? parts.join(' ')
       : 'No encontramos lo suficiente para armar un resumen en palabras, pero revisá los datos más abajo. Probá cargando alguno de los "Resumen" indicados arriba para una devolución más completa.';
 
-    // Gráficos
+    // Gráficos principales
     toggleChart('traffic', trafficItems);
     toggleChart('pages', pagesItems, { limit: 5 });
-    toggleChart('device', deviceItems);
-    toggleChart('newReturning', newReturningItems);
     toggleChart('events', eventItems && eventItems.map(i => ({ label: labelEvent(i.label), value: i.value })), { limit: 6 });
-    toggleChart('country', countryItems, { limit: 6 });
-    toggleChart('city', cityItems, { limit: 6 });
-    toggleChart('os', osItems, { limit: 5 });
-    toggleChart('browser', browserItems, { limit: 5 });
-    toggleChart('language', languageItems, { limit: 5 });
+
+    deviceBox.hidden = !(deviceItems && deviceItems.length);
+    if (deviceItems && deviceItems.length) renderDonut(deviceBox.querySelector('.dash-donut'), deviceItems);
+
+    splitBox.hidden = !newReturningItems;
+    if (newReturningItems) renderSplit(splitBox.querySelector('.dash-split'), newReturningItems);
+
+    // Panel de datos secundarios/técnicos: se agrupan en una sola card,
+    // que solo aparece si al menos uno de los cinco tiene datos. Ojo:
+    // no encadenar con || — eso corta apenas uno da true y se saltea
+    // renderizar el resto.
+    const detailResults = [
+      toggleDetail('country', countryItems, { limit: 6 }),
+      toggleDetail('city', cityItems, { limit: 6 }),
+      toggleDetail('os', osItems, { limit: 5 }),
+      toggleDetail('browser', browserItems, { limit: 5 }),
+      toggleDetail('language', languageItems, { limit: 5 }),
+    ];
+    detailPanel.hidden = !detailResults.some(Boolean);
   }
 
   // Traduce los nombres técnicos de eventos a algo legible para el cliente.
@@ -485,6 +577,19 @@
     }
     box.hidden = false;
     renderBars(box.querySelector('.dash-bars'), items, opts);
+  }
+
+  // Devuelve true/false según si ese detalle tenía datos, para que el
+  // panel contenedor sepa si tiene que mostrarse o no.
+  function toggleDetail(key, items, opts){
+    const box = detailBoxes[key];
+    if (!items || !items.length){
+      box.hidden = true;
+      return false;
+    }
+    box.hidden = false;
+    renderMini(box.querySelector('.dash-mini'), items, opts);
+    return true;
   }
 
   /* ─────────── 10. Eventos de carga ─────────── */

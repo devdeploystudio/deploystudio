@@ -16,8 +16,14 @@ body.dash{overflow-x:hidden}
 }
 .dash-back:hover{color:var(--ink)}
 
-/* ══════════════ HERO ══════════════ */
-.dash-main{max-width:840px;margin-inline:auto;padding:0 var(--pad)}
+/* ══════════════ ANCHO ══════════════
+   El shell (header/footer) y el grid de resultados usan el ancho
+   completo del sitio (--max), igual que index.html. Solo la intro de
+   texto (hero + carga de archivos + resumen) se recorta a un ancho de
+   lectura cómodo — es la única parte que es prosa, no datos. */
+.dash-main{max-width:var(--max);margin-inline:auto;padding:0 var(--pad)}
+.dash-narrow{max-width:720px;margin-inline:auto}
+
 .dash-hero{padding:var(--sec) 0 0}
 .dash-hero h1{
   font-size:clamp(30px,4.2vw,46px);font-weight:700;
@@ -76,7 +82,7 @@ body.dash{overflow-x:hidden}
 .dash-warning__text{font-size:13.5px;color:#333;margin-bottom:14px;max-width:64ch;overflow-wrap:break-word}
 .dash-warning__actions{display:flex;gap:10px;flex-wrap:wrap}
 
-/* ══════════════ GLOSARIO (dentro de un gráfico) ══════════════ */
+/* ══════════════ GLOSARIO (dentro de una card) ══════════════ */
 .dash-glossary{margin-top:18px;font-size:13px}
 .dash-glossary summary{
   cursor:pointer;color:var(--stone);font-size:12px;
@@ -98,45 +104,127 @@ body.dash{overflow-x:hidden}
 }
 .dash-summary b{color:var(--lime);font-weight:600}
 
-/* ══════════════ KPIs ══════════════ */
+/* ══════════════ KPIs ══════════════
+   Mismo lenguaje que .stats de la home (número grande + etiqueta mono),
+   ahora usando el ancho completo del sitio en vez de un contenedor angosto. */
 .dash-kpis{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:1px;background:var(--mist);
   border:1px solid var(--mist);margin-bottom:var(--gap-head);
 }
-.dash-kpi{background:var(--paper);padding:22px 20px}
+.dash-kpi{background:var(--paper);padding:26px 24px}
 .dash-kpi__num{
   display:flex;align-items:baseline;gap:8px;
-  font-size:clamp(26px,3.2vw,36px);font-weight:600;
+  font-size:clamp(28px,3.4vw,40px);font-weight:600;
   letter-spacing:-.04em;line-height:1;margin-bottom:10px;
 }
-.dash-kpi__delta{font-size:12px;font-weight:600}
-.dash-kpi__delta.is-up{color:#4d8a00}
-.dash-kpi__delta.is-down{color:#c0392b}
 .dash-kpi__label{font-size:12.5px;color:var(--stone)}
 .dash-kpi__hint{display:block;font-size:11.5px;color:#8a8a8a;margin-top:4px;line-height:1.4}
 
-/* ══════════════ CHARTS ══════════════ */
-.dash-charts{display:flex;flex-direction:column;gap:var(--gap-head)}
-.dash-chart__title{
-  font-size:13px;text-transform:uppercase;letter-spacing:.08em;
-  color:var(--stone);margin-bottom:6px;
+/* ══════════════ GRID PRINCIPAL ══════════════
+   12 columnas, como cualquier grid de dashboard, pero los tamaños de
+   card están elegidos por prioridad de contenido (acciones de contacto
+   es lo más importante → card más grande), no por simetría. */
+.dash-grid{
+  display:grid;grid-template-columns:repeat(12,1fr);
+  gap:var(--gap-head) 24px;
 }
-.dash-chart__desc{font-size:13px;color:#6b6b6b;max-width:56ch;margin-bottom:18px}
+.dash-card--span5{grid-column:span 5}
+.dash-card--span6{grid-column:span 6}
+.dash-card--span7{grid-column:span 7}
+.dash-card--span12{grid-column:span 12}
 
+.dash-card{
+  border:1px solid var(--mist);border-radius:var(--r);
+  padding:26px 28px;background:var(--paper);
+  opacity:0;transform:translateY(10px);
+  animation:dashCardIn .5s var(--ease) forwards;
+}
+.dash-card--hero{background:var(--ink);color:var(--paper)}
+.dash-card--hero .dash-card__title{color:var(--paper)}
+.dash-card--hero .dash-card__desc{color:#b8b8b8}
+.dash-card--hero .dash-bar__label{color:var(--paper)}
+.dash-card--hero .dash-bar__value{color:#c7c7c7}
+.dash-card--hero .dash-bar__track rect:first-child{fill:#2a2a2a}
+
+@keyframes dashCardIn{to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+  .dash-card{animation:none;opacity:1;transform:none}
+}
+
+.dash-card__head{margin-bottom:20px}
+.dash-card__title{
+  font-size:13px;text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.dash-card__desc{font-size:13px;color:#6b6b6b;max-width:56ch}
+
+/* ══════════════ BARRAS ══════════════ */
 .dash-bars{display:flex;flex-direction:column;gap:14px}
+.dash-bars--lg{gap:16px}
 /* El valor tiene un ancho FIJO (no auto): cada .dash-bar es su propia
    grilla independiente, así que si el ancho de esta columna dependiera
-   del texto, una fila con un número más largo (ej. con coma decimal)
-   le robaría espacio a la barra de esa fila puntual y quedaría más
-   corta que las demás sin motivo real. */
-.dash-bar{display:grid;grid-template-columns:minmax(90px,180px) 1fr 7ch;align-items:center;gap:14px}
+   del texto, una fila con un número más largo le robaría espacio a la
+   barra de esa fila puntual y quedaría más corta que las demás sin
+   motivo real. */
+.dash-bar{
+  display:grid;grid-template-columns:minmax(90px,180px) 1fr 7ch;
+  align-items:center;gap:14px;
+  padding:4px 6px;margin:-4px -6px;border-radius:1px;
+  transition:background .2s var(--ease);
+}
+.dash-bar:hover{background:rgba(132,230,0,.06)}
+.dash-card--hero .dash-bar:hover{background:rgba(132,230,0,.1)}
 .dash-bar__label{
   font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .dash-bar__track{height:22px;border-radius:1px;overflow:hidden}
 .dash-bar__track svg{display:block;width:100%;height:100%}
 .dash-bar__value{font-size:13px;font-variant-numeric:tabular-nums;color:#4d4d4d;white-space:nowrap}
+
+/* ══════════════ DONA (dispositivo) ══════════════ */
+.dash-donut{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.dash-donut svg{width:150px;height:150px;flex-shrink:0}
+.dash-donut__legend{display:flex;flex-direction:column;gap:10px;flex:1;min-width:140px}
+.dash-donut__item{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.dash-donut__dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dash-donut__label{flex:1}
+.dash-donut__value{font-size:13px;color:#4d4d4d;font-variant-numeric:tabular-nums}
+
+/* ══════════════ BARRA PARTIDA (nuevos vs. recurrentes) ══════════════ */
+.dash-split{display:flex;flex-direction:column;gap:10px}
+.dash-split__track{
+  display:flex;height:36px;border-radius:1px;overflow:hidden;background:var(--mist);
+}
+.dash-split__seg{
+  height:100%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:12.5px;color:var(--paper);
+  min-width:2px;white-space:nowrap;overflow:hidden;
+}
+.dash-split__labels{display:flex;justify-content:space-between;font-size:12.5px;color:#4d4d4d}
+.dash-split__labels b{color:var(--ink);font-weight:600}
+
+/* ══════════════ PANEL DE DETALLE (país / ciudad / SO / navegador / idioma) ══════════════
+   Datos secundarios: se agrupan en una sola card, en columnas angostas
+   y sin el track de barra completo, para que no compitan visualmente
+   con los gráficos principales de arriba. */
+.dash-card--detail{background:#F3F3F1;border-color:var(--mist)}
+.dash-detail-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:28px;
+}
+.dash-detail__title{
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--stone);margin-bottom:12px;
+}
+.dash-mini{display:flex;flex-direction:column;gap:8px}
+.dash-mini__row{
+  display:flex;justify-content:space-between;gap:10px;
+  font-size:13px;padding-bottom:8px;border-bottom:1px solid var(--mist);
+}
+.dash-mini__row:last-child{border-bottom:none;padding-bottom:0}
+.dash-mini__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-mini__value{color:var(--stone);font-variant-numeric:tabular-nums;flex-shrink:0}
 
 .dash-reset{margin-top:var(--gap-head)}
 
@@ -150,7 +238,13 @@ body.dash{overflow-x:hidden}
 .dash-footer .footer__status{display:inline-flex;align-items:center;gap:8px}
 .dash-footer .footer__status .dot{width:6px;height:6px}
 
+@media (max-width:900px){
+  .dash-card--span5,.dash-card--span6,.dash-card--span7{grid-column:span 12}
+}
+
 @media (max-width:560px){
   .dash-bar{grid-template-columns:1fr;gap:4px}
   .dash-bar__value{justify-self:start}
+  .dash-donut{flex-direction:column;align-items:flex-start}
+  .dash-card{padding:22px 20px}
 }

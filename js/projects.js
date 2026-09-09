@@ -29,6 +29,16 @@
 
 const PROYECTOS = [
   {
+    nombre: "EPSILON",
+    categoria: "Sitio institucional",
+    anio: "2026",
+    desc: "Empresa de ingeniería en robótica colaborativa, visión artificial e inteligencia predictiva para líneas de producción industrial. Sitio institucional con sus capacidades, la tecnología que desarrollan y su proceso de trabajo.",
+    tags: ["Robótica industrial", "Diseño oscuro", "Animaciones", "Formulario de contacto"],
+    url: "https://devdeploystudio.github.io/epsilon-robotics/",
+    imagen: "img/proyectos/epsilon.jpg",
+    mock: "landing"
+  },
+  {
     nombre: "BRASA",
     categoria: "Sitio institucional",
     anio: "2026",

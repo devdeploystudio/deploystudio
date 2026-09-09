@@ -1,5 +1,6 @@
 # Claude Code
 .claude/
+.impeccable/
 
 # Dependencias / Node
 node_modules/
