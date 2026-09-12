@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Página no encontrada | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/404.css" />
+
+</head>
+<body class="err">
+
+<!-- ══════════════ SPOTLIGHT (sigue al mouse) ══════════════ -->
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<main class="err-main">
+  <a href="index.html" class="logo logo--lg" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+
+  <p class="err-code mono">// error 404</p>
+  <h1 class="err-title">Esta página no existe<span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
+  <p class="err-sub">El link puede estar roto, o la página se movió de lugar.</p>
+
+  <a href="index.html" class="btn btn--lime btn--lg">
+    Volver al inicio <span class="btn__arrow">→</span>
+  </a>
+</main>
+
+<script>
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    if (!cursors.length) return;
+    var on = true;
+    setInterval(function(){ on = !on; cursors.forEach(function(c){ c.classList.toggle('off', !on); }); }, 530);
+  })();
+
+  (function spotlight(){
+    var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var spot = document.getElementById('spot');
+    if (!spot || REDUCED || window.matchMedia('(hover:none)').matches) return;
+
+    var root = document.documentElement;
+    var tx = window.innerWidth / 2, ty = window.innerHeight * .4;
+    var cx = tx, cy = ty, raf = null, idle = null;
+
+    window.addEventListener('pointermove', function(e){
+      tx = e.clientX; ty = e.clientY;
+      root.style.setProperty('--spot-op', '1');
+      if (!raf) raf = requestAnimationFrame(loop);
+      clearTimeout(idle);
+      idle = setTimeout(function(){ root.style.setProperty('--spot-op', '.55'); }, 2600);
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', function(){ root.style.setProperty('--spot-op', '0'); });
+
+    function loop(){
+      cx += (tx - cx) * .085;
+      cy += (ty - cy) * .085;
+      root.style.setProperty('--mx', cx.toFixed(1) + 'px');
+      root.style.setProperty('--my', cy.toFixed(1) + 'px');
+      if (Math.abs(tx - cx) < .4 && Math.abs(ty - cy) < .4){ raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+  })();
+</script>
+</body>
+</html>

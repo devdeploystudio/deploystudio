@@ -7,38 +7,36 @@
 <title>Chequeo de SEO | Deploy Studio</title>
 <meta name="robots" content="noindex, nofollow" />
 
-<link rel="icon" type="image/png" href="img/favicon.png" />
-<link rel="apple-touch-icon" href="img/favicon.png" />
+<link rel="icon" type="image/png" href="../img/favicon.png" />
+<link rel="apple-touch-icon" href="../img/favicon.png" />
 
 <link
   rel="preload"
-  href="fonts/geist-latin-wght-normal.woff2"
+  href="../fonts/geist-latin-wght-normal.woff2"
   as="font"
   type="font/woff2"
   crossorigin
 />
 
-<link rel="stylesheet" href="css/styles.min.css" />
-<link rel="stylesheet" href="css/analiticas.css" />
-<link rel="stylesheet" href="css/seo.css" />
+<link rel="stylesheet" href="../css/styles.min.css" />
+<link rel="stylesheet" href="../css/analiticas.css" />
+<link rel="stylesheet" href="../css/seo.css" />
 
 </head>
 <body class="dash">
 
 <!-- ══════════════ HEADER LIVIANO ══════════════ -->
 <header class="dash-header">
-  <a href="index.html" class="logo" aria-label="deploy - inicio">
+  <a href="../index.html" class="logo" aria-label="deploy - inicio">
     <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
   </a>
-  <nav class="dash-header__links mono">
-    <a href="post-deploy.html" class="dash-back">← Volver al panel</a>
-    <a href="index.html" class="dash-back">Volver al sitio</a>
-  </nav>
+  <a href="../index.html" class="dash-back mono">← Volver al sitio</a>
 </header>
 
 <main class="dash-main">
 
   <section class="dash-hero">
+    <a href="../index.html" class="dash-hero__back mono">← Volver al panel</a>
     <span class="eyebrow mono">— SEO</span>
     <h1>¿Cómo está el SEO de tu sitio?</h1>
     <p class="dash-hero__sub">
@@ -50,10 +48,14 @@
   <section class="seo-form">
     <form id="seoForm" class="seo-form__row">
       <input
-        type="url"
+        type="text"
         id="seoUrl"
         class="seo-form__input mono"
-        placeholder="https://tusitio.com"
+        placeholder="tusitio.com"
+        inputmode="url"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
         required
       />
       <button type="submit" class="btn btn--lime" id="seoSubmit">
@@ -82,6 +84,6 @@
   <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
 </footer>
 
-<script src="js/seo.js" defer></script>
+<script src="../js/seo.js" defer></script>
 </body>
 </html>

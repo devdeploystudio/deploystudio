@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chequeo de Performance | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="../img/favicon.png" />
+<link rel="apple-touch-icon" href="../img/favicon.png" />
+
+<link
+  rel="preload"
+  href="../fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="../css/styles.min.css" />
+<link rel="stylesheet" href="../css/analiticas.css" />
+<link rel="stylesheet" href="../css/seo.css" />
+
+</head>
+<body class="dash">
+
+<!-- ══════════════ HEADER LIVIANO ══════════════ -->
+<header class="dash-header">
+  <a href="../index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="../index.html" class="dash-back mono">← Volver al sitio</a>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <a href="../index.html" class="dash-hero__back mono">← Volver al panel</a>
+    <span class="eyebrow mono">— Performance</span>
+    <h1>¿Qué tan rápido carga tu sitio?</h1>
+    <p class="dash-hero__sub">
+      Pegá la URL de tu sitio y revisamos, en palabras simples, si está
+      configurado para cargar rápido.
+    </p>
+  </section>
+
+  <section class="seo-form">
+    <form id="perfForm" class="seo-form__row">
+      <input
+        type="text"
+        id="perfUrl"
+        class="seo-form__input mono"
+        placeholder="tusitio.com"
+        inputmode="url"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        required
+      />
+      <button type="submit" class="btn btn--lime" id="perfSubmit">
+        Analizar <span class="btn__arrow">→</span>
+      </button>
+    </form>
+    <div class="dash-upload__status mono" id="perfStatus" hidden></div>
+  </section>
+
+  <!-- ══════════════ RESULTADOS ══════════════ -->
+  <section class="seo-results" id="perfResults" hidden>
+
+    <div class="dash-summary" id="perfSummary"></div>
+
+    <div class="seo-checklist" id="perfChecklist"></div>
+
+    <button class="btn btn--ghost btn--sm dash-reset" id="perfReset">
+      Analizar otra URL
+    </button>
+  </section>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script src="../js/performance.js" defer></script>
+</body>
+</html>

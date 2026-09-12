@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Post Deploy | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="../img/favicon.png" />
+<link rel="apple-touch-icon" href="../img/favicon.png" />
+
+<link
+  rel="preload"
+  href="../fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="../css/styles.min.css" />
+<link rel="stylesheet" href="../css/analiticas.css" />
+<link rel="stylesheet" href="../css/post-deploy.css" />
+
+</head>
+<body class="dash">
+
+<!-- ══════════════ SPOTLIGHT (sigue al mouse) ══════════════ -->
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<!-- ══════════════ HEADER LIVIANO ══════════════ -->
+<header class="dash-header">
+  <a href="../index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="../index.html" class="dash-back mono">← Volver al sitio</a>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <span class="eyebrow mono">— Panel</span>
+    <h1>Tus herramientas, después de la entrega<span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
+    <p class="dash-hero__sub">
+      Todo lo que necesitás para entender y cuidar tu sitio una vez que ya
+      está online, en un solo lugar.
+    </p>
+  </section>
+
+  <div class="dash-grid post-hub__grid">
+
+    <a class="dash-card dash-card--span6 post-hub__card" href="analiticas.html">
+      <span class="post-hub__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V13M12 21V4M19 21V16"/></svg>
+      </span>
+      <h2 class="dash-card__title">Analíticas</h2>
+      <p class="dash-card__desc">Subí los CSV que exportaste de Google Analytics y recibí un resumen en palabras simples: visitas, de dónde vinieron, qué páginas miraron y qué acciones hicieron.</p>
+      <span class="post-hub__go mono">Entrar <span class="btn__arrow">→</span></span>
+    </a>
+
+    <a class="dash-card dash-card--span6 post-hub__card" href="seo.html">
+      <span class="post-hub__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-5-5"/></svg>
+      </span>
+      <h2 class="dash-card__title">Chequeo de SEO</h2>
+      <p class="dash-card__desc">Pegá la URL de tu sitio y te decimos, en palabras simples, cómo está preparado para aparecer en Google.</p>
+      <span class="post-hub__go mono">Entrar <span class="btn__arrow">→</span></span>
+    </a>
+
+    <a class="dash-card dash-card--span6 post-hub__card" href="performance.html">
+      <span class="post-hub__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
+      </span>
+      <h2 class="dash-card__title">Chequeo de Performance</h2>
+      <p class="dash-card__desc">Pegá la URL de tu sitio y revisamos, en palabras simples, si está configurado para cargar rápido.</p>
+      <span class="post-hub__go mono">Entrar <span class="btn__arrow">→</span></span>
+    </a>
+
+    <a class="dash-card dash-card--span6 post-hub__card" href="tutorial.html">
+      <span class="post-hub__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+      </span>
+      <h2 class="dash-card__title">Tu panel de edición</h2>
+      <p class="dash-card__desc">Un video corto mostrando cómo entrar a tu panel y cambiar textos, fotos, productos o precios de tu sitio sin tocar código.</p>
+      <span class="post-hub__go mono">Entrar <span class="btn__arrow">→</span></span>
+    </a>
+
+    <a class="dash-card dash-card--span12 post-hub__card post-hub__contact"
+       href="https://wa.me/5491125851237?text=%C2%A1Hola!%20Ya%20soy%20cliente%20de%20Deploy%20Studio%20y%20necesito%20ayuda%20con%20mi%20sitio%2C%20o%20quiero%20consultar%20por%20un%20servicio%20nuevo."
+       target="_blank" rel="noopener">
+      <div class="post-hub__contact-text">
+        <h2 class="dash-card__title">¿Necesitás mantenimiento?</h2>
+        <p class="dash-card__desc">Si algo dejó de funcionar, querés un cambio que el panel no cubre, o necesitás un servicio nuevo, escribinos directo.</p>
+      </div>
+      <span class="btn btn--lime post-hub__contact-btn">Contactanos <span class="btn__arrow">→</span></span>
+    </a>
+
+  </div>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script>
+  document.getElementById('dashYear').textContent = new Date().getFullYear();
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    if (!cursors.length) return;
+    var on = true;
+    setInterval(function(){ on = !on; cursors.forEach(function(c){ c.classList.toggle('off', !on); }); }, 530);
+  })();
+
+  /* Spotlight lima que sigue al mouse (mismo mecanismo que index.html) —
+     tiene sentido acá porque las cards ahora son translúcidas y necesitan
+     algo de color detrás para notarse. */
+  (function spotlight(){
+    var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var spot = document.getElementById('spot');
+    if (!spot || REDUCED || window.matchMedia('(hover:none)').matches) return;
+
+    var root = document.documentElement;
+    var tx = window.innerWidth / 2, ty = window.innerHeight * .4;
+    var cx = tx, cy = ty, raf = null, idle = null;
+
+    window.addEventListener('pointermove', function(e){
+      tx = e.clientX; ty = e.clientY;
+      root.style.setProperty('--spot-op', '1');
+      if (!raf) raf = requestAnimationFrame(loop);
+      clearTimeout(idle);
+      idle = setTimeout(function(){ root.style.setProperty('--spot-op', '.55'); }, 2600);
+    }, { passive: true });
+
+    document.addEventListener('mouseleave', function(){ root.style.setProperty('--spot-op', '0'); });
+
+    function loop(){
+      cx += (tx - cx) * .085;
+      cy += (ty - cy) * .085;
+      root.style.setProperty('--mx', cx.toFixed(1) + 'px');
+      root.style.setProperty('--my', cy.toFixed(1) + 'px');
+      if (Math.abs(tx - cx) < .4 && Math.abs(ty - cy) < .4){ raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+  })();
+</script>
+</body>
+</html>

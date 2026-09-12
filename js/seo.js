@@ -7,10 +7,7 @@
 (function(){
   'use strict';
 
-  // TODO: reemplazar por la URL real una vez deployado el Worker en
-  // Cloudflare (Workers & Pages → Create Worker → pegar worker/seo-check.js
-  // → Deploy). La URL que te da Cloudflare va acá.
-  const WORKER_URL = 'https://seo-check.TU-SUBDOMINIO.workers.dev';
+  const WORKER_URL = 'https://seo-check.contact-deploystudio.workers.dev';
 
   const form        = document.getElementById('seoForm');
   const urlInput     = document.getElementById('seoUrl');
@@ -42,8 +39,14 @@
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    const url = urlInput.value.trim();
-    if (!url) return;
+    const raw = urlInput.value.trim();
+    if (!raw) return;
+
+    const url = normalizeUrl(raw);
+    if (!url){
+      showStatus('Esa URL no parece válida. Escribí algo como "tusitio.com" o "https://tusitio.com".', true);
+      return;
+    }
 
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'Analizando…';
@@ -61,13 +64,28 @@
         statusEl.hidden = true;
       })
       .catch(function(){
-        showStatus('No pudimos analizar esa URL. Revisá que esté bien escrita (con https://) y que el sitio esté online.', true);
+        showStatus('No pudimos analizar esa URL. Revisá que esté bien escrita y que el sitio esté online.', true);
       })
       .finally(function(){
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'Analizar <span class="btn__arrow">→</span>';
       });
   });
+
+  // Acepta "deploystudio.com.ar", "www.deploystudio.com.ar" o una URL
+  // completa con protocolo — si falta el protocolo, asumimos https.
+  function normalizeUrl(input){
+    let s = input.trim();
+    if (!s) return null;
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    try {
+      const u = new URL(s);
+      if (!u.hostname.includes('.')) return null;
+      return u.toString();
+    } catch (e) {
+      return null;
+    }
+  }
 
   function showStatus(msg, isError){
     statusEl.hidden = false;

@@ -3,32 +3,62 @@
    Hereda .dash-* de css/analiticas.css
    ═══════════════════════════════════════════════ */
 
-.dash-card--span4{grid-column:span 4}
+/* .dots viene calibrado a .58em para el tamaño gigante del h1 de home;
+   acá el h1 es bastante más chico (clamp 30-46px), así que a 1em se lee
+   igual de bien que el resto del título, sin quedar diminuto. */
+.dash-hero h1 .dots{font-size:1em}
 
-.post-hub__grid{margin-top:var(--gap-head)}
+.post-hub__grid{margin-top:var(--gap-head);margin-bottom:var(--sec)}
 
 .post-hub__card{
-  display:flex;flex-direction:column;
-  text-decoration:none;color:inherit;cursor:pointer;
+  display:flex;flex-direction:column;position:relative;z-index:1;
+  text-decoration:none;color:inherit;cursor:pointer;overflow:hidden;
+  background:rgba(255,255,255,.7);
   transition:border-color .25s var(--ease),transform .25s var(--ease);
   animation:dashCardIn .5s var(--ease) forwards;
 }
-.post-hub__card:hover{border-color:var(--ink);transform:translateY(-3px)}
+/* Línea lima que crece desde arriba al pasar el mouse — mismo lenguaje
+   del subrayado del .eyebrow, no un borde lateral de color. */
+.post-hub__card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--lime);transform:scaleX(0);transform-origin:left;
+  transition:transform .35s var(--ease);
+}
+.post-hub__card:hover{border-color:var(--lime);transform:translateY(-3px)}
+.post-hub__card:hover::before{transform:scaleX(1)}
 .post-hub__card:hover .btn__arrow{transform:translateX(4px)}
+.post-hub__card:hover .post-hub__go{color:var(--lime)}
 
 .post-hub__icon{
-  display:block;font-size:11px;color:var(--stone);margin-bottom:18px;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;margin-bottom:20px;
+  color:var(--ink);border:1px solid var(--mist);border-radius:var(--r);
+  transition:color .25s var(--ease),border-color .25s var(--ease);
 }
+.post-hub__icon svg{width:22px;height:22px}
+.post-hub__card:hover .post-hub__icon{color:var(--lime);border-color:var(--lime)}
 
 .post-hub__card .dash-card__title{margin-bottom:12px}
 .post-hub__card .dash-card__desc{margin-bottom:24px;flex:1}
 
 .post-hub__go{
   display:inline-flex;align-items:center;gap:8px;
-  font-size:12.5px;color:var(--ink);
+  font-size:12.5px;color:var(--ink);transition:color .25s var(--ease);
 }
 .post-hub__go .btn__arrow{display:inline-block;transition:transform .3s var(--ease)}
 
-@media (max-width:900px){
-  .dash-card--span4{grid-column:span 12}
+/* ══════════════ BANNER DE CONTACTO ══════════════
+   Mismo componente .post-hub__card (mismo fondo translúcido, mismo
+   hover), pero en fila (no columna) y de ancho completo — el lima queda
+   solo en el botón "Contactanos" (.btn--lime), como en el resto del
+   sitio, no en el fondo de la card entera. */
+.post-hub__contact{
+  flex-direction:row;align-items:center;justify-content:space-between;
+  gap:24px;flex-wrap:wrap;
+}
+.post-hub__contact .dash-card__desc{margin-bottom:0;max-width:56ch;flex:none}
+.post-hub__contact-btn{flex-shrink:0}
+
+@media (max-width:560px){
+  .post-hub__contact{flex-direction:column;align-items:flex-start}
 }

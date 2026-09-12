@@ -13,16 +13,28 @@
    4. Copiá esa URL y pegala en WORKER_URL, arriba de js/seo.js.
    ═══════════════════════════════════════════════ */
 
-// Dominio desde el que se puede llamar a este Worker. Cambiar si el sitio
-// se sirve desde otro dominio.
-const ALLOWED_ORIGIN = 'https://deploystudio.com.ar';
+// Orígenes desde los que se puede llamar a este Worker: el sitio real, más
+// localhost/127.0.0.1 en cualquier puerto (dev-server.js, Vite, Live
+// Server, lo que sea) para poder probar en desarrollo sin deployar cada
+// vez. Nunca poner "*" acá — dejaría que cualquier otro sitio use el
+// Worker gratis y coma la cuota de Cloudflare.
+const PRODUCTION_ORIGIN = 'https://deploystudio.com.ar';
+const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+
+function isAllowedOrigin(origin){
+  return origin === PRODUCTION_ORIGIN || LOCALHOST_ORIGIN.test(origin);
+}
 
 export default {
   async fetch(request) {
+    const origin = request.headers.get('Origin') || '';
+    const allowOrigin = isAllowedOrigin(origin) ? origin : PRODUCTION_ORIGIN;
+
     const headers = {
-      'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+      'Access-Control-Allow-Origin': allowOrigin,
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Content-Type': 'application/json; charset=utf-8',
+      'Vary': 'Origin',
     };
 
     if (request.method === 'OPTIONS') {
@@ -54,9 +66,19 @@ export default {
 };
 
 async function analyze(parsed) {
+  const startedAt = Date.now();
   const pageRes = await fetch(parsed.toString(), { redirect: 'follow' });
+  const ttfbMs = Date.now() - startedAt;
+
   const contentType = pageRes.headers.get('content-type') || '';
   if (!contentType.includes('text/html')) throw new Error('not-html');
+
+  // Cabeceras para los chequeos de performance — hay que leerlas ANTES de
+  // consumir el body con HTMLRewriter (después ya no son confiables en
+  // todos los runtimes de Workers).
+  const contentEncoding = pageRes.headers.get('content-encoding') || '';
+  const cacheControl = pageRes.headers.get('cache-control') || '';
+  const declaredLength = pageRes.headers.get('content-length');
 
   const data = {
     title: null,
@@ -72,14 +94,24 @@ async function analyze(parsed) {
     structuredData: false,
     imgTotal: 0,
     imgWithAlt: 0,
+    imgWithDims: 0,
+    headScriptsBlocking: 0,
+    headStylesheets: 0,
   };
 
   let capturingTitle = false;
   let capturingH1 = false;
+  let inHead = false;
 
   const rewriter = new HTMLRewriter()
     .on('html', {
       element(el) { data.lang = el.getAttribute('lang'); },
+    })
+    .on('head', {
+      element(el) {
+        inHead = true;
+        el.onEndTag(() => { inHead = false; });
+      },
     })
     .on('title', {
       element() { capturingTitle = true; data.title = ''; },
@@ -111,12 +143,28 @@ async function analyze(parsed) {
         data.imgTotal++;
         const alt = el.getAttribute('alt');
         if (alt && alt.trim()) data.imgWithAlt++;
+        if (el.getAttribute('width') && el.getAttribute('height')) data.imgWithDims++;
       },
+    })
+    // Selectores simples (sin combinador "head X"): filtramos por inHead
+    // nosotros mismos adentro, en vez de depender de que el motor de
+    // selectores de HTMLRewriter soporte combinadores descendientes.
+    .on('script[src]', {
+      element(el) {
+        if (inHead && el.getAttribute('async') == null && el.getAttribute('defer') == null && el.getAttribute('type') !== 'module') {
+          data.headScriptsBlocking++;
+        }
+      },
+    })
+    .on('link[rel=stylesheet]', {
+      element() { if (inHead) data.headStylesheets++; },
     });
 
   // HTMLRewriter transforma en streaming: hay que consumir la respuesta
-  // (.text()) para que dispare los handlers de arriba sobre todo el HTML.
-  await rewriter.transform(pageRes).text();
+  // (.text()) para que dispare los handlers de arriba sobre todo el HTML,
+  // y de paso nos da el peso real del documento si content-length no vino.
+  const bodyText = await rewriter.transform(pageRes).text();
+  const htmlBytes = declaredLength ? parseInt(declaredLength, 10) : new TextEncoder().encode(bodyText).length;
 
   const [robotsOk, sitemapOk] = await Promise.all([
     checkExists(parsed, '/robots.txt'),
@@ -149,6 +197,19 @@ async function analyze(parsed) {
       sitemapXml: { ok: sitemapOk },
       structuredData: { ok: data.structuredData },
       lang: { ok: !!data.lang, value: data.lang },
+    },
+    performance: {
+      ttfb: { ok: ttfbMs < 600, ms: ttfbMs },
+      compression: { ok: /br|gzip|deflate/i.test(contentEncoding), value: contentEncoding || 'ninguna' },
+      pageWeight: { ok: htmlBytes < 150000, bytes: htmlBytes, kb: Math.round(htmlBytes / 1024) },
+      caching: { ok: /max-age=[1-9]|public/i.test(cacheControl), value: cacheControl || 'sin configurar' },
+      blockingScripts: { ok: data.headScriptsBlocking === 0, count: data.headScriptsBlocking },
+      imageDimensions: {
+        ok: data.imgTotal === 0 || data.imgWithDims === data.imgTotal,
+        total: data.imgTotal,
+        withDims: data.imgWithDims,
+        pct: data.imgTotal ? Math.round((data.imgWithDims / data.imgTotal) * 100) : 100,
+      },
     },
   };
 }

@@ -1,0 +1,26 @@
+/* ═══════════════════════════════════════════════
+   404 — página no encontrada
+   ═══════════════════════════════════════════════ */
+
+body.err{overflow-x:hidden}
+
+.err-main{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;
+  padding:var(--pad);position:relative;z-index:1;
+}
+
+.err-main .logo{margin-bottom:56px}
+
+.err-code{
+  font-size:13px;color:var(--stone);letter-spacing:.06em;margin-bottom:18px;
+}
+
+.err-title{
+  font-size:clamp(32px,5vw,52px);font-weight:700;letter-spacing:-.03em;
+  line-height:1.1;margin-bottom:16px;
+}
+
+.err-sub{
+  font-size:15.5px;color:#4d4d4d;max-width:48ch;margin-bottom:40px;
+}

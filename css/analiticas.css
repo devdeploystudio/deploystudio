@@ -11,7 +11,6 @@ body.dash{overflow-x:hidden}
   padding:20px var(--pad);
   border-bottom:1px solid var(--mist);
 }
-.dash-header__links{display:flex;align-items:center;gap:20px}
 .dash-back{
   font-size:13px;color:var(--stone);transition:color .25s var(--ease);
 }
@@ -27,11 +26,16 @@ body.dash{overflow-x:hidden}
 .dash-main{max-width:var(--max);margin-inline:auto;padding:0 var(--pad)}
 
 .dash-hero{padding:var(--sec) 0 0}
+.dash-hero__back{
+  display:block;font-size:12.5px;color:var(--stone);
+  margin-bottom:16px;transition:color .25s var(--ease);
+}
+.dash-hero__back:hover{color:var(--ink)}
 .dash-hero h1{
   font-size:clamp(30px,4.2vw,46px);font-weight:700;
   letter-spacing:-.03em;line-height:1.08;margin-bottom:16px;
 }
-.dash-hero__sub{max-width:56ch;color:#4d4d4d;font-size:15.5px}
+.dash-hero__sub{max-width:75ch;color:#4d4d4d;font-size:15.5px}
 
 /* ══════════════ UPLOAD ══════════════ */
 .dash-upload{padding:var(--gap-head) 0 var(--sec)}
@@ -71,7 +75,7 @@ body.dash{overflow-x:hidden}
 .dash-instructions summary::before{content:'+ ';color:var(--lime)}
 .dash-instructions[open] summary::before{content:'− '}
 .dash-instructions__body{padding-top:16px;color:#4d4d4d}
-.dash-instructions__body p{margin-bottom:12px;max-width:64ch}
+.dash-instructions__body p{margin-bottom:12px;max-width:75ch}
 .dash-instructions__body ol{padding-left:20px;display:flex;flex-direction:column;gap:12px}
 .dash-instructions__body strong{color:var(--ink)}
 .dash-instructions__video-label{margin-top:8px}
@@ -87,7 +91,7 @@ body.dash{overflow-x:hidden}
   background:var(--paper);border:1px solid var(--ink);
   border-radius:var(--r);
 }
-.dash-warning__text{font-size:13.5px;color:#333;margin-bottom:14px;max-width:64ch;overflow-wrap:break-word}
+.dash-warning__text{font-size:13.5px;color:#333;margin-bottom:14px;max-width:75ch;overflow-wrap:break-word}
 .dash-warning__actions{display:flex;gap:10px;flex-wrap:wrap}
 
 /* ══════════════ GLOSARIO (dentro de una card) ══════════════ */
