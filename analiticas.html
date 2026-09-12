@@ -29,67 +29,79 @@
   <a href="index.html" class="logo" aria-label="deploy - inicio">
     <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
   </a>
-  <a href="index.html" class="dash-back mono">← Volver al sitio</a>
+  <nav class="dash-header__links mono">
+    <a href="post-deploy.html" class="dash-back">← Volver al panel</a>
+    <a href="index.html" class="dash-back">Volver al sitio</a>
+  </nav>
 </header>
 
 <main class="dash-main">
 
-  <div class="dash-narrow">
-    <!-- ══════════════ INTRO ══════════════ -->
-    <section class="dash-hero">
-      <span class="eyebrow mono">— Analíticas</span>
-      <h1>Tus métricas, en palabras simples</h1>
-      <p class="dash-hero__sub">
-        Subí los archivos que exportaste de Google Analytics y te devolvemos
-        un resumen fácil de leer, con los números que más importan para tu
-        negocio.
-      </p>
-    </section>
+  <!-- ══════════════ INTRO ══════════════ -->
+  <section class="dash-hero">
+    <span class="eyebrow mono">— Analíticas</span>
+    <h1>Tus métricas, en palabras simples</h1>
+    <p class="dash-hero__sub">
+      Subí los archivos que exportaste de Google Analytics y te devolvemos
+      un resumen fácil de leer, con los números que más importan para tu
+      negocio.
+    </p>
+  </section>
 
-    <!-- ══════════════ CARGA DE ARCHIVOS ══════════════ -->
-    <section class="dash-upload" id="dashUpload">
-      <div class="dash-upload__zone" id="dashDropzone" tabindex="0" role="button"
-           aria-label="Subir archivos CSV de Google Analytics">
-        <svg class="dash-upload__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <path d="M24 6v24M24 6l-9 9M24 6l9 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M8 32v6a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <p class="dash-upload__title">Arrastrá tus CSV acá</p>
-        <p class="dash-upload__hint mono">o hacé clic para elegir los archivos</p>
-        <input type="file" id="dashFileInput" accept=".csv" multiple hidden />
+  <!-- ══════════════ CARGA DE ARCHIVOS ══════════════ -->
+  <section class="dash-upload" id="dashUpload">
+    <div class="dash-upload__zone" id="dashDropzone" tabindex="0" role="button"
+         aria-label="Subir archivos CSV de Google Analytics">
+      <svg class="dash-upload__icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M24 6v24M24 6l-9 9M24 6l9 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 32v6a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p class="dash-upload__title">Arrastrá tus CSV acá</p>
+      <p class="dash-upload__hint mono">o hacé clic para elegir los archivos</p>
+      <input type="file" id="dashFileInput" accept=".csv" multiple hidden />
+    </div>
+
+    <div class="dash-upload__status mono" id="dashStatus" hidden></div>
+
+    <div class="dash-warning" id="dashWarning" hidden>
+      <p class="dash-warning__text" id="dashWarningText"></p>
+      <div class="dash-warning__actions">
+        <button class="btn btn--lime btn--sm" id="dashWarningContinue">Continuar igual</button>
+        <button class="btn btn--ghost btn--sm" id="dashWarningIgnore">Ignorar esos archivos</button>
       </div>
+    </div>
 
-      <div class="dash-upload__status mono" id="dashStatus" hidden></div>
+    <details class="dash-instructions">
+      <summary class="mono">¿Cómo exporto los datos de Google Analytics?</summary>
+      <div class="dash-instructions__body">
+        <p>Entrá a <strong>analytics.google.com</strong> con el mail que te dimos acceso. En el menú de la izquierda vas a ver varias secciones (Generar oportunidades de venta, Conocer el tráfico, Ver la interacción y la retención, Tecnología, etc.). Entrá a cada una, quedate en su <strong>"Resumen"</strong> (la pantalla que aparece de entrada) y exportalo:</p>
+        <ol>
+          <li>Arriba a la derecha de la pantalla, ícono de <strong>compartir este informe</strong>.</li>
+          <li><strong>Descargar archivo</strong> → <strong>CSV</strong>.</li>
+          <li>Repetí lo mismo en cada sección del menú que tengas disponible.</li>
+        </ol>
+        <p>No hace falta que sean todas ni en un orden particular, subilas juntas o de a una: la página reconoce sola qué trae cada archivo.</p>
 
-      <div class="dash-warning" id="dashWarning" hidden>
-        <p class="dash-warning__text" id="dashWarningText"></p>
-        <div class="dash-warning__actions">
-          <button class="btn btn--lime btn--sm" id="dashWarningContinue">Continuar igual</button>
-          <button class="btn btn--ghost btn--sm" id="dashWarningIgnore">Ignorar esos archivos</button>
+        <p class="dash-instructions__video-label"><strong>¿Preferís verlo en video?</strong></p>
+        <div class="dash-instructions__video">
+          <!-- TODO: reemplazar VIDEO_ID por el ID del video de YouTube/Vimeo
+               explicando cómo exportar los datos de Analytics. -->
+          <iframe
+            src="https://www.youtube.com/embed/VIDEO_ID"
+            title="Cómo exportar los datos de Google Analytics"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
         </div>
       </div>
-
-      <details class="dash-instructions">
-        <summary class="mono">¿Cómo exporto los datos de Google Analytics?</summary>
-        <div class="dash-instructions__body">
-          <p>Entrá a <strong>analytics.google.com</strong> con el mail que te dimos acceso. En el menú de la izquierda vas a ver varias secciones (Generar oportunidades de venta, Conocer el tráfico, Ver la interacción y la retención, Tecnología, etc.). Entrá a cada una, quedate en su <strong>"Resumen"</strong> (la pantalla que aparece de entrada) y exportalo:</p>
-          <ol>
-            <li>Arriba a la derecha de la pantalla, ícono de <strong>compartir este informe</strong>.</li>
-            <li><strong>Descargar archivo</strong> → <strong>CSV</strong>.</li>
-            <li>Repetí lo mismo en cada sección del menú que tengas disponible.</li>
-          </ol>
-          <p>No hace falta que sean todas ni en un orden particular, subilas juntas o de a una: la página reconoce sola qué trae cada archivo.</p>
-        </div>
-      </details>
-    </section>
-  </div>
+    </details>
+  </section>
 
   <!-- ══════════════ RESULTADOS ══════════════ -->
   <section class="dash-results" id="dashResults" hidden>
 
-    <div class="dash-narrow">
-      <div class="dash-summary" id="dashSummary"></div>
-    </div>
+    <div class="dash-summary" id="dashSummary"></div>
 
     <div class="dash-kpis" id="dashKpis"></div>
 
@@ -185,11 +197,9 @@
 
     </div>
 
-    <div class="dash-narrow">
-      <button class="btn btn--ghost btn--sm dash-reset" id="dashReset">
-        Cargar otros archivos
-      </button>
-    </div>
+    <button class="btn btn--ghost btn--sm dash-reset" id="dashReset">
+      Cargar otros archivos
+    </button>
   </section>
 
 </main>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chequeo de SEO | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/analiticas.css" />
+<link rel="stylesheet" href="css/seo.css" />
+
+</head>
+<body class="dash">
+
+<!-- ══════════════ HEADER LIVIANO ══════════════ -->
+<header class="dash-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <nav class="dash-header__links mono">
+    <a href="post-deploy.html" class="dash-back">← Volver al panel</a>
+    <a href="index.html" class="dash-back">Volver al sitio</a>
+  </nav>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <span class="eyebrow mono">— SEO</span>
+    <h1>¿Cómo está el SEO de tu sitio?</h1>
+    <p class="dash-hero__sub">
+      Pegá la URL de tu sitio y revisamos, en palabras simples, si está
+      preparado para que Google lo entienda y lo muestre bien.
+    </p>
+  </section>
+
+  <section class="seo-form">
+    <form id="seoForm" class="seo-form__row">
+      <input
+        type="url"
+        id="seoUrl"
+        class="seo-form__input mono"
+        placeholder="https://tusitio.com"
+        required
+      />
+      <button type="submit" class="btn btn--lime" id="seoSubmit">
+        Analizar <span class="btn__arrow">→</span>
+      </button>
+    </form>
+    <div class="dash-upload__status mono" id="seoStatus" hidden></div>
+  </section>
+
+  <!-- ══════════════ RESULTADOS ══════════════ -->
+  <section class="seo-results" id="seoResults" hidden>
+
+    <div class="dash-summary" id="seoSummary"></div>
+
+    <div class="seo-checklist" id="seoChecklist"></div>
+
+    <button class="btn btn--ghost btn--sm dash-reset" id="seoReset">
+      Analizar otra URL
+    </button>
+  </section>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script src="js/seo.js" defer></script>
+</body>
+</html>

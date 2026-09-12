@@ -11,18 +11,20 @@ body.dash{overflow-x:hidden}
   padding:20px var(--pad);
   border-bottom:1px solid var(--mist);
 }
+.dash-header__links{display:flex;align-items:center;gap:20px}
 .dash-back{
   font-size:13px;color:var(--stone);transition:color .25s var(--ease);
 }
 .dash-back:hover{color:var(--ink)}
 
 /* ══════════════ ANCHO ══════════════
-   El shell (header/footer) y el grid de resultados usan el ancho
-   completo del sitio (--max), igual que index.html. Solo la intro de
-   texto (hero + carga de archivos + resumen) se recorta a un ancho de
-   lectura cómodo — es la única parte que es prosa, no datos. */
+   Todo el contenido (intro, carga de archivos, resultados) usa el mismo
+   ancho completo del sitio (--max), igual que index.html. Los párrafos
+   largos individuales limitan su propio ancho en "ch" para que no se
+   vuelvan incómodos de leer en una pantalla ancha — eso es un límite de
+   tipografía, no de layout, así que vive en el elemento de texto, no en
+   un contenedor que angoste toda la sección. */
 .dash-main{max-width:var(--max);margin-inline:auto;padding:0 var(--pad)}
-.dash-narrow{max-width:720px;margin-inline:auto}
 
 .dash-hero{padding:var(--sec) 0 0}
 .dash-hero h1{
@@ -72,6 +74,12 @@ body.dash{overflow-x:hidden}
 .dash-instructions__body p{margin-bottom:12px;max-width:64ch}
 .dash-instructions__body ol{padding-left:20px;display:flex;flex-direction:column;gap:12px}
 .dash-instructions__body strong{color:var(--ink)}
+.dash-instructions__video-label{margin-top:8px}
+.dash-instructions__video{
+  position:relative;width:100%;max-width:520px;padding-top:56.25%; /* 16:9, el % es siempre sobre el ancho, no cambia con max-width */
+  background:var(--ink);border-radius:var(--r);overflow:hidden;
+}
+.dash-instructions__video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 
 /* ══════════════ AVISO (archivo que no es un Resumen) ══════════════ */
 .dash-warning{

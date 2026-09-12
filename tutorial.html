@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Video tutorial | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/analiticas.css" />
+<link rel="stylesheet" href="css/tutorial.css" />
+
+</head>
+<body class="dash">
+
+<!-- ══════════════ HEADER LIVIANO ══════════════ -->
+<header class="dash-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <nav class="dash-header__links mono">
+    <a href="post-deploy.html" class="dash-back">← Volver al panel</a>
+    <a href="index.html" class="dash-back">Volver al sitio</a>
+  </nav>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <span class="eyebrow mono">— Tutorial</span>
+    <h1>Cómo usar el panel</h1>
+    <p class="dash-hero__sub">
+      Un video corto mostrando dónde entrar, qué subir y cómo leer cada
+      devolución del panel.
+    </p>
+  </section>
+
+  <section class="tutorial-video">
+    <div class="tutorial-video__frame">
+      <!-- TODO: reemplazar VIDEO_ID por el ID del video de YouTube/Vimeo
+           subido como "oculto"/"no listado". Ejemplo YouTube:
+           https://www.youtube.com/embed/VIDEO_ID -->
+      <iframe
+        src="https://www.youtube.com/embed/VIDEO_ID"
+        title="Cómo usar el panel de Deploy Studio"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+  </section>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script>
+  document.getElementById('dashYear').textContent = new Date().getFullYear();
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    if (!cursors.length) return;
+    var on = true;
+    setInterval(function(){ on = !on; cursors.forEach(function(c){ c.classList.toggle('off', !on); }); }, 530);
+  })();
+</script>
+</body>
+</html>

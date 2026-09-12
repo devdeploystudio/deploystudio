@@ -29,6 +29,16 @@
 
 const PROYECTOS = [
   {
+    nombre: "TERRA",
+    categoria: "Sitio institucional",
+    anio: "2026",
+    desc: "Estudio de arquitectura enfocado en viviendas de autor. Sitio institucional con fotografía a pantalla completa y una tipografía editorial que acompaña la estética atemporal de los espacios que diseñan.",
+    tags: ["Arquitectura", "Fotografía a pantalla completa", "Diseño editorial", "Formulario de contacto"],
+    url: "https://devdeploystudio.github.io/terra-arquitectura/",
+    imagen: "img/proyectos/terra.jpg",
+    mock: "landing"
+  },
+  {
     nombre: "EPSILON",
     categoria: "Sitio institucional",
     anio: "2026",
