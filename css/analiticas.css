@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   /analiticas — devolución de Google Analytics
+   /analiticas - devolución de Google Analytics
    Hereda variables y reset de css/styles.css
    ═══════════════════════════════════════════════ */
 
@@ -20,7 +20,7 @@ body.dash{overflow-x:hidden}
    Todo el contenido (intro, carga de archivos, resultados) usa el mismo
    ancho completo del sitio (--max), igual que index.html. Los párrafos
    largos individuales limitan su propio ancho en "ch" para que no se
-   vuelvan incómodos de leer en una pantalla ancha — eso es un límite de
+   vuelvan incómodos de leer en una pantalla ancha - eso es un límite de
    tipografía, no de layout, así que vive en el elemento de texto, no en
    un contenedor que angoste toda la sección. */
 .dash-main{max-width:var(--max);margin-inline:auto;padding:0 var(--pad)}
@@ -64,7 +64,11 @@ body.dash{overflow-x:hidden}
 .dash-upload__status.is-ok{border-color:var(--lime);color:#4d4d4d}
 
 /* ══════════════ INSTRUCCIONES (details) ══════════════ */
-.dash-instructions{margin-top:22px;font-size:14px}
+/* margin-top:0 porque ahora es el primer elemento de .dash-upload (antes
+   iba después del dropzone, por eso solo tenía margen arriba); el margen
+   que hace falta ahora es ABAJO, para separarlo de la zona de carga que
+   le sigue. */
+.dash-instructions{margin:0 0 32px;font-size:14px}
 .dash-instructions summary{
   cursor:pointer;color:var(--ink);font-size:12.5px;
   text-transform:uppercase;letter-spacing:.08em;
@@ -75,9 +79,15 @@ body.dash{overflow-x:hidden}
 .dash-instructions summary::before{content:'+ ';color:var(--lime)}
 .dash-instructions[open] summary::before{content:'− '}
 .dash-instructions__body{padding-top:16px;color:#4d4d4d}
-.dash-instructions__body p{margin-bottom:12px;max-width:75ch}
+.dash-instructions__body p{margin-bottom:12px}
 .dash-instructions__body ol{padding-left:20px;display:flex;flex-direction:column;gap:12px}
 .dash-instructions__body strong{color:var(--ink)}
+/* Lima solo en un par de palabras sueltas clave (ver .hl en el HTML), no
+   en frases largas: lima sobre el fondo del sitio da ~1.5:1 de contraste
+   (el mínimo aceptable para texto es 4.5:1), así que como acento en una
+   palabra corta y reconocible es aceptable, pero ilegible si se usa para
+   un renglón entero. */
+.dash-instructions__body strong.hl{color:var(--lime)}
 .dash-instructions__video-label{margin-top:8px}
 .dash-instructions__video{
   position:relative;width:100%;max-width:520px;padding-top:56.25%; /* 16:9, el % es siempre sobre el ancho, no cambia con max-width */
@@ -148,7 +158,7 @@ body.dash{overflow-x:hidden}
 
 .dash-card{
   border:1px solid var(--mist);border-radius:var(--r);
-  padding:26px 28px;background:var(--paper);
+  padding:26px 28px;background:rgba(255,255,255,.7);
   opacity:0;transform:translateY(10px);
   animation:dashCardIn .5s var(--ease) forwards;
 }
@@ -158,6 +168,10 @@ body.dash{overflow-x:hidden}
 .dash-card--hero .dash-bar__label{color:var(--paper)}
 .dash-card--hero .dash-bar__value{color:#c7c7c7}
 .dash-card--hero .dash-bar__track rect:first-child{fill:#2a2a2a}
+.dash-card--hero .dash-glossary summary{color:var(--paper)}
+.dash-card--hero .dash-glossary summary:hover{color:var(--lime)}
+.dash-card--hero .dash-glossary__list{color:#b8b8b8}
+.dash-card--hero .dash-glossary__list strong{color:var(--paper)}
 
 @keyframes dashCardIn{to{opacity:1;transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){
@@ -215,6 +229,13 @@ body.dash{overflow-x:hidden}
 }
 .dash-split__labels{display:flex;justify-content:space-between;font-size:12.5px;color:#4d4d4d}
 .dash-split__labels b{color:var(--ink);font-weight:600}
+
+/* ══════════════ LÍNEA DE TENDENCIA (usuarios activos por día) ══════════════ */
+.dash-line__svg{width:100%;height:120px;display:block}
+.dash-line__labels{
+  display:flex;justify-content:space-between;margin-top:8px;
+  font-size:11.5px;color:var(--stone);
+}
 
 /* ══════════════ PANEL DE DETALLE (país / ciudad / SO / navegador / idioma) ══════════════
    Datos secundarios: se agrupan en una sola card, en columnas angostas

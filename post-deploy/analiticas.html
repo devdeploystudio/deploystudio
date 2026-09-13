@@ -36,8 +36,8 @@
 
   <!-- ══════════════ INTRO ══════════════ -->
   <section class="dash-hero">
-    <a href="../index.html" class="dash-hero__back mono">← Volver al panel</a>
-    <span class="eyebrow mono">— Analíticas</span>
+    <a href="index.html" class="dash-hero__back mono">← Volver al panel</a>
+    <span class="eyebrow mono">- Analíticas</span>
     <h1>Tus métricas, en palabras simples</h1>
     <p class="dash-hero__sub">
       Subí los archivos que exportaste de Google Analytics y te devolvemos
@@ -51,10 +51,10 @@
     <details class="dash-instructions">
       <summary class="mono">¿Cómo exporto los datos de Google Analytics?</summary>
       <div class="dash-instructions__body">
-        <p>Entrá a <strong>analytics.google.com</strong> con el mail que te dimos acceso. En el menú de la izquierda vas a ver varias secciones (Generar oportunidades de venta, Conocer el tráfico, Ver la interacción y la retención, Tecnología, etc.). Entrá a cada una, quedate en su <strong>"Resumen"</strong> (la pantalla que aparece de entrada) y exportalo:</p>
+        <p>Entrá a <strong>analytics.google.com</strong> con el mail que te dimos acceso. En el menú de la izquierda vas a ver varias secciones (Generar oportunidades de venta, Conocer el tráfico, Ver la interacción y la retención, Tecnología, etc.). Entrá a cada una, quedate en su <strong class="hl">"Resumen"</strong> (la pantalla que aparece de entrada) y exportalo:</p>
         <ol>
           <li>Arriba a la derecha de la pantalla, ícono de <strong>compartir este informe</strong>.</li>
-          <li><strong>Descargar archivo</strong> → <strong>CSV</strong>.</li>
+          <li><strong>Descargar archivo</strong> → <strong class="hl">CSV</strong>.</li>
           <li>Repetí lo mismo en cada sección del menú que tengas disponible.</li>
         </ol>
         <p>No hace falta que sean todas ni en un orden particular, subilas juntas o de a una: la página reconoce sola qué trae cada archivo.</p>
@@ -105,13 +105,22 @@
 
     <div class="dash-grid">
 
-      <!-- Fila 1: lo más importante — acciones de contacto (grande) + dispositivo (dona) -->
+      <!-- Fila 1: lo más importante - acciones de contacto (grande) + dispositivo (dona) -->
       <article class="dash-card dash-card--hero dash-card--span7" id="dashChartEvents" hidden>
         <header class="dash-card__head">
           <h2 class="dash-card__title">Acciones de contacto</h2>
           <p class="dash-card__desc">Cuántas veces tocaron un botón para contactarte. Es lo más importante de todo: mide gente que quiso hablar con vos, no solo que miró la página.</p>
         </header>
         <div class="dash-bars dash-bars--lg"></div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada acción?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>Clics a WhatsApp / Instagram / email</strong> - tocó ese link puntual para contactarte por esa vía.</li>
+            <li><strong>Formularios iniciados</strong> - empezó a completar el formulario, pero eso solo no significa que lo haya terminado ni enviado.</li>
+            <li><strong>Formularios enviados</strong> - completó el formulario y lo envió con éxito. Es la más importante: significa que te dejó sus datos para que lo contactes.</li>
+            <li><strong>Clics de navegación</strong> - tocó un link del menú para moverse por el sitio, no necesariamente para contactarte.</li>
+          </ul>
+        </details>
       </article>
 
       <article class="dash-card dash-card--span5" id="dashChartDevice" hidden>
@@ -120,9 +129,17 @@
           <p class="dash-card__desc">Si entran desde el celular o la computadora. Si la mayoría es celular, priorizá que todo se vea perfecto ahí.</p>
         </header>
         <div class="dash-donut"></div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada categoría?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>desktop</strong> - entró desde una computadora de escritorio o notebook.</li>
+            <li><strong>mobile</strong> - entró desde el celular.</li>
+            <li><strong>tablet</strong> - entró desde una tablet.</li>
+          </ul>
+        </details>
       </article>
 
-      <!-- Fila 2: rankings — tráfico + páginas -->
+      <!-- Fila 2: rankings - tráfico + páginas -->
       <article class="dash-card dash-card--span6" id="dashChartTraffic" hidden>
         <header class="dash-card__head">
           <h2 class="dash-card__title">Fuentes de tráfico</h2>
@@ -132,14 +149,14 @@
         <details class="dash-glossary">
           <summary class="mono">¿Qué significa cada canal?</summary>
           <ul class="dash-glossary__list">
-            <li><strong>Direct</strong> — escribieron tu web directamente o la tenían guardada.</li>
-            <li><strong>Organic Social</strong> — llegaron desde una red social, sin publicidad paga.</li>
-            <li><strong>Organic Search</strong> — te buscaron en Google u otro buscador.</li>
-            <li><strong>Paid Search</strong> — vinieron de un anuncio pago en un buscador (Google Ads).</li>
-            <li><strong>Paid Social</strong> — vinieron de un anuncio pago en redes sociales.</li>
-            <li><strong>Referral</strong> — llegaron con un link desde otro sitio web.</li>
-            <li><strong>Email</strong> — llegaron desde un link en un mail.</li>
-            <li><strong>Unassigned</strong> — Google no pudo identificar de dónde vinieron.</li>
+            <li><strong>Direct</strong> - escribieron tu web directamente o la tenían guardada.</li>
+            <li><strong>Organic Social</strong> - llegaron desde una red social, sin publicidad paga.</li>
+            <li><strong>Organic Search</strong> - te buscaron en Google u otro buscador.</li>
+            <li><strong>Paid Search</strong> - vinieron de un anuncio pago en un buscador (Google Ads).</li>
+            <li><strong>Paid Social</strong> - vinieron de un anuncio pago en redes sociales.</li>
+            <li><strong>Referral</strong> - llegaron con un link desde otro sitio web.</li>
+            <li><strong>Email</strong> - llegaron desde un link en un mail.</li>
+            <li><strong>Unassigned</strong> - Google no pudo identificar de dónde vinieron.</li>
           </ul>
         </details>
       </article>
@@ -161,13 +178,54 @@
           </div>
         </header>
         <div class="dash-split"></div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada categoría?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>Nuevos</strong> - es la primera vez que esa persona entra a tu sitio, según lo que Google Analytics tiene registrado.</li>
+            <li><strong>Recurrentes</strong> - ya te había visitado antes, en cualquier momento anterior (no solo en este período que estás mirando).</li>
+          </ul>
+        </details>
+      </article>
+
+      <!-- Fila 3b: tendencia diaria de usuarios activos, línea de ancho completo -->
+      <article class="dash-card dash-card--span12" id="dashChartTrend" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Tendencia de visitas</h2>
+          <p class="dash-card__desc">Cómo varió día a día la cantidad de usuarios activos en el período. Te sirve para ver si vas creciendo o si hubo un pico puntual (una campaña, una publicación, etc.).</p>
+        </header>
+        <div class="dash-line"></div>
+      </article>
+
+      <!-- Fila 3c: ventas y embudo de leads - condicionales, solo si el negocio los usa -->
+      <article class="dash-card dash-card--span6" id="dashChartEcommerce" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Ventas</h2>
+          <p class="dash-card__desc">Resumen de tu tienda online en este período.</p>
+        </header>
+        <div class="dash-mini"></div>
+      </article>
+
+      <article class="dash-card dash-card--span6" id="dashChartLeads" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Clientes potenciales</h2>
+          <p class="dash-card__desc">De la gente que dejó sus datos, cuántos avanzaron en el proceso de venta.</p>
+        </header>
+        <div class="dash-bars"></div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada etapa?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>Nuevos</strong> - dejó sus datos por primera vez (completó y envió el formulario de contacto).</li>
+            <li><strong>Cualificados</strong> - alguien del equipo de ventas revisó el contacto y confirmó que es un cliente potencial real.</li>
+            <li><strong>Convertidos</strong> - ese cliente potencial terminó comprando o contratando.</li>
+          </ul>
+        </details>
       </article>
 
       <!-- Fila 4: datos secundarios / técnicos, agrupados y compactos -->
       <article class="dash-card dash-card--span12 dash-card--detail" id="dashDetailPanel" hidden>
         <header class="dash-card__head">
           <h2 class="dash-card__title">Más datos técnicos</h2>
-          <p class="dash-card__desc">País, ciudad, sistema operativo, navegador e idioma de tus visitantes. Útiles como referencia, no hace falta actuar sobre esto.</p>
+          <p class="dash-card__desc">País, ciudad, sistema operativo, navegador, idioma, plataforma y resolución de pantalla de tus visitantes. Útiles como referencia, no hace falta actuar sobre esto.</p>
         </header>
         <div class="dash-detail-grid">
           <div class="dash-detail" id="dashDetailCountry" hidden>
@@ -190,7 +248,26 @@
             <h3 class="dash-detail__title mono">Idioma</h3>
             <div class="dash-mini"></div>
           </div>
+          <div class="dash-detail" id="dashDetailPlatform" hidden>
+            <h3 class="dash-detail__title mono">Plataforma</h3>
+            <div class="dash-mini"></div>
+          </div>
+          <div class="dash-detail" id="dashDetailScreenRes" hidden>
+            <h3 class="dash-detail__title mono">Resolución de pantalla</h3>
+            <div class="dash-mini"></div>
+          </div>
         </div>
+        <details class="dash-glossary">
+          <summary class="mono">¿Qué significa cada dato?</summary>
+          <ul class="dash-glossary__list">
+            <li><strong>País / Ciudad</strong> - ubicación aproximada del visitante según su conexión a internet. No siempre es exacta.</li>
+            <li><strong>Sistema operativo</strong> - el sistema del dispositivo que usó para entrar (Windows, iOS, Android, etc.).</li>
+            <li><strong>Navegador</strong> - el programa que usó para entrar a tu sitio (Chrome, Safari, etc.).</li>
+            <li><strong>Idioma</strong> - el idioma configurado en su dispositivo, no necesariamente el idioma que habla.</li>
+            <li><strong>Plataforma</strong> - si entró desde la web, la app de iOS o la app de Android (solo aplica si tenés una app además del sitio).</li>
+            <li><strong>Resolución de pantalla</strong> - el tamaño de pantalla del dispositivo que usó. Es un dato técnico, no hace falta actuar sobre esto.</li>
+          </ul>
+        </details>
       </article>
 
     </div>

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   /post-deploy — hub de herramientas
+   /post-deploy - hub de herramientas
    Hereda .dash-* de css/analiticas.css
    ═══════════════════════════════════════════════ */
 
@@ -10,14 +10,14 @@
 
 .post-hub__grid{margin-top:var(--gap-head);margin-bottom:var(--sec)}
 
+/* El fondo translúcido ya lo hereda de .dash-card (css/analiticas.css) -
+   acá solo lo que es específico de que la card sea, además, un link. */
 .post-hub__card{
   display:flex;flex-direction:column;position:relative;z-index:1;
   text-decoration:none;color:inherit;cursor:pointer;overflow:hidden;
-  background:rgba(255,255,255,.7);
   transition:border-color .25s var(--ease),transform .25s var(--ease);
-  animation:dashCardIn .5s var(--ease) forwards;
 }
-/* Línea lima que crece desde arriba al pasar el mouse — mismo lenguaje
+/* Línea lima que crece desde arriba al pasar el mouse - mismo lenguaje
    del subrayado del .eyebrow, no un borde lateral de color. */
 .post-hub__card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:2px;
@@ -49,7 +49,7 @@
 
 /* ══════════════ BANNER DE CONTACTO ══════════════
    Mismo componente .post-hub__card (mismo fondo translúcido, mismo
-   hover), pero en fila (no columna) y de ancho completo — el lima queda
+   hover), pero en fila (no columna) y de ancho completo - el lima queda
    solo en el botón "Contactanos" (.btn--lime), como en el resto del
    sitio, no en el fondo de la card entera. */
 .post-hub__contact{

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   /analiticas — lee los CSV "Resumen" que exporta Google
+   /analiticas - lee los CSV "Resumen" que exporta Google
    Analytics (uno por sección del menú) y arma una devolución
    en palabras simples + gráficos.
    Todo pasa en el navegador: nada se sube a ningún lado.
@@ -50,6 +50,9 @@
   };
   const deviceBox   = document.getElementById('dashChartDevice');
   const splitBox    = document.getElementById('dashChartNewReturning');
+  const trendBox    = document.getElementById('dashChartTrend');
+  const ecommerceBox = document.getElementById('dashChartEcommerce');
+  const leadsBox    = document.getElementById('dashChartLeads');
   const detailPanel = document.getElementById('dashDetailPanel');
   const detailBoxes = {
     country:  document.getElementById('dashDetailCountry'),
@@ -57,12 +60,16 @@
     os:       document.getElementById('dashDetailOs'),
     browser:  document.getElementById('dashDetailBrowser'),
     language: document.getElementById('dashDetailLanguage'),
+    platform: document.getElementById('dashDetailPlatform'),
+    screenResolution: document.getElementById('dashDetailScreenRes'),
   };
 
   // Un bloque elegido por categoría (el primero que matchea, ver §5).
   const EMPTY_STORE = { traffic: null, pages: null, device: null, country: null, city: null,
     events: null, audience: null, os: null, browser: null, language: null,
-    newUsers: null, returningUsers: null };
+    newUsers: null, returningUsers: null, activeUsersDaily: null, engagementTimeDaily: null,
+    retentionCohort: null, retentionWeekly: null, platform: null, screenResolution: null,
+    revenueDaily: null, buyersDaily: null, newBuyersDaily: null, itemsPurchasedDaily: null };
   const store = Object.assign({}, EMPTY_STORE);
 
   /* ─────────── 2. CSV: una línea, respetando comillas ─────────── */
@@ -111,7 +118,7 @@
   }
 
   /* ─────────── 3. Números: GA exporta con punto decimal (no coma),
-     sin separador de miles — pero por las dudas cubrimos ambos casos. ─────────── */
+     sin separador de miles - pero por las dudas cubrimos ambos casos. ─────────── */
   function normalizeNumber(raw){
     if (raw == null) return 0;
     let s = String(raw).trim().replace(/[^\d.,\-]/g, '');
@@ -147,9 +154,9 @@
      Además de matchear el nombre de la dimensión (primera columna), cada
      categoría exige que el bloque tenga la MÉTRICA que después vamos a
      graficar (ver CATEGORY_METRIC). Sin esto, un reporte individual que
-     comparte la misma dimensión pero mide otra cosa — por ejemplo
+     comparte la misma dimensión pero mide otra cosa - por ejemplo
      "Adquisición de clientes potenciales" también agrupa por canal, pero
-     mide leads, no usuarios — le robaría el lugar a un archivo que sí
+     mide leads, no usuarios - le robaría el lugar a un archivo que sí
      sirve, y se quedaría sin nada para mostrar. */
   const CATEGORY_MATCHERS = {
     device:   [ h => h[0] === 'categoría de dispositivo', h => h.join(' ').includes('categoría de dispositivo') ],
@@ -162,10 +169,27 @@
     os:       [ h => h[0] === 'sistema operativo' ],
     browser:  [ h => h[0] === 'navegador' ],
     language: [ h => h[0] === 'idioma' ],
-    // Estos dos son series por día ("Día N"), no por categoría — la
-    // dimensión no importa, solo sumamos el total del período.
+    // Estos son series por día ("Día N"), no por categoría - la dimensión
+    // no importa, solo sumamos (o promediamos) el total del período. El
+    // orden de las filas se conserva porque también sirven para el
+    // gráfico de tendencia (línea día a día), no solo para el total.
     newUsers:       [ h => h[0] === 'día n' && h[1] === 'usuarios nuevos' ],
     returningUsers: [ h => h[0] === 'día n' && h[1] === 'usuarios recurrentes' ],
+    activeUsersDaily:    [ h => h[0] === 'día n' && h[1] === 'usuarios activos' ],
+    engagementTimeDaily: [ h => h[0] === 'día n' && h[1] && h[1].includes('tiempo de interacción medio') ],
+    revenueDaily:        [ h => h[0] === 'día n' && h[1] && h[1].includes('ingresos') ],
+    buyersDaily:         [ h => h[0] === 'día n' && h[1] === 'compradores' ],
+    newBuyersDaily:      [ h => h[0] === 'día n' && h[1] && h[1].includes('compradores nuevos') ],
+    itemsPurchasedDaily: [ h => h[0] === 'día n' && h[1] && h[1].includes('artículos') ],
+    // Retención: dos formatos posibles según de qué Resumen salga (una
+    // fila por cohorte con columnas "Día N", o una fila por fecha con
+    // columnas "Semana N") - se soportan los dos, se usa el que aparezca.
+    retentionCohort: [ h => h[0] === 'cohorte' ],
+    retentionWeekly: [ h => h[0] === 'fecha' && h.some(c => c.startsWith('semana')) ],
+    // Plataforma y resolución de pantalla salen del Resumen de "Tecnología",
+    // mismo patrón que sistema operativo / navegador.
+    platform:         [ h => h[0] === 'plataforma' ],
+    screenResolution: [ h => h[0] === 'resolución de pantalla' ],
   };
 
   // Nombres EXACTOS (no sustrings sueltos) de columnas de conteo de
@@ -179,9 +203,14 @@
     device: USER_COUNT_KEYWORDS, country: USER_COUNT_KEYWORDS, city: USER_COUNT_KEYWORDS,
     traffic: USER_COUNT_KEYWORDS, os: USER_COUNT_KEYWORDS, browser: USER_COUNT_KEYWORDS,
     language: USER_COUNT_KEYWORDS, audience: USER_COUNT_KEYWORDS,
+    platform: USER_COUNT_KEYWORDS, screenResolution: USER_COUNT_KEYWORDS,
     pages: ['vistas', 'views'],
     events: ['número de eventos', 'eventos', 'events'],
     newUsers: ['usuarios nuevos'], returningUsers: ['usuarios recurrentes'],
+    activeUsersDaily: ['usuarios activos'], engagementTimeDaily: ['tiempo de interacción medio'],
+    revenueDaily: ['ingresos'], buyersDaily: ['compradores'],
+    newBuyersDaily: ['compradores nuevos'], itemsPurchasedDaily: ['artículos'],
+    retentionCohort: ['día'], retentionWeekly: ['semana'],
   };
 
   function classifyAll(blocks){
@@ -198,7 +227,7 @@
 
   // Un CSV "Resumen" siempre trae esta línea de metadata al principio;
   // un reporte individual (ej. "Páginas y pantallas: Ruta de página...")
-  // en cambio no la tiene — así distinguimos uno de otro.
+  // en cambio no la tiene - así distinguimos uno de otro.
   function isResumenFile(text){
     const clean = text.replace(/^﻿/, '');
     const lines = clean.split(/\r\n|\n|\r/).slice(0, 15);
@@ -314,8 +343,66 @@
     return row ? normalizeNumber(row[idx]) : null;
   }
 
+  // Serie día a día para el gráfico de tendencia: a diferencia de
+  // seriesFromBlock, acá NO se ordena por valor - el orden cronológico
+  // ("Día 0", "Día 1"...) es el punto de la línea.
+  function dailySeriesFromBlock(block, metricKeywords){
+    if (!block) return null;
+    const idx = findCol(block.headers, metricKeywords);
+    if (idx === -1) return null;
+    const items = block.rows
+      .filter(r => r[0] && !/^total$/i.test(r[0].trim()))
+      .map(r => ({ label: r[0], value: normalizeNumber(r[idx]) }));
+    return items.length ? items : null;
+  }
+
+  // Promedio de una serie "Día N" ignorando los días en 0: Analytics
+  // exporta 0 para los días sin datos todavía (no es un promedio real de
+  // ese día), así que promediarlos junto con los días reales lo distorsiona.
+  function avgDailyIgnoringZero(block, metricKeywords){
+    if (!block) return null;
+    const idx = findCol(block.headers, metricKeywords);
+    if (idx === -1) return null;
+    const vals = block.rows.map(r => normalizeNumber(r[idx])).filter(v => v > 0);
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }
+
+  // Retención: promedia la columna pedida ("día 7" o "semana 1") entre las
+  // cohortes/fechas que ya tienen dato. GA4 usa -1 como "todavía no hay
+  // dato para esta cohorte" y 0 para cohortes muy nuevas sin datos reales
+  // todavía - ambos se excluyen del promedio, no solo el -1.
+  function averageRetentionPct(block, colKeyword){
+    if (!block) return null;
+    const idx = findCol(block.headers, [colKeyword]);
+    if (idx === -1) return null;
+    const vals = block.rows.map(r => normalizeNumber(r[idx])).filter(v => v > 0);
+    if (!vals.length) return null;
+    let avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    // Algunos exports dan la retención como fracción (0.23 = 23%) y otros
+    // ya como porcentaje (23.4) - si da 1 o menos, asumimos fracción.
+    if (avg <= 1) avg *= 100;
+    return avg;
+  }
+
+  // GA4 exporta "Plataforma" con un formato de array sucio: ["Web"].
+  // Después de parsear el CSV (que ya desescapa comillas dobles) queda
+  // como el string literal ["Web"] - hay que sacarle los corchetes/comillas.
+  function cleanPlatformLabel(raw){
+    const s = String(raw || '').trim();
+    const m = s.match(/\[?"?([^"\[\]]+)"?\]?/);
+    return m && m[1] ? m[1].trim() : s;
+  }
+
+  function formatDuration(seconds){
+    const s = Math.round(seconds);
+    if (s < 60) return s + ' seg';
+    const m = Math.floor(s / 60), r = s % 60;
+    return m + ' min' + (r ? ' ' + r + ' seg' : '');
+  }
+
   // Eventos automáticos que manda GA4 solo (no son una acción real del
-  // visitante contra el negocio) — se ocultan para dejar ver las
+  // visitante contra el negocio) - se ocultan para dejar ver las
   // acciones que sí importan (clics a WhatsApp, formularios, etc.).
   const AUTOMATIC_EVENTS = ['page_view', 'session_start', 'user_engagement', 'first_visit', 'scroll', 'click'];
 
@@ -345,10 +432,10 @@
     });
   }
 
-  /* ─────────── 7b. Dona (dispositivo) — SVG a mano ─────────── */
+  /* ─────────── 7b. Dona (dispositivo) - SVG a mano ─────────── */
   // Color fijo por categoría de dispositivo (no por orden), así el
   // celular siempre es lima sin importar si es la categoría más grande
-  // o no — coherente con el resto de la página, donde lima = celular.
+  // o no - coherente con el resto de la página, donde lima = celular.
   const DEVICE_COLORS = { mobile: 'var(--lime)', desktop: 'var(--ink)', tablet: 'var(--stone)' };
   const DONUT_FALLBACK = ['#8a8a8a', '#c7c7c7'];
   function renderDonut(container, items){
@@ -407,6 +494,34 @@
     container.innerHTML = `<div class="dash-split__track">${segs}</div><div class="dash-split__labels">${labels}</div>`;
   }
 
+  /* ─────────── 7c-bis. Línea de tendencia (SVG a mano) ───────────
+     Path relativo (0-100 x 0-40) con preserveAspectRatio="none": se
+     estira al ancho real de la card vía CSS, así no hace falta recalcular
+     puntos en resize. */
+  function renderLine(container, items){
+    container.innerHTML = '';
+    if (!items || items.length < 2) return;
+    const max = Math.max(...items.map(i => i.value), 1);
+    const w = 100, h = 40, n = items.length;
+    const points = items.map((it, idx) => {
+      const x = (idx / (n - 1)) * w;
+      const y = h - (it.value / max) * h;
+      return x.toFixed(2) + ',' + y.toFixed(2);
+    }).join(' ');
+    const area = '0,' + h + ' ' + points + ' ' + w + ',' + h;
+
+    container.innerHTML = `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" class="dash-line__svg">
+        <polygon points="${area}" fill="var(--lime)" opacity=".12"></polygon>
+        <polyline points="${points}" fill="none" stroke="var(--lime)" stroke-width="1.6" vector-effect="non-scaling-stroke"></polyline>
+      </svg>
+      <div class="dash-line__labels mono">
+        <span>Día ${Number(items[0].label) + 1}</span>
+        <span>Día ${Number(items[items.length - 1].label) + 1}</span>
+      </div>
+    `;
+  }
+
   /* ─────────── 7d. Lista compacta (datos secundarios/técnicos) ─────────── */
   function renderMini(container, items, opts){
     opts = opts || {};
@@ -441,6 +556,8 @@
     'Sesiones': 'Veces que entraron en total (una persona puede entrar varias veces).',
     'Páginas vistas': 'Cuántas páginas se abrieron en total.',
     'Desde el celular': 'De tus visitantes, cuántos entraron desde el teléfono.',
+    'Tiempo de interacción medio': 'Cuánto tiempo pasó en promedio activamente en tu sitio cada visitante (sin contar el tiempo con la pestaña en segundo plano).',
+    'Retención a 7 días': 'De la gente que te visitó por primera vez, qué porcentaje volvió a entrar 7 días después.',
   };
   function renderKpi(label, value){
     const hint = KPI_HINTS[label] || '';
@@ -481,6 +598,40 @@
       ? [{ label: 'Nuevos', value: totalNewUsers }, { label: 'Recurrentes', value: totalReturningUsers }]
       : null;
 
+    // Tendencia diaria de usuarios activos (gráfico de línea).
+    const trendItems = dailySeriesFromBlock(store.activeUsersDaily, ['usuarios activos']);
+
+    // Tiempo de interacción medio y retención (KPIs).
+    const avgEngagementTime = avgDailyIgnoringZero(store.engagementTimeDaily, ['tiempo de interacción medio']);
+    const retentionPct = averageRetentionPct(store.retentionCohort, 'día 7')
+      ?? averageRetentionPct(store.retentionWeekly, 'semana 1');
+
+    // Plataforma y resolución de pantalla (columnas del panel técnico).
+    const platformItemsRaw = seriesFromBlock(store.platform, USER_COUNT_KEYWORDS);
+    const platformItems = platformItemsRaw && platformItemsRaw.map(i => ({ label: cleanPlatformLabel(i.label), value: i.value }));
+    const screenResItems = seriesFromBlock(store.screenResolution, USER_COUNT_KEYWORDS);
+
+    // Ventas / ecommerce (card condicional - solo aparece con datos reales).
+    const totalRevenue = sumFromBlock(store.revenueDaily, ['ingresos']);
+    const totalBuyers = sumFromBlock(store.buyersDaily, ['compradores']);
+    const totalNewBuyers = sumFromBlock(store.newBuyersDaily, ['compradores nuevos']);
+    const totalItemsPurchased = sumFromBlock(store.itemsPurchasedDaily, ['artículos']);
+    const hasEcommerce = [totalRevenue, totalBuyers, totalNewBuyers, totalItemsPurchased].some(v => v > 0);
+
+    // Embudo de clientes potenciales (card condicional) - reutiliza el
+    // mismo bloque de eventos que "Acciones de contacto": generate_lead,
+    // qualify_lead y close_convert_lead son los 3 eventos estándar que
+    // GA4 recomienda para medir este embudo.
+    const leadsNew = findRowValue(store.events, /^generate_lead$/i, ['número de eventos', 'eventos', 'events']);
+    const leadsQualified = findRowValue(store.events, /^qualify_lead$/i, ['número de eventos', 'eventos', 'events']);
+    const leadsConverted = findRowValue(store.events, /^close_convert_lead$/i, ['número de eventos', 'eventos', 'events']);
+    const leadsItems = [
+      leadsNew != null && { label: 'Nuevos', value: leadsNew },
+      leadsQualified != null && { label: 'Cualificados', value: leadsQualified },
+      leadsConverted != null && { label: 'Convertidos', value: leadsConverted },
+    ].filter(Boolean);
+    const hasLeadsFunnel = leadsItems.some(i => i.value > 0);
+
     const totalDevice = deviceItems ? deviceItems.reduce((a, i) => a + i.value, 0) : 0;
     const mobile = deviceItems && deviceItems.find(i => /mobile|celular|móvil/i.test(i.label));
     const pctMobile = mobile && totalDevice > 0 ? (mobile.value / totalDevice) * 100 : null;
@@ -491,6 +642,8 @@
     if (totalSessions != null) kpis.push(renderKpi('Sesiones', formatNumber(totalSessions)));
     if (totalViews != null) kpis.push(renderKpi('Páginas vistas', formatNumber(totalViews)));
     if (pctMobile != null) kpis.push(renderKpi('Desde el celular', formatPct(pctMobile) + '%'));
+    if (avgEngagementTime != null) kpis.push(renderKpi('Tiempo de interacción medio', formatDuration(avgEngagementTime)));
+    if (retentionPct != null) kpis.push(renderKpi('Retención a 7 días', formatPct(retentionPct) + '%'));
     kpisEl.innerHTML = kpis.join('');
 
     // Resumen en palabras simples
@@ -531,16 +684,37 @@
     splitBox.hidden = !newReturningItems;
     if (newReturningItems) renderSplit(splitBox.querySelector('.dash-split'), newReturningItems);
 
+    // Tendencia diaria de usuarios activos.
+    trendBox.hidden = !trendItems;
+    if (trendItems) renderLine(trendBox.querySelector('.dash-line'), trendItems);
+
+    // Ventas y embudo de leads - solo aparecen con datos reales (la
+    // mayoría de los sitios de Deploy no tiene ecommerce ni este embudo
+    // armado en GA4, así que quedan ocultos sin romper nada).
+    ecommerceBox.hidden = !hasEcommerce;
+    if (hasEcommerce){
+      renderMini(ecommerceBox.querySelector('.dash-mini'), [
+        totalRevenue > 0 && { label: 'Ingresos totales', value: totalRevenue },
+        totalBuyers > 0 && { label: 'Compradores', value: totalBuyers },
+        totalNewBuyers > 0 && { label: 'Compradores nuevos', value: totalNewBuyers },
+        totalItemsPurchased > 0 && { label: 'Artículos comprados', value: totalItemsPurchased },
+      ].filter(Boolean), { limit: 4 });
+    }
+
+    leadsBox.hidden = !hasLeadsFunnel;
+    if (hasLeadsFunnel) renderBars(leadsBox.querySelector('.dash-bars'), leadsItems, { limit: 3 });
+
     // Panel de datos secundarios/técnicos: se agrupan en una sola card,
-    // que solo aparece si al menos uno de los cinco tiene datos. Ojo:
-    // no encadenar con || — eso corta apenas uno da true y se saltea
-    // renderizar el resto.
+    // que solo aparece si al menos uno tiene datos. Ojo: no encadenar con
+    // || - eso corta apenas uno da true y se saltea renderizar el resto.
     const detailResults = [
       toggleDetail('country', countryItems, { limit: 6 }),
       toggleDetail('city', cityItems, { limit: 6 }),
       toggleDetail('os', osItems, { limit: 5 }),
       toggleDetail('browser', browserItems, { limit: 5 }),
       toggleDetail('language', languageItems, { limit: 5 }),
+      toggleDetail('platform', platformItems, { limit: 3 }),
+      toggleDetail('screenResolution', screenResItems, { limit: 5 }),
     ];
     detailPanel.hidden = !detailResults.some(Boolean);
   }
@@ -553,6 +727,8 @@
     form_start: 'Formularios iniciados',
     generate_lead: 'Formularios enviados',
     navigation_click: 'Clics de navegación',
+    qualify_lead: 'Contacto cualificado',
+    close_convert_lead: 'Cliente convertido',
   };
   function labelEvent(name){
     return EVENT_LABELS[name] || name;
