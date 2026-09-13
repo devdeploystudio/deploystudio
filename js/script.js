@@ -1044,8 +1044,16 @@ function startReveals(){
   const WHATSAPP = '5491125851237';
   const btn = form.querySelector('button[type="submit"]');
 
-  // Saca el "!" del campo apenas la persona empieza a corregirlo.
-  form.addEventListener('input', e => e.target.closest('.field')?.classList.remove('has-error'));
+  // Saca el "!" del campo apenas la persona empieza a corregirlo, y manda
+  // form_start la primera vez que toca cualquier campo (no en cada tecla).
+  let formStarted = false;
+  form.addEventListener('input', e => {
+    e.target.closest('.field')?.classList.remove('has-error');
+    if(!formStarted){
+      formStarted = true;
+      if(typeof gtag === 'function') gtag('event', 'form_start');
+    }
+  });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();

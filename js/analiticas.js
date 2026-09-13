@@ -51,9 +51,11 @@
   const deviceBox   = document.getElementById('dashChartDevice');
   const splitBox    = document.getElementById('dashChartNewReturning');
   const trendBox    = document.getElementById('dashChartTrend');
+  const retentionBox = document.getElementById('dashChartRetention');
   const ecommerceBox = document.getElementById('dashChartEcommerce');
   const leadsBox    = document.getElementById('dashChartLeads');
-  const detailPanel = document.getElementById('dashDetailPanel');
+  // Cada dato técnico es su propia card (ver §9): no hay un panel
+  // contenedor que ocultar/mostrar en conjunto, cada una se maneja sola.
   const detailBoxes = {
     country:  document.getElementById('dashDetailCountry'),
     city:     document.getElementById('dashDetailCity'),
@@ -271,9 +273,15 @@
     }
 
     const detailBlocks = detailFiles.flatMap(f => f.blocks);
-    const names = detailFiles.map(f => f.name).join(', ');
+    const names = detailFiles.map(f => f.name);
+    // Con pocos archivos los nombramos todos; con muchos (alguien subió
+    // reportes individuales en vez del Resumen, ej. 20 CSV sueltos) listar
+    // cada uno vuelve la frase ilegible - se acorta a los primeros 2 + cuántos más.
+    const nameList = names.length <= 3 ? names.join(', ') : names.slice(0, 2).join(', ') + ' y ' + (names.length - 2) + ' más';
     const plural = detailFiles.length > 1;
-    warningTextEl.textContent = `${plural ? 'Estos archivos no parecen' : 'Este archivo no parece'} un "Resumen" de Analytics (${names}). Es un reporte individual: puede traer menos datos, o datos distintos, de los que espera esta página. ¿Querés procesarlo${plural ? 's' : ''} igual?`;
+    warningTextEl.textContent = plural
+      ? `Estos ${detailFiles.length} archivos no parecen un "Resumen" de Analytics (${nameList}). Son reportes individuales: pueden traer menos datos, o datos distintos, de los que espera esta página. ¿Querés procesarlos igual?`
+      : `Este archivo no parece un "Resumen" de Analytics (${nameList}). Es un reporte individual: puede traer menos datos, o datos distintos, de los que espera esta página. ¿Querés procesarlo igual?`;
     warningEl.hidden = false;
     statusEl.hidden = true;
 
@@ -368,21 +376,24 @@
     return vals.reduce((a, b) => a + b, 0) / vals.length;
   }
 
-  // Retención: promedia la columna pedida ("día 7" o "semana 1") entre las
-  // cohortes/fechas que ya tienen dato. GA4 usa -1 como "todavía no hay
-  // dato para esta cohorte" y 0 para cohortes muy nuevas sin datos reales
-  // todavía - ambos se excluyen del promedio, no solo el -1.
-  function averageRetentionPct(block, colKeyword){
+  // Retención: la columna pedida ("día 7" o "semana 1"), una fila por
+  // cohorte/fecha, en el orden en que vienen en el CSV. GA4 usa -1 como
+  // "todavía no hay dato para esta cohorte" y 0 para cohortes muy nuevas
+  // sin datos reales todavía - ambos se excluyen, no solo el -1. Algunos
+  // exports dan la retención como fracción (0.23 = 23%) y otros ya como
+  // porcentaje (23.4) - se decide una sola vez para todo el bloque (según
+  // el valor más alto), no fila por fila, para no mezclar criterios.
+  function retentionSeriesFromBlock(block, colKeyword){
     if (!block) return null;
     const idx = findCol(block.headers, [colKeyword]);
     if (idx === -1) return null;
-    const vals = block.rows.map(r => normalizeNumber(r[idx])).filter(v => v > 0);
-    if (!vals.length) return null;
-    let avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    // Algunos exports dan la retención como fracción (0.23 = 23%) y otros
-    // ya como porcentaje (23.4) - si da 1 o menos, asumimos fracción.
-    if (avg <= 1) avg *= 100;
-    return avg;
+    const raw = block.rows
+      .filter(r => r[0])
+      .map(r => ({ label: r[0], value: normalizeNumber(r[idx]) }))
+      .filter(r => r.value > 0);
+    if (!raw.length) return null;
+    const isFraction = Math.max(...raw.map(r => r.value)) <= 1;
+    return raw.map(r => ({ label: r.label, value: isFraction ? r.value * 100 : r.value }));
   }
 
   // GA4 exporta "Plataforma" con un formato de array sucio: ["Web"].
@@ -522,7 +533,8 @@
     `;
   }
 
-  /* ─────────── 7d. Lista compacta (datos secundarios/técnicos) ─────────── */
+  /* ─────────── 7d. Lista plana (ventas - unidades distintas entre filas,
+     una barra comparativa no tendría sentido) ─────────── */
   function renderMini(container, items, opts){
     opts = opts || {};
     container.innerHTML = '';
@@ -534,6 +546,28 @@
         <span class="dash-mini__value mono">${formatNumber(item.value)}</span>
       </div>
     `).join('');
+  }
+
+  /* ─────────── 7e. Barritas chicas (datos técnicos: país, ciudad, SO,
+     navegador, idioma, plataforma, resolución) - todas las filas miden
+     lo mismo (usuarios), así que acá sí tiene sentido una barra
+     comparativa, más liviana que .dash-bar (CSS puro, sin SVG). ─────────── */
+  function renderMiniBar(container, items, opts){
+    opts = opts || {};
+    container.innerHTML = '';
+    if (!items || !items.length) return;
+    const top = items.slice(0, opts.limit || 5);
+    const max = Math.max(...top.map(i => i.value));
+    container.innerHTML = top.map(item => {
+      const pct = max > 0 ? Math.max((item.value / max) * 100, 3) : 0;
+      return `
+        <div class="dash-mini-bar__row">
+          <span class="dash-mini-bar__label" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</span>
+          <span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:${pct}%"></span></span>
+          <span class="dash-mini-bar__value mono">${formatNumber(item.value)}</span>
+        </div>
+      `;
+    }).join('');
   }
 
   function escapeHtml(str){
@@ -601,10 +635,14 @@
     // Tendencia diaria de usuarios activos (gráfico de línea).
     const trendItems = dailySeriesFromBlock(store.activeUsersDaily, ['usuarios activos']);
 
-    // Tiempo de interacción medio y retención (KPIs).
+    // Tiempo de interacción medio y retención (KPIs) + el detalle por
+    // cohorte/fecha de esa retención (card de respaldo del KPI).
     const avgEngagementTime = avgDailyIgnoringZero(store.engagementTimeDaily, ['tiempo de interacción medio']);
-    const retentionPct = averageRetentionPct(store.retentionCohort, 'día 7')
-      ?? averageRetentionPct(store.retentionWeekly, 'semana 1');
+    const retentionItems = retentionSeriesFromBlock(store.retentionCohort, 'día 7')
+      ?? retentionSeriesFromBlock(store.retentionWeekly, 'semana 1');
+    const retentionPct = retentionItems
+      ? retentionItems.reduce((a, i) => a + i.value, 0) / retentionItems.length
+      : null;
 
     // Plataforma y resolución de pantalla (columnas del panel técnico).
     const platformItemsRaw = seriesFromBlock(store.platform, USER_COUNT_KEYWORDS);
@@ -688,6 +726,10 @@
     trendBox.hidden = !trendItems;
     if (trendItems) renderLine(trendBox.querySelector('.dash-line'), trendItems);
 
+    // Retención por cohorte/fecha - respaldo visual del KPI de arriba.
+    retentionBox.hidden = !retentionItems;
+    if (retentionItems) renderBars(retentionBox.querySelector('.dash-bars'), retentionItems, { limit: 8, suffix: '%' });
+
     // Ventas y embudo de leads - solo aparecen con datos reales (la
     // mayoría de los sitios de Deploy no tiene ecommerce ni este embudo
     // armado en GA4, así que quedan ocultos sin romper nada).
@@ -704,19 +746,15 @@
     leadsBox.hidden = !hasLeadsFunnel;
     if (hasLeadsFunnel) renderBars(leadsBox.querySelector('.dash-bars'), leadsItems, { limit: 3 });
 
-    // Panel de datos secundarios/técnicos: se agrupan en una sola card,
-    // que solo aparece si al menos uno tiene datos. Ojo: no encadenar con
-    // || - eso corta apenas uno da true y se saltea renderizar el resto.
-    const detailResults = [
-      toggleDetail('country', countryItems, { limit: 6 }),
-      toggleDetail('city', cityItems, { limit: 6 }),
-      toggleDetail('os', osItems, { limit: 5 }),
-      toggleDetail('browser', browserItems, { limit: 5 }),
-      toggleDetail('language', languageItems, { limit: 5 }),
-      toggleDetail('platform', platformItems, { limit: 3 }),
-      toggleDetail('screenResolution', screenResItems, { limit: 5 }),
-    ];
-    detailPanel.hidden = !detailResults.some(Boolean);
+    // Datos secundarios/técnicos: cada uno es su propia card, se ocultan
+    // de forma independiente (ver toggleDetail).
+    toggleDetail('country', countryItems, { limit: 6 });
+    toggleDetail('city', cityItems, { limit: 6 });
+    toggleDetail('os', osItems, { limit: 5 });
+    toggleDetail('browser', browserItems, { limit: 5 });
+    toggleDetail('language', languageItems, { limit: 5 });
+    toggleDetail('platform', platformItems, { limit: 3 });
+    toggleDetail('screenResolution', screenResItems, { limit: 5 });
   }
 
   // Traduce los nombres técnicos de eventos a algo legible para el cliente.
@@ -764,7 +802,7 @@
       return false;
     }
     box.hidden = false;
-    renderMini(box.querySelector('.dash-mini'), items, opts);
+    renderMiniBar(box.querySelector('.dash-mini-bar'), items, opts);
     return true;
   }
 

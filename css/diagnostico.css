@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════════════
+   diagnostico.html - analizador gratis (lead magnet)
+   Hereda .dash-* de css/analiticas.css y .seo-* de css/seo.css
+   ═══════════════════════════════════════════════ */
+
+body.dash{overflow-x:hidden}
+
+/* ══════════════ PITCH ("¿lo solucionamos juntos?") ══════════════
+   Vive dentro de .seo-results, después de las cards de resultados -
+   mismo fondo --ink que .dash-summary para que se sienta como el cierre
+   de la devolución, no como un banner de publicidad aparte. */
+.diag-pitch{
+  margin-top:28px;padding:clamp(32px,4vw,48px);
+  background:var(--ink);border-radius:var(--r);text-align:center;
+}
+.diag-pitch .eyebrow{color:var(--stone);border-bottom-color:var(--lime)}
+.diag-pitch__title{
+  font-size:clamp(24px,3vw,34px);font-weight:700;letter-spacing:-.03em;
+  color:var(--paper);margin:14px 0 14px;
+}
+.diag-pitch__lead{
+  font-size:15.5px;line-height:1.6;color:#c7c7c7;
+  max-width:52ch;margin:0 auto 28px;
+}
+.diag-pitch__actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+/* .btn--ghost por defecto es texto/borde --ink (pensado para fondos
+   claros) - acá el fondo es --ink, así que sin esto el botón queda
+   negro sobre negro, invisible. El hover no hace falta tocarlo: el lima
+   que barre por debajo ya se ve bien sobre cualquier fondo. */
+.diag-pitch .btn--ghost{--fg:var(--paper);border-color:var(--paper)}
+
+@media (max-width:560px){
+  .diag-pitch__actions{flex-direction:column;align-items:stretch}
+  .diag-pitch__actions .btn{justify-content:center}
+}

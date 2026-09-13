@@ -196,8 +196,21 @@
         <div class="dash-line"></div>
       </article>
 
-      <!-- Fila 3c: ventas y embudo de leads - condicionales, solo si el negocio los usa -->
-      <article class="dash-card dash-card--span6" id="dashChartEcommerce" hidden>
+      <!-- Fila 3b-bis: retención por cohorte/fecha, respaldo del KPI "Retención a 7 días" -->
+      <article class="dash-card dash-card--span12" id="dashChartRetention" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Retención</h2>
+          <p class="dash-card__desc">Qué porcentaje de cada grupo de visitantes nuevos volvió a entrar unos 7 días después de su primera visita.</p>
+        </header>
+        <div class="dash-bars"></div>
+      </article>
+
+      <!-- Fila 3c: ventas y embudo de leads - condicionales, solo si el negocio los usa.
+           Mismo ancho (span4) que las cards técnicas de más abajo y en el
+           MISMO grid: así, tengan o no par, se acomodan naturalmente junto
+           a País/Ciudad/etc. en vez de quedar solas ocupando toda la fila
+           o dejando un hueco al lado por un ancho distinto. -->
+      <article class="dash-card dash-card--span4" id="dashChartEcommerce" hidden>
         <header class="dash-card__head">
           <h2 class="dash-card__title">Ventas</h2>
           <p class="dash-card__desc">Resumen de tu tienda online en este período.</p>
@@ -205,7 +218,7 @@
         <div class="dash-mini"></div>
       </article>
 
-      <article class="dash-card dash-card--span6" id="dashChartLeads" hidden>
+      <article class="dash-card dash-card--span4" id="dashChartLeads" hidden>
         <header class="dash-card__head">
           <h2 class="dash-card__title">Clientes potenciales</h2>
           <p class="dash-card__desc">De la gente que dejó sus datos, cuántos avanzaron en el proceso de venta.</p>
@@ -221,53 +234,64 @@
         </details>
       </article>
 
-      <!-- Fila 4: datos secundarios / técnicos, agrupados y compactos -->
-      <article class="dash-card dash-card--span12 dash-card--detail" id="dashDetailPanel" hidden>
+      <!-- Fila 4: datos secundarios / técnicos - cada uno con su propia card
+           chica (mismo fondo blanco translúcido que el resto), con
+           barritas comparativas ya que todas las filas miden lo mismo
+           (usuarios). -->
+      <article class="dash-card dash-card--span4" id="dashDetailCountry" hidden>
         <header class="dash-card__head">
-          <h2 class="dash-card__title">Más datos técnicos</h2>
-          <p class="dash-card__desc">País, ciudad, sistema operativo, navegador, idioma, plataforma y resolución de pantalla de tus visitantes. Útiles como referencia, no hace falta actuar sobre esto.</p>
+          <h2 class="dash-card__title">País</h2>
+          <p class="dash-card__desc">De qué país se conectaron, según su ubicación aproximada.</p>
         </header>
-        <div class="dash-detail-grid">
-          <div class="dash-detail" id="dashDetailCountry" hidden>
-            <h3 class="dash-detail__title mono">País</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailCity" hidden>
-            <h3 class="dash-detail__title mono">Ciudad</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailOs" hidden>
-            <h3 class="dash-detail__title mono">Sistema operativo</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailBrowser" hidden>
-            <h3 class="dash-detail__title mono">Navegador</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailLanguage" hidden>
-            <h3 class="dash-detail__title mono">Idioma</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailPlatform" hidden>
-            <h3 class="dash-detail__title mono">Plataforma</h3>
-            <div class="dash-mini"></div>
-          </div>
-          <div class="dash-detail" id="dashDetailScreenRes" hidden>
-            <h3 class="dash-detail__title mono">Resolución de pantalla</h3>
-            <div class="dash-mini"></div>
-          </div>
-        </div>
-        <details class="dash-glossary">
-          <summary class="mono">¿Qué significa cada dato?</summary>
-          <ul class="dash-glossary__list">
-            <li><strong>País / Ciudad</strong> - ubicación aproximada del visitante según su conexión a internet. No siempre es exacta.</li>
-            <li><strong>Sistema operativo</strong> - el sistema del dispositivo que usó para entrar (Windows, iOS, Android, etc.).</li>
-            <li><strong>Navegador</strong> - el programa que usó para entrar a tu sitio (Chrome, Safari, etc.).</li>
-            <li><strong>Idioma</strong> - el idioma configurado en su dispositivo, no necesariamente el idioma que habla.</li>
-            <li><strong>Plataforma</strong> - si entró desde la web, la app de iOS o la app de Android (solo aplica si tenés una app además del sitio).</li>
-            <li><strong>Resolución de pantalla</strong> - el tamaño de pantalla del dispositivo que usó. Es un dato técnico, no hace falta actuar sobre esto.</li>
-          </ul>
-        </details>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailCity" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Ciudad</h2>
+          <p class="dash-card__desc">De qué ciudad se conectaron tus visitantes.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailOs" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Sistema operativo</h2>
+          <p class="dash-card__desc">El sistema del dispositivo que usaron para entrar.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailBrowser" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Navegador</h2>
+          <p class="dash-card__desc">El programa que usaron para entrar a tu sitio.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailLanguage" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Idioma</h2>
+          <p class="dash-card__desc">El idioma configurado en el dispositivo de tus visitantes.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailPlatform" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Plataforma</h2>
+          <p class="dash-card__desc">Si entraron desde la web, la app de iOS o la de Android.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
+      </article>
+
+      <article class="dash-card dash-card--span4" id="dashDetailScreenRes" hidden>
+        <header class="dash-card__head">
+          <h2 class="dash-card__title">Resolución de pantalla</h2>
+          <p class="dash-card__desc">El tamaño de pantalla del dispositivo que usaron.</p>
+        </header>
+        <div class="dash-mini-bar"></div>
       </article>
 
     </div>

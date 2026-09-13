@@ -1293,6 +1293,20 @@ a{color:inherit;text-decoration:none}
   max-width:46ch;margin-top:clamp(24px,3vw,36px);
 }
 
+/* Banner al analizador gratis (diagnostico.html) - bloque propio, no
+   metido dentro de una card del carrusel, para que no dependa de que el
+   visitante llegue a scrollear justo hasta esa tarjeta. */
+.audience__audit-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  margin-top:clamp(28px,3vw,40px);padding:28px 32px;
+  border:1px solid var(--mist);border-radius:var(--r);
+  background:rgba(255,255,255,.7);
+  transition:border-color .3s,box-shadow .35s var(--ease);
+}
+.audience__audit-banner:hover{border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4)}
+.audience__audit-banner h3{font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.audience__audit-banner p{font-size:14px;color:#5a5a5a;max-width:46ch}
+
 /* ══════════════ NOSOTROS ══════════════ */
 /* La columna de texto ahora incluye "Cómo trabajamos" (antes era una barra
    aparte, abajo de todo): así ocupa un alto parecido al de la foto, en vez
@@ -1603,7 +1617,6 @@ a{color:inherit;text-decoration:none}
    de angostar lo de Nosotros para volver al gap viejo. */
 .contact__inner{
   display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.5vw,32px);
-  align-items:start;
 }
 .contact__inner > *{min-width:0}
 .contact__title{
@@ -1628,6 +1641,15 @@ a{color:inherit;text-decoration:none}
   transition:transform .35s var(--ease);
 }
 .contact__links a:hover::after{transform:scaleX(1)}
+
+/* CTA al analizador gratis (diagnostico.html) - botón de verdad (ghost,
+   no lima) para que se note, pero sin competir con el "Enviar consulta"
+   del form, que sigue siendo la acción principal de la sección. */
+.contact__audit{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  margin-top:28px;padding-top:24px;border-top:1px solid var(--mist);
+}
+.contact__audit-text{font-size:12.5px;color:var(--stone)}
 
 /* FORM */
 .form{
@@ -1655,6 +1677,12 @@ a{color:inherit;text-decoration:none}
 .field.has-error > span::after,.field.has-error > legend::after{
   content:' !';color:var(--lime);font-weight:700;
 }
+/* El campo de mensaje absorbe el espacio vertical libre - así, cuando la
+   columna de la izquierda queda más alta que el contenido natural del
+   form (ej. al sumar el CTA del analizador gratis), el form crece parejo
+   en vez de quedar corto con un hueco vacío al lado. */
+.field--grow{flex:1}
+.field--grow textarea{flex:1;min-height:96px}
 .field--chips{gap:12px}
 .field--chips legend{margin-bottom:4px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -1707,6 +1735,8 @@ a{color:inherit;text-decoration:none}
 }
 .footer__status{display:inline-flex;align-items:center;gap:8px}
 .footer__status .dot{width:6px;height:6px}
+.footer__bottom a{color:#8d8d8d;transition:color .25s var(--ease)}
+.footer__bottom a:hover{color:var(--lime)}
 
 /* ══════════════ TO TOP ══════════════ */
 .totop{
@@ -1718,6 +1748,24 @@ a{color:inherit;text-decoration:none}
 }
 .totop.is-visible{opacity:1;pointer-events:auto;transform:none}
 .totop:hover{background:var(--lime);color:var(--ink)}
+
+/* CTA fijo de WhatsApp en mobile - lado opuesto al de "volver arriba"
+   (ese va abajo a la derecha) para que nunca se superpongan. Solo en
+   mobile: en desktop el CTA del hero ya está siempre a un scroll de
+   distancia, no hace falta uno flotante. */
+.whatsapp-float{
+  position:fixed;left:18px;bottom:18px;z-index:800;
+  width:52px;height:52px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  background:var(--lime);color:var(--ink);
+  box-shadow:0 10px 24px -8px rgba(13,13,13,.45);
+  transition:transform .25s var(--ease);
+}
+.whatsapp-float:hover{transform:scale(1.06)}
+.whatsapp-float svg{width:26px;height:26px}
+@media (max-width:760px){
+  .whatsapp-float{display:flex}
+}
 
 /* ══════════════ REVEAL ══════════════ */
 .reveal{opacity:0;transform:translateY(26px);

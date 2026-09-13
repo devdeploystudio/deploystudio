@@ -90,7 +90,7 @@ body.dash{overflow-x:hidden}
 .dash-instructions__body strong.hl{color:var(--lime)}
 .dash-instructions__video-label{margin-top:8px}
 .dash-instructions__video{
-  position:relative;width:100%;max-width:520px;padding-top:56.25%; /* 16:9, el % es siempre sobre el ancho, no cambia con max-width */
+  position:relative;width:100%;padding-top:56.25%; /* 16:9, el % es siempre sobre el ancho */
   background:var(--ink);border-radius:var(--r);overflow:hidden;
 }
 .dash-instructions__video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -120,7 +120,7 @@ body.dash{overflow-x:hidden}
 .dash-results{padding-bottom:var(--sec)}
 
 .dash-summary{
-  padding:22px 24px;margin-bottom:32px;
+  padding:22px 24px;margin-bottom:28px;
   background:var(--ink);color:var(--paper);border-radius:var(--r);
   font-size:15.5px;line-height:1.6;
 }
@@ -129,12 +129,22 @@ body.dash{overflow-x:hidden}
 /* ══════════════ KPIs ══════════════
    Mismo lenguaje que .stats de la home (número grande + etiqueta mono),
    ahora usando el ancho completo del sitio en vez de un contenedor angosto. */
+/* Mismo arreglo que .seo-checklist/.seo-item en css/seo.css: el truco de
+   background+gap para las líneas divisorias deja un bloque gris sólido
+   cuando la última fila no se completa (ej. 5 KPIs en un grid de 4: la
+   fila 2 queda con 1 solo, el resto del fondo del contenedor se ve como
+   un bloque gris vacío). En cambio, cada item dibuja su propio borde
+   derecho e inferior (no dependen de un vecino al lado o abajo), y el
+   contenedor aporta una sola vez el borde superior e izquierdo. */
 .dash-kpis{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:1px;background:var(--mist);
-  border:1px solid var(--mist);margin-bottom:var(--gap-head);
+  border-top:1px solid var(--mist);border-left:1px solid var(--mist);
+  margin-bottom:28px;
 }
-.dash-kpi{background:var(--paper);padding:26px 24px}
+.dash-kpi{
+  background:rgba(255,255,255,.7);padding:26px 24px;
+  border-right:1px solid var(--mist);border-bottom:1px solid var(--mist);
+}
 .dash-kpi__num{
   display:flex;align-items:baseline;gap:8px;
   font-size:clamp(28px,3.4vw,40px);font-weight:600;
@@ -147,10 +157,15 @@ body.dash{overflow-x:hidden}
    12 columnas, como cualquier grid de dashboard, pero los tamaños de
    card están elegidos por prioridad de contenido (acciones de contacto
    es lo más importante → card más grande), no por simetría. */
+/* Antes usaba var(--gap-head) (hasta 44px) para el espacio entre filas -
+   contra los 26px de padding interno de cada card, y los 24px de gap
+   horizontal, se sentía desbalanceado (más aire ENTRE cards que DENTRO de
+   ellas). 28px queda parejo con el gap horizontal sin pegotearse. */
 .dash-grid{
   display:grid;grid-template-columns:repeat(12,1fr);
-  gap:var(--gap-head) 24px;
+  gap:28px 24px;
 }
+.dash-card--span4{grid-column:span 4}
 .dash-card--span5{grid-column:span 5}
 .dash-card--span6{grid-column:span 6}
 .dash-card--span7{grid-column:span 7}
@@ -179,6 +194,7 @@ body.dash{overflow-x:hidden}
 }
 
 .dash-card__head{margin-bottom:20px}
+.dash-card__head--row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .dash-card__title{
   font-size:13px;text-transform:uppercase;letter-spacing:.08em;
   margin-bottom:6px;
@@ -237,19 +253,8 @@ body.dash{overflow-x:hidden}
   font-size:11.5px;color:var(--stone);
 }
 
-/* ══════════════ PANEL DE DETALLE (país / ciudad / SO / navegador / idioma) ══════════════
-   Datos secundarios: se agrupan en una sola card, en columnas angostas
-   y sin el track de barra completo, para que no compitan visualmente
-   con los gráficos principales de arriba. */
-.dash-card--detail{background:#F3F3F1;border-color:var(--mist)}
-.dash-detail-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:28px;
-}
-.dash-detail__title{
-  font-size:11px;text-transform:uppercase;letter-spacing:.08em;
-  color:var(--stone);margin-bottom:12px;
-}
+/* ══════════════ LISTA PLANA (ventas - métricas de distinta unidad,
+   una barra comparativa no tendría sentido entre ingresos y compradores) ══════════════ */
 .dash-mini{display:flex;flex-direction:column;gap:8px}
 .dash-mini__row{
   display:flex;justify-content:space-between;gap:10px;
@@ -259,7 +264,23 @@ body.dash{overflow-x:hidden}
 .dash-mini__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dash-mini__value{color:var(--stone);font-variant-numeric:tabular-nums;flex-shrink:0}
 
-.dash-reset{margin-top:var(--gap-head)}
+/* ══════════════ BARRITAS CHICAS (país / ciudad / SO / navegador / idioma /
+   plataforma / resolución) ══════════════
+   Mismo dato (usuarios) en todas las filas, así que acá SÍ tiene sentido
+   una barra comparativa - pero más chica y liviana (CSS, no SVG) que
+   .dash-bar, para que esta card secundaria no compita visualmente con
+   los gráficos principales de arriba. */
+.dash-mini-bar{display:flex;flex-direction:column;gap:10px}
+.dash-mini-bar__row{
+  display:grid;grid-template-columns:minmax(70px,120px) 1fr 4ch;
+  align-items:center;gap:10px;font-size:12.5px;
+}
+.dash-mini-bar__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-mini-bar__track{height:6px;border-radius:3px;background:var(--mist);overflow:hidden}
+.dash-mini-bar__fill{display:block;height:100%;background:var(--lime);border-radius:3px}
+.dash-mini-bar__value{color:var(--stone);font-variant-numeric:tabular-nums;text-align:right}
+
+.dash-reset{margin-top:28px}
 
 /* ══════════════ FOOTER ══════════════ */
 .dash-footer{
@@ -272,7 +293,7 @@ body.dash{overflow-x:hidden}
 .dash-footer .footer__status .dot{width:6px;height:6px}
 
 @media (max-width:900px){
-  .dash-card--span5,.dash-card--span6,.dash-card--span7{grid-column:span 12}
+  .dash-card--span4,.dash-card--span5,.dash-card--span6,.dash-card--span7{grid-column:span 12}
 }
 
 @media (max-width:560px){

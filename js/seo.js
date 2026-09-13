@@ -15,7 +15,7 @@
   const statusEl     = document.getElementById('seoStatus');
   const resultsEl    = document.getElementById('seoResults');
   const summaryEl    = document.getElementById('seoSummary');
-  const checklistEl  = document.getElementById('seoChecklist');
+  const groupsEl     = document.getElementById('seoGroups');
   const resetBtn     = document.getElementById('seoReset');
 
   // Orden, título y explicación en palabras simples de cada chequeo.
@@ -25,22 +25,37 @@
   const CHECKS = [
     { key: 'indexable', priority: 1, title: 'Indexable por Google', desc: 'Si esto falla, tu página directamente no puede aparecer en Google, sin importar qué tan bien esté todo lo demás.' },
     { key: 'https', priority: 2, title: 'Conexión segura (HTTPS)', desc: 'Tu sitio carga con candado, no como "no seguro". Google lo pide y los visitantes lo esperan.' },
-    { key: 'title', priority: 3, title: 'Título de la página', desc: 'El texto que aparece en la pestaña del navegador y en el resultado de Google. Ideal entre 30 y 60 caracteres.' },
-    { key: 'metaDescription', priority: 4, title: 'Descripción (meta description)', desc: 'El resumen que Google muestra debajo del título en los resultados de búsqueda. Ideal entre 70 y 160 caracteres.' },
-    { key: 'h1', priority: 5, title: 'Título principal (H1)', desc: 'Cada página debería tener un único título principal que diga de qué trata.' },
-    { key: 'viewport', priority: 6, title: 'Preparado para celular', desc: 'Le dice al navegador cómo ajustarse a pantallas chicas. Sin esto, tu sitio se ve mal en el teléfono.' },
-    { key: 'altText', priority: 7, title: 'Texto alternativo en imágenes', desc: 'Una descripción de cada foto, para personas con discapacidad visual y para que Google entienda qué muestra la imagen.' },
-    { key: 'canonical', priority: 8, title: 'URL canónica', desc: 'Le indica a Google cuál es la versión "oficial" de la página, para que no la confunda con una copia.' },
-    { key: 'sitemapXml', priority: 9, title: 'Mapa del sitio (sitemap.xml)', desc: 'Una lista de todas tus páginas para que Google las encuentre más rápido.' },
-    { key: 'robotsTxt', priority: 10, title: 'Archivo robots.txt', desc: 'Le dice a Google qué partes de tu sitio puede recorrer. Es técnico, pero conviene que exista.' },
-    { key: 'ogTitle', priority: 11, title: 'Título para compartir (Open Graph)', desc: 'El título que se muestra cuando alguien comparte tu link en WhatsApp, Instagram o Facebook.' },
-    { key: 'ogDescription', priority: 12, title: 'Descripción para compartir', desc: 'El texto que acompaña al link cuando lo compartís en redes sociales.' },
-    { key: 'ogImage', priority: 13, title: 'Imagen para compartir', desc: 'La foto que aparece cuando compartís el link de tu sitio. Sin esto, se ve un link pelado, sin foto.' },
-    { key: 'headingStructure', priority: 14, title: 'Estructura de subtítulos (H2)', desc: 'Subtítulos que ordenan el contenido de la página. Ayudan a Google (y a la gente) a entender de qué trata cada parte.' },
-    { key: 'wordCount', priority: 15, title: 'Cantidad de contenido', desc: 'Páginas con muy poco texto le dan menos pistas a Google sobre de qué tratan. Ideal al menos 300 palabras.' },
+    { key: 'mixedContent', priority: 3, title: 'Sin contenido mixto', desc: 'Que ninguna imagen o script cargue todavía por "http://" en vez de "https://" - si pasa, el navegador puede mostrar el candado como inseguro igual.' },
+    { key: 'title', priority: 4, title: 'Título de la página', desc: 'El texto que aparece en la pestaña del navegador y en el resultado de Google. Ideal hasta 60 caracteres, para que no se corte en el resultado de búsqueda.' },
+    { key: 'metaDescription', priority: 5, title: 'Descripción (meta description)', desc: 'El resumen que Google muestra debajo del título en los resultados de búsqueda. Ideal hasta 160 caracteres.' },
+    { key: 'h1', priority: 6, title: 'Título principal (H1)', desc: 'Que haya al menos un título principal que diga de qué trata la página. Tener más de uno no es un problema para Google (lo confirmaron varias veces), lo que sí conviene evitar es no tener ninguno.' },
+    { key: 'viewport', priority: 7, title: 'Preparado para celular', desc: 'Le dice al navegador cómo ajustarse a pantallas chicas. Sin esto, tu sitio se ve mal en el teléfono.' },
+    { key: 'altText', priority: 8, title: 'Texto alternativo en imágenes', desc: 'Una descripción de cada foto para personas con discapacidad visual y para que Google entienda qué muestra. Las imágenes decorativas pueden llevarlo vacío a propósito, eso también cuenta como correcto.' },
+    { key: 'canonical', priority: 9, title: 'URL canónica', desc: 'Le indica a Google cuál es la versión "oficial" de la página, para que no la confunda con una copia.' },
+    { key: 'sitemapXml', priority: 10, title: 'Mapa del sitio (sitemap.xml)', desc: 'Una lista de todas tus páginas para que Google las encuentre más rápido.' },
+    { key: 'robotsTxt', priority: 11, title: 'Archivo robots.txt', desc: 'Le dice a Google qué partes de tu sitio puede recorrer. Es técnico, pero conviene que exista.' },
+    { key: 'ogTitle', priority: 12, title: 'Título para compartir (Open Graph)', desc: 'El título que se muestra cuando alguien comparte tu link en WhatsApp, Instagram o Facebook.' },
+    { key: 'ogDescription', priority: 13, title: 'Descripción para compartir', desc: 'El texto que acompaña al link cuando lo compartís en redes sociales.' },
+    { key: 'ogImage', priority: 14, title: 'Imagen para compartir', desc: 'La foto que aparece cuando compartís el link de tu sitio. Sin esto, se ve un link pelado, sin foto.' },
+    { key: 'headingStructure', priority: 15, title: 'Estructura de subtítulos (H2)', desc: 'Subtítulos que ordenan el contenido de la página. Ayudan a Google (y a la gente) a entender de qué trata cada parte.' },
     { key: 'structuredData', priority: 16, title: 'Datos estructurados', desc: 'Información extra que ayuda a Google a mostrar tu sitio con más detalle en los resultados.' },
     { key: 'favicon', priority: 17, title: 'Favicon', desc: 'El ícono que aparece en la pestaña del navegador y al guardar tu sitio como acceso directo.' },
     { key: 'lang', priority: 18, title: 'Idioma declarado', desc: 'Le dice al navegador y a Google en qué idioma está tu contenido.' },
+    { key: 'hsts', priority: 19, title: 'HSTS (conexión segura reforzada)', desc: 'Le dice al navegador que jamás intente cargar tu sitio por http:// (sin el candado), ni siquiera la primera vez. Es una configuración del hosting, no del diseño.' },
+    { key: 'doctype', priority: 20, title: 'Declaración de tipo de documento', desc: 'La primera línea del HTML, que le dice al navegador cómo interpretar el resto de la página. Es técnico, pero debería estar siempre.' },
+  ];
+
+  // Los mismos 20 chequeos de arriba, agrupados en cards temáticas (como
+  // las de /analiticas) en vez de una grilla plana de renglones. "chart:
+  // 'images'" marca la única card con una barrita propia además de la
+  // lista - el resto son solo lista, no hace falta un gráfico para cada una.
+  const GROUPS = [
+    { title: 'Indexación y seguridad', desc: 'Que Google pueda encontrar tu página y que cargue de forma segura.', span: 6, keys: ['indexable', 'https', 'mixedContent', 'hsts'] },
+    { title: 'Título y descripción', desc: 'Lo que se ve en el resultado de Google antes de entrar al sitio.', span: 6, keys: ['title', 'metaDescription'] },
+    { title: 'Estructura y accesibilidad', desc: 'Cómo está organizado el contenido de la página.', span: 6, keys: ['h1', 'headingStructure', 'lang', 'viewport'] },
+    { title: 'Imágenes', desc: 'Que las fotos tengan lo necesario para accesibilidad y buen SEO.', span: 6, keys: ['altText'], chart: 'images' },
+    { title: 'Compartir en redes', desc: 'Cómo se ve el link cuando lo compartís en WhatsApp o Instagram.', span: 6, keys: ['ogTitle', 'ogDescription', 'ogImage'] },
+    { title: 'Archivos técnicos', desc: 'Configuración de base que Google espera encontrar.', span: 6, keys: ['canonical', 'sitemapXml', 'robotsTxt', 'doctype', 'favicon', 'structuredData'] },
   ];
 
   form.addEventListener('submit', function(e){
@@ -108,22 +123,76 @@
       .sort(function(a, b){ return a.priority - b.priority; });
 
     summaryEl.innerHTML = renderScoreSummary(passed.length, items.length, failed, 'SEO');
-
-    checklistEl.innerHTML = items.map(function(c){
-      const check = checks[c.key];
-      const detail = formatDetail(c.key, check);
-      return '' +
-        '<div class="seo-item ' + (check.ok ? 'is-ok' : 'is-fail') + '">' +
-          '<div class="seo-item__head">' +
-            '<span class="seo-item__mark">' + (check.ok ? '✓' : '✕') + '</span>' +
-            '<span class="seo-item__title">' + c.title + '</span>' +
-          '</div>' +
-          '<p class="seo-item__desc">' + c.desc + '</p>' +
-          (detail ? '<p class="seo-item__detail">' + detail + '</p>' : '') +
-        '</div>';
-    }).join('');
+    groupsEl.innerHTML = renderGroups(checks);
 
     resultsEl.hidden = false;
+  }
+
+  function renderGroups(checks){
+    return GROUPS.map(function(group){
+      const groupChecks = CHECKS.filter(function(c){ return group.keys.indexOf(c.key) !== -1 && checks[c.key]; });
+      if (!groupChecks.length) return '';
+      const okCount = groupChecks.filter(function(c){ return checks[c.key].ok; }).length;
+
+      const chart = group.chart === 'images' ? renderImageBars(checks) : '';
+
+      const rows = groupChecks.map(function(c){
+        const check = checks[c.key];
+        const detail = formatDetail(c.key, check);
+        return '' +
+          '<div class="seo-check-row ' + (check.ok ? 'is-ok' : 'is-fail') + '">' +
+            '<span class="seo-check-row__mark">' + (check.ok ? '✓' : '✕') + '</span>' +
+            '<div class="seo-check-row__body">' +
+              '<p class="seo-check-row__title">' + c.title + '</p>' +
+              '<p class="seo-check-row__desc">' + c.desc + '</p>' +
+              (detail ? '<p class="seo-check-row__detail">' + detail + '</p>' : '') +
+            '</div>' +
+          '</div>';
+      }).join('');
+
+      return '' +
+        '<article class="dash-card dash-card--span' + group.span + '">' +
+          '<header class="dash-card__head dash-card__head--row">' +
+            '<div>' +
+              '<h2 class="dash-card__title">' + group.title + '</h2>' +
+              '<p class="dash-card__desc">' + group.desc + '</p>' +
+            '</div>' +
+            '<span class="seo-group__badge mono' + (okCount === groupChecks.length ? ' is-full' : '') + '">' + okCount + '/' + groupChecks.length + '</span>' +
+          '</header>' +
+          chart +
+          '<div class="seo-group__list">' + rows + '</div>' +
+        '</article>';
+    }).join('');
+  }
+
+  // Barrita chica con el % de imágenes con alt - único chequeo con un
+  // gráfico propio además de la lista, porque ya viene como porcentaje.
+  function renderImageBars(checks){
+    const pct = checks.altText ? checks.altText.pct : 0;
+    return '' +
+      '<div class="dash-mini-bar seo-group__bars">' +
+        '<div class="dash-mini-bar__row">' +
+          '<span class="dash-mini-bar__label">Con alt correcto</span>' +
+          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:' + pct + '%"></span></span>' +
+          '<span class="dash-mini-bar__value mono">' + pct + '%</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // Etiqueta y color según el % de puntaje - mismos 4 cortes para las
+  // dos cosas, así que se entienda de un vistazo cómo está el sitio sin
+  // tener que leer el detalle de abajo (semáforo: lima/amarillo/naranja/rojo).
+  function scoreTag(pct){
+    if (pct >= 90) return 'Excelente';
+    if (pct >= 70) return 'Bien encaminado';
+    if (pct >= 50) return 'Para mejorar';
+    return 'Necesita atención';
+  }
+  function scoreColor(pct){
+    if (pct >= 90) return 'var(--lime)';
+    if (pct >= 70) return '#E6C200';
+    if (pct >= 50) return '#E68A00';
+    return '#E64545';
   }
 
   // Aro de puntaje (SVG a mano) + devolución concreta: en vez de solo
@@ -133,20 +202,22 @@
     const pct = total ? Math.round((passedCount / total) * 100) : 0;
     const r = 42, c = 2 * Math.PI * r;
     const dash = (pct / 100) * c;
+    const color = scoreColor(pct);
 
     const ring = '' +
       '<svg viewBox="0 0 100 100" class="seo-score__ring">' +
         '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="10"/>' +
-        '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="var(--lime)" stroke-width="10" stroke-linecap="round" ' +
+        '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="10" stroke-linecap="round" ' +
           'stroke-dasharray="' + dash.toFixed(1) + ' ' + (c - dash).toFixed(1) + '" transform="rotate(-90 50 50)"/>' +
       '</svg>';
 
+    const tag = '<b style="color:' + color + '">' + scoreTag(pct) + '.</b>';
     let text;
     if (!failedSorted.length){
-      text = 'Está muy bien encaminado, no encontramos nada urgente para corregir.';
+      text = tag + ' No encontramos nada urgente para corregir.';
     } else {
       const top = failedSorted.slice(0, 3).map(function(c){ return c.title; });
-      text = 'Lo más importante para corregir primero: <b>' + top.join('</b>, <b>') + '</b>' +
+      text = tag + ' Lo más importante para corregir primero: <b>' + top.join('</b>, <b>') + '</b>' +
         (failedSorted.length > 3 ? ', y ' + (failedSorted.length - 3) + ' punto(s) más abajo.' : '.');
     }
 
@@ -154,7 +225,7 @@
       '<div class="seo-score">' +
         '<div class="seo-score__gauge">' + ring +
           '<div class="seo-score__num">' +
-            '<span class="seo-score__pct">' + pct + '%</span>' +
+            '<span class="seo-score__pct" style="color:' + color + '">' + pct + '%</span>' +
             '<span class="seo-score__frac mono">' + passedCount + ' de ' + total + '</span>' +
           '</div>' +
         '</div>' +
@@ -165,12 +236,16 @@
   function formatDetail(key, check){
     if (key === 'title' && check.value) return '"' + escapeHtml(check.value) + '" (' + check.length + ' caracteres)';
     if (key === 'metaDescription' && check.value) return '"' + escapeHtml(check.value) + '" (' + check.length + ' caracteres)';
-    if (key === 'h1') return check.count === 1 ? ('1 encontrado: "' + escapeHtml(check.value || '') + '"') : (check.count + ' encontrados (debería haber solo 1)');
+    if (key === 'h1') return check.count === 0 ? '0 encontrados' : (check.count + ' encontrado(s)' + (check.count === 1 ? ': "' + escapeHtml(check.value || '') + '"' : ''));
     if (key === 'headingStructure') return check.count + ' subtítulo(s) H2 encontrados';
-    if (key === 'wordCount') return check.count + ' palabras aproximadamente';
-    if (key === 'altText') return check.withAlt + ' de ' + check.total + ' imágenes tienen texto alternativo (' + check.pct + '%)';
+    if (key === 'altText') return check.withAlt + ' de ' + check.total + ' imágenes tienen el atributo alt (con descripción, o vacío a propósito en las decorativas) (' + check.pct + '%)';
     if (key === 'indexable') return check.ok ? 'Sin restricciones de indexado' : ('Encontrado: "' + escapeHtml(check.value) + '" - esto le dice a Google que NO indexe la página');
     if (key === 'lang' && check.value) return 'Declarado como "' + check.value + '"';
+    if (key === 'mixedContent') return check.ok ? 'Todo carga por https://' : (check.count + ' recurso(s) cargando todavía por http://');
+    if (key === 'canonical' && check.value) return '"' + escapeHtml(check.value) + '"' + (check.self === false ? ' - apunta a otra URL, distinta de la que se analizó' : '');
+    if (key === 'structuredData') return check.present ? (check.valid ? 'Encontrado y es JSON válido' : 'Encontrado, pero no es JSON válido - revisalo') : '';
+    if (key === 'hsts') return check.ok ? 'Configurado: "' + escapeHtml(check.value) + '"' : 'No configurado';
+    if (key === 'doctype') return check.ok ? '' : 'No se encontró "<!DOCTYPE html>" al principio del HTML';
     return '';
   }
 

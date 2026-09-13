@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Términos y condiciones | Deploy Studio</title>
+<meta name="description" content="Condiciones de uso del sitio de Deploy Studio y de los servicios de diseño y desarrollo web que ofrecemos." />
+<link rel="canonical" href="https://deploystudio.com.ar/terminos.html" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/legal.css" />
+
+</head>
+<body class="legal">
+
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<header class="legal-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="index.html" class="legal-back mono">← Volver al sitio</a>
+</header>
+
+<main class="legal-main">
+  <span class="eyebrow mono">- Legal</span>
+  <h1>Términos y condiciones</h1>
+  <p class="legal-updated mono">Última actualización: septiembre de 2026</p>
+
+  <p>Estos términos explican las condiciones para usar este sitio y, en líneas generales, cómo trabajamos con nuestros clientes. No reemplazan al contrato o presupuesto específico que firmamos con cada cliente para un proyecto puntual - ese documento siempre tiene prioridad sobre lo que dice acá.</p>
+
+  <h2>Uso del sitio</h2>
+  <p>Este sitio es informativo: presenta a Deploy Studio, nuestros servicios y trabajos anteriores, y permite ponerse en contacto con nosotros. El contenido (textos, diseño, logo, capturas de proyectos) es propiedad de Deploy Studio o de nuestros clientes (en el caso de las capturas de sus proyectos), y no puede reproducirse sin autorización.</p>
+
+  <h2>El formulario de contacto</h2>
+  <p>Al completar el formulario de contacto, aceptás que usemos esa información para responder tu consulta, según lo que se explica en nuestra <a href="privacidad.html">política de privacidad</a>. No hay ninguna obligación de tu parte por el solo hecho de escribirnos: es el primer paso para conversar sobre un proyecto, no una contratación.</p>
+
+  <h2>Nuestros servicios</h2>
+  <p>Deploy Studio ofrece diseño y desarrollo de sitios web, identidad de marca y servicios relacionados. Los alcances, tiempos y costos de cada proyecto se definen en un presupuesto o contrato particular con cada cliente, antes de empezar a trabajar. En términos generales:</p>
+  <ul>
+    <li>Un proyecto avanza en base a las etapas y entregables acordados con cada cliente.</li>
+    <li>Los cambios que se salgan del alcance acordado se cotizan aparte.</li>
+    <li>Salvo que se acuerde lo contrario, el sitio queda publicado en un hosting/dominio a nombre del cliente (o gestionado por Deploy Studio según el plan contratado).</li>
+    <li>Después de la entrega, ofrecemos un período de acompañamiento y, opcionalmente, mantenimiento mensual - los detalles de cada caso se acuerdan por separado.</li>
+  </ul>
+
+  <h2>Propiedad del trabajo entregado</h2>
+  <p>Una vez completado el pago acordado, el diseño y el código desarrollados específicamente para el proyecto del cliente le pertenecen a ese cliente. Deploy Studio se reserva el derecho de mostrar el proyecto como parte de su portfolio, salvo que se acuerde confidencialidad.</p>
+
+  <h2>Enlaces a otros sitios</h2>
+  <p>Este sitio tiene links a redes sociales y otras plataformas externas (Instagram, WhatsApp, Gmail). No somos responsables por el contenido o las políticas de privacidad de esos sitios de terceros.</p>
+
+  <h2>Límite de responsabilidad</h2>
+  <p>Hacemos nuestro mejor esfuerzo para que la información de este sitio sea precisa y esté actualizada, pero no garantizamos que esté libre de errores en todo momento. El uso de este sitio es bajo tu propia responsabilidad.</p>
+
+  <h2>Cambios a estos términos</h2>
+  <p>Podemos actualizar estos términos en algún momento. Si hacemos un cambio importante, lo vas a poder ver reflejado en la fecha de "última actualización" de arriba.</p>
+
+  <h2>Contacto</h2>
+  <p>Si tenés alguna duda sobre estos términos, escribinos a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contact.deploystudio@gmail.com" target="_blank" rel="noopener">contact.deploystudio@gmail.com</a> o por <a href="https://wa.me/5491125851237" target="_blank" rel="noopener">WhatsApp</a>.</p>
+
+  <a href="privacidad.html" class="legal-cross mono">Ver también: Política de privacidad →</a>
+</main>
+
+<footer class="legal-footer mono">
+  <span>© <span id="legalYear">2026</span> Deploy Studio</span>
+  <a href="index.html">Volver al inicio</a>
+</footer>
+
+<script>
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    if (!cursors.length) return;
+    var on = true;
+    setInterval(function(){ on = !on; cursors.forEach(function(c){ c.classList.toggle('off', !on); }); }, 530);
+  })();
+  var y = document.getElementById('legalYear');
+  if (y) y.textContent = new Date().getFullYear();
+
+  (function spotlight(){
+    var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var spot = document.getElementById('spot');
+    if (!spot || REDUCED || window.matchMedia('(hover:none)').matches) return;
+    var root = document.documentElement;
+    var tx = window.innerWidth / 2, ty = window.innerHeight * .4;
+    var cx = tx, cy = ty, raf = null, idle = null;
+    window.addEventListener('pointermove', function(e){
+      tx = e.clientX; ty = e.clientY;
+      root.style.setProperty('--spot-op', '1');
+      if (!raf) raf = requestAnimationFrame(loop);
+      clearTimeout(idle);
+      idle = setTimeout(function(){ root.style.setProperty('--spot-op', '.55'); }, 2600);
+    }, { passive: true });
+    document.addEventListener('mouseleave', function(){ root.style.setProperty('--spot-op', '0'); });
+    function loop(){
+      cx += (tx - cx) * .085;
+      cy += (ty - cy) * .085;
+      root.style.setProperty('--mx', cx.toFixed(1) + 'px');
+      root.style.setProperty('--my', cy.toFixed(1) + 'px');
+      if (Math.abs(tx - cx) < .4 && Math.abs(ty - cy) < .4){ raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+  })();
+</script>
+</body>
+</html>

@@ -350,10 +350,20 @@
   </div>
 
   <p class="audience__note mono reveal">
-    // ¿No te viste en ninguno? 
+    // ¿No te viste en ninguno?
     <br>
     Escribinos igual, nosotros lo resolvemos.
   </p>
+
+  <div class="audience__audit-banner reveal">
+    <div>
+      <h3>¿Ya tenés un sitio y no sabés cómo está?</h3>
+      <p>Analizalo gratis: te decimos en segundos qué está bien y qué se puede mejorar en SEO y velocidad.</p>
+    </div>
+    <a href="diagnostico.html" class="btn btn--lime">
+      Analizar mi sitio <span class="btn__arrow">→</span>
+    </a>
+  </div>
 </section>
 
 <!-- ══════════════ SERVICIOS ══════════════ -->
@@ -822,6 +832,13 @@
         <li><span class="k">whatsapp</span> <a href="https://wa.me/5491125851237?text=%C2%A1Hola!%20Me%20gustar%C3%ADa%20empezar%20un%20proyecto%20con%20ustedes.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F" target="_blank" rel="noopener">Mariana - +54 9 11 2585-1237</a></li>
         <li><span class="k">whatsapp</span> <a href="https://wa.me/5491176262733?text=%C2%A1Hola!%20Me%20gustar%C3%ADa%20empezar%20un%20proyecto%20con%20ustedes.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F" target="_blank" rel="noopener">Ignacio - +54 9 11 7626-2733</a></li>
       </ul>
+
+      <div class="contact__audit">
+        <p class="contact__audit-text mono">¿Todavía no estás segur@?</p>
+        <a href="diagnostico.html" class="btn btn--ghost btn--sm">
+          Analizar mi sitio gratis <span class="btn__arrow">→</span>
+        </a>
+      </div>
     </div>
 
     <form class="form" id="form" novalidate>
@@ -854,7 +871,7 @@
         </div>
       </fieldset>
 
-      <label class="field">
+      <label class="field field--grow">
         <span class="mono">contanos un poco más *</span>
         <textarea name="mensaje" rows="4" required placeholder="Qué hacés, qué necesitás y para cuándo…"></textarea>
       </label>
@@ -911,18 +928,28 @@
   </div>
 
   <div class="footer__bottom mono">
-    <span>© <span id="year">2026</span> Deploy Studio — Todos los derechos reservados</span>
+    <span>© <span id="year">2026</span> Deploy Studio — Todos los derechos reservados · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></span>
     <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
   </div>
 </footer>
 
 <button class="totop" id="toTop" aria-label="Volver arriba">↑</button>
 
+<a
+  class="whatsapp-float"
+  href="https://wa.me/5491125851237?text=%C2%A1Hola!%20Me%20gustar%C3%ADa%20empezar%20un%20proyecto%20con%20ustedes.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F"
+  target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp"
+>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.79.47 3.53 1.36 5.07L2.05 22l5.19-1.36a9.87 9.87 0 0 0 4.8 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 1.67c2.19 0 4.25.85 5.79 2.4a8.18 8.18 0 0 1 2.41 5.81c0 4.53-3.68 8.21-8.21 8.21a8.2 8.2 0 0 1-4.17-1.14l-.3-.18-3.08.81.82-3-.19-.31a8.15 8.15 0 0 1-1.25-4.35c0-4.53 3.69-8.21 8.18-8.25zm-4.5 4.37c-.16 0-.42.06-.64.31-.22.25-.85.83-.85 2.02 0 1.19.87 2.34.99 2.5.12.16 1.7 2.66 4.14 3.7.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.42h-.47z"/>
+  </svg>
+</a>
+
 <div class="lightbox" id="lightbox" hidden>
   <button class="lightbox__close" id="lightboxClose" aria-label="Cerrar imagen">✕</button>
   <div class="lightbox__stage">
     <button class="lightbox__nav lightbox__prev" id="lightboxPrev" aria-label="Ver foto anterior">‹</button>
-    <img class="lightbox__img" id="lightboxImg" src="" alt="Vista ampliada del proyecto seleccionado" />
+    <img class="lightbox__img" id="lightboxImg" src="" alt="Vista ampliada del proyecto seleccionado" width="1600" height="1000" />
     <button class="lightbox__nav lightbox__next" id="lightboxNext" aria-label="Ver foto siguiente">›</button>
   </div>
   <p class="lightbox__title mono" id="lightboxTitle"></p>

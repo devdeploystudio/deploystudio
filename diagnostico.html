@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Analizá tu sitio gratis | Deploy Studio</title>
+<meta
+  name="description"
+  content="Pegá la URL de tu sitio y te decimos, en palabras simples, qué está bien y qué se puede mejorar en SEO y velocidad. Gratis, en segundos."
+/>
+<link rel="canonical" href="https://deploystudio.com.ar/diagnostico.html" />
+
+<meta name="theme-color" content="#0D0D0D" />
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Deploy Studio" />
+<meta property="og:locale" content="es_AR" />
+<meta property="og:url" content="https://deploystudio.com.ar/diagnostico.html" />
+<meta property="og:title" content="Analizá tu sitio gratis | Deploy Studio" />
+<meta property="og:description" content="Pegá la URL de tu sitio y te decimos, en palabras simples, qué está bien y qué se puede mejorar en SEO y velocidad." />
+<meta property="og:image" content="https://deploystudio.com.ar/img/logo.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/analiticas.css" />
+<link rel="stylesheet" href="css/seo.css" />
+<link rel="stylesheet" href="css/diagnostico.css" />
+
+</head>
+<body class="dash">
+
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<header class="dash-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="index.html" class="dash-back mono">← Volver al sitio</a>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <span class="eyebrow mono">- Diagnóstico</span>
+    <h1>¿Cómo está tu página hoy?<span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
+    <p class="dash-hero__sub">
+      Pegá la URL de tu sitio y te devolvemos un diagnóstico real de SEO y
+      velocidad, en palabras simples, sin tecnicismos. Es gratis y tarda
+      unos segundos.
+    </p>
+  </section>
+
+  <section class="seo-form">
+    <form id="diagForm" class="seo-form__row">
+      <input
+        type="text"
+        id="diagUrl"
+        class="seo-form__input mono"
+        placeholder="tusitio.com"
+        inputmode="url"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        required
+      />
+      <button type="submit" class="btn btn--lime" id="diagSubmit">
+        Analizar mi sitio <span class="btn__arrow">→</span>
+      </button>
+    </form>
+    <div class="dash-upload__status mono" id="diagStatus" hidden></div>
+  </section>
+
+  <!-- ══════════════ RESULTADOS ══════════════ -->
+  <section class="seo-results" id="diagResults" hidden>
+
+    <div class="dash-summary" id="diagSummary"></div>
+
+    <div class="dash-grid seo-groups" id="diagGroups"></div>
+
+    <!-- ══════════════ PITCH: "te ayudamos a arreglarlo" ══════════════ -->
+    <div class="diag-pitch">
+      <span class="eyebrow mono">- Deploy Studio</span>
+      <h2 class="diag-pitch__title">¿Querés que lo solucionemos juntos?</h2>
+      <p class="diag-pitch__lead">
+        Nos dedicamos exactamente a esto: dejar sitios rápidos, bien
+        armados para Google y fáciles de mantener. Contanos qué encontraste
+        acá arriba y lo revisamos sin compromiso.
+      </p>
+      <div class="diag-pitch__actions">
+        <a href="index.html#contacto" class="btn btn--lime btn--lg">
+          Quiero que lo revisen <span class="btn__arrow">→</span>
+        </a>
+        <a
+          href="https://wa.me/5491125851237?text=%C2%A1Hola!%20Analic%C3%A9%20mi%20sitio%20con%20la%20herramienta%20de%20Deploy%20y%20me%20gustar%C3%ADa%20que%20me%20ayuden%20a%20mejorarlo.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F"
+          target="_blank" rel="noopener" class="btn btn--ghost btn--lg"
+        >
+          Escribir por WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <button class="btn btn--ghost btn--sm dash-reset" id="diagReset">
+      Analizar otro sitio
+    </button>
+  </section>
+
+</main>
+
+<footer class="dash-footer mono">
+  <span>© <span id="dashYear">2026</span> Deploy Studio</span>
+  <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
+</footer>
+
+<script src="js/diagnostico.js" defer></script>
+</body>
+</html>
