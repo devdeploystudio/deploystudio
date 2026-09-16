@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Firmar contrato | Deploy Studio</title>
+<meta name="description" content="Firmá tu contrato con Deploy Studio directamente desde el navegador, sin imprimir nada." />
+<meta name="robots" content="noindex" />
+<link rel="canonical" href="https://deploystudio.com.ar/firmar-contrato.html" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/legal.css" />
+<link rel="stylesheet" href="css/firmar-contrato.css" />
+
+</head>
+<body class="legal">
+
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<header class="legal-header">
+  <a href="index.html" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="index.html" class="legal-back mono">← Volver al sitio</a>
+</header>
+
+<main class="legal-main contrato-main">
+  <span class="eyebrow mono">- Contrato</span>
+  <h1>Firmá tu contrato</h1>
+  <p>Subí el PDF que te mandamos por WhatsApp o mail, firmá con el dedo o el mouse, y lo mandamos solo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.</p>
+
+  <!-- Paso 1: subir el PDF -->
+  <section class="contrato-step" id="stepUpload">
+    <label class="contrato-drop" id="dropZone" for="fileInput">
+      <span class="contrato-drop__icon" aria-hidden="true">↑</span>
+      <span class="contrato-drop__text">Tocá para elegir el PDF del contrato<br /><span class="mono contrato-drop__hint">o soltalo acá</span></span>
+    </label>
+    <input type="file" id="fileInput" accept="application/pdf" hidden />
+    <p class="contrato-error mono" id="uploadError" hidden></p>
+  </section>
+
+  <!-- Paso 2: firmar -->
+  <section class="contrato-step" id="stepSign" hidden>
+    <p class="contrato-filename mono" id="fileName"></p>
+
+    <div class="contrato-preview">
+      <canvas id="pageCanvas"></canvas>
+      <p class="contrato-preview__caption mono">Así se ve la última página. Tu firma se va a ubicar sobre el renglón de "Firma" de EL CLIENTE.</p>
+    </div>
+
+    <label class="contrato-field">
+      <span class="mono">Tu nombre (para identificar la firma)</span>
+      <input type="text" id="clientName" placeholder="Nombre y apellido" autocomplete="name" />
+    </label>
+
+    <div class="contrato-padwrap">
+      <span class="mono contrato-padwrap__label">Firmá acá</span>
+      <canvas id="sigCanvas" class="contrato-pad"></canvas>
+      <button type="button" class="btn btn--ghost btn--sm" id="clearSig">Borrar firma</button>
+    </div>
+
+    <button type="button" class="btn btn--lime btn--block" id="sendBtn" disabled>
+      Firmar y enviar <span class="btn__arrow">→</span>
+    </button>
+    <p class="contrato-error mono" id="signError" hidden></p>
+  </section>
+
+  <!-- Paso 3: estados finales -->
+  <section class="contrato-step contrato-state" id="stepSending" hidden>
+    <p class="mono">Enviando...</p>
+  </section>
+
+  <section class="contrato-step contrato-state" id="stepSuccess" hidden>
+    <p class="contrato-state__title">Listo, se firmó correctamente</p>
+    <p>Le llegó una copia a Deploy Studio. Guardá también tu propia copia:</p>
+    <a href="#" class="btn btn--ghost" id="downloadSuccess" download>Descargar mi copia firmada</a>
+  </section>
+
+  <section class="contrato-step contrato-state" id="stepFailure" hidden>
+    <p class="contrato-state__title">No pudimos enviarlo automáticamente</p>
+    <p>Puede ser algo temporal. Descargá tu contrato ya firmado y enviánoslo por WhatsApp para que quede confirmado:</p>
+    <div class="contrato-actions">
+      <a href="#" class="btn btn--lime" id="downloadFailure" download>Descargar PDF firmado</a>
+      <a href="https://wa.me/5491125851237?text=Hola!%20Te%20env%C3%ADo%20mi%20contrato%20firmado" target="_blank" rel="noopener" class="btn btn--ghost">Enviar por WhatsApp</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="legal-footer mono">
+  <span>© <span id="legalYear">2026</span> Deploy Studio</span>
+  <a href="index.html">Volver al inicio</a>
+</footer>
+
+<script src="js/vendor/pdf-lib.min.js"></script>
+<script src="js/vendor/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/vendor/pdf.worker.min.js';
+  }
+</script>
+<script src="js/firmar-contrato.js"></script>
+
+<script>
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    if (!cursors.length) return;
+    var on = true;
+    setInterval(function(){ on = !on; cursors.forEach(function(c){ c.classList.toggle('off', !on); }); }, 530);
+  })();
+  var y = document.getElementById('legalYear');
+  if (y) y.textContent = new Date().getFullYear();
+
+  (function spotlight(){
+    var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var spot = document.getElementById('spot');
+    if (!spot || REDUCED || window.matchMedia('(hover:none)').matches) return;
+    var root = document.documentElement;
+    var tx = window.innerWidth / 2, ty = window.innerHeight * .4;
+    var cx = tx, cy = ty, raf = null, idle = null;
+    window.addEventListener('pointermove', function(e){
+      tx = e.clientX; ty = e.clientY;
+      root.style.setProperty('--spot-op', '1');
+      if (!raf) raf = requestAnimationFrame(loop);
+      clearTimeout(idle);
+      idle = setTimeout(function(){ root.style.setProperty('--spot-op', '.55'); }, 2600);
+    }, { passive: true });
+    document.addEventListener('mouseleave', function(){ root.style.setProperty('--spot-op', '0'); });
+    function loop(){
+      cx += (tx - cx) * .085;
+      cy += (ty - cy) * .085;
+      root.style.setProperty('--mx', cx.toFixed(1) + 'px');
+      root.style.setProperty('--my', cy.toFixed(1) + 'px');
+      if (Math.abs(tx - cx) < .4 && Math.abs(ty - cy) < .4){ raf = null; return; }
+      raf = requestAnimationFrame(loop);
+    }
+  })();
+</script>
+</body>
+</html>
