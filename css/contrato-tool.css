@@ -68,7 +68,10 @@
 .contrato-field span{font-size:12px;color:var(--stone)}
 .contrato-field input{
   padding:12px 14px;border:1px solid var(--mist);border-radius:var(--r);
-  font-family:var(--font-sans);font-size:15px;color:var(--ink);background:rgba(255,255,255,.7);
+  /* 16px, no 15px: por debajo de eso, Safari en iOS hace zoom
+     automático apenas se toca el campo (y vuelve a alejar al perder el
+     foco) - un "flasheo" molesto. Con 16px o más no lo dispara. */
+  font-family:var(--font-sans);font-size:16px;color:var(--ink);background:rgba(255,255,255,.7);
   transition:border-color .25s var(--ease);
 }
 .contrato-field input:focus{outline:none;border-color:var(--lime)}
@@ -115,6 +118,8 @@
 .contrato-result__label{font-size:12px;color:var(--stone)}
 .contrato-result__row{display:flex;gap:10px;flex-wrap:wrap}
 .contrato-result__link{
+  /* 16px por la misma razón que .contrato-field input - evita el zoom
+     automático de Safari/iOS al tocar el campo. */
   flex:1;min-width:0;padding:12px 14px;border:1px solid var(--mist);border-radius:var(--r);
-  font-family:var(--font-mono);font-size:13px;background:rgba(255,255,255,.7);color:var(--ink);
+  font-family:var(--font-mono);font-size:16px;background:rgba(255,255,255,.7);color:var(--ink);
 }

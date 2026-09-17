@@ -189,9 +189,17 @@
     // una podrían tardar hasta 42s en el peor caso; en paralelo, como
     // mucho tarda lo que tarde la más lenta.
     pdfPagesEl.innerHTML = '';
+    // dpr: la resolución "de verdad" del canvas tiene que ser más alta
+    // que su tamaño en pantalla en cualquier pantalla retina/alta
+    // densidad (la gran mayoría de los celulares), si no se ve borroso
+    // - el canvas.width/height de abajo son la resolución real; el
+    // tamaño en pantalla lo sigue definiendo el CSS (max-width:100%),
+    // así que esto no cambia el tamaño visual, solo la nitidez. Tope en
+    // 3x para no disparar el peso/tiempo de render en pantallas 4x+.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const targets = pages.map((page) => {
-      const scale = Math.min(2, containerWidth / page.getViewport({ scale: 1 }).width);
-      const viewport = page.getViewport({ scale });
+      const cssScale = Math.min(2, containerWidth / page.getViewport({ scale: 1 }).width);
+      const viewport = page.getViewport({ scale: cssScale * dpr });
       const canvas = document.createElement('canvas');
       canvas.className = 'contrato-pdfview__page';
       canvas.width = viewport.width;
@@ -295,7 +303,12 @@
   // fondo, con el marco punteado igual dibujado sobre el canvas en
   // blanco para que se entienda dónde va a ir.
   async function renderLastPage(page, anchorInfo) {
-    const scale = Math.min(2, 900 / page.getViewport({ scale: 1 }).width);
+    // dpr multiplicando la resolución real del canvas (no el tamaño en
+    // pantalla, que lo sigue definiendo el CSS) - mismo motivo que en
+    // renderAllPages: sin esto se ve borroso en cualquier pantalla
+    // retina/alta densidad.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const scale = Math.min(2, 900 / page.getViewport({ scale: 1 }).width) * dpr;
     const viewport = page.getViewport({ scale });
 
     pageCanvas.width = viewport.width;
