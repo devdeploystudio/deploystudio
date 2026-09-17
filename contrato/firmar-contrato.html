@@ -126,6 +126,14 @@
 
 </main>
 
+<!-- Visor grande al tocar una hoja del contrato en stepRead. Reusa la
+     imagen ya renderizada (alta resolución) del canvas correspondiente,
+     no vuelve a dibujar nada. -->
+<div id="pageLightbox" class="contrato-lightbox" hidden>
+  <button type="button" id="pageLightboxClose" class="contrato-lightbox__close" aria-label="Cerrar">✕</button>
+  <img id="pageLightboxImg" alt="Página del contrato ampliada" />
+</div>
+
 <footer class="legal-footer mono">
   <span>© <span id="legalYear">2026</span> Deploy Studio</span>
   <a href="/">Volver al inicio</a>

@@ -42,6 +42,19 @@
   const pdfPagesEl = $('pdfPages');
   const downloadReadBtn = $('downloadReadBtn');
   const confirmReadBtn = $('confirmReadBtn');
+  const pageLightbox = $('pageLightbox');
+  const pageLightboxImg = $('pageLightboxImg');
+  const pageLightboxClose = $('pageLightboxClose');
+
+  // Tocar una hoja la agranda reusando la misma imagen ya renderizada
+  // (alta resolución) - no vuelve a dibujar nada. Se cierra tocando el
+  // fondo O la crucecita - la crucecita está para quien no dé por
+  // sentado que tocar afuera cierra un visor.
+  pageLightbox.addEventListener('click', () => { pageLightbox.hidden = true; });
+  pageLightboxClose.addEventListener('click', (e) => {
+    e.stopPropagation();
+    pageLightbox.hidden = true;
+  });
 
   const fileNameEl = $('fileName');
   const pageCanvas = $('pageCanvas');
@@ -204,6 +217,10 @@
       canvas.className = 'contrato-pdfview__page';
       canvas.width = viewport.width;
       canvas.height = viewport.height;
+      canvas.addEventListener('click', () => {
+        pageLightboxImg.src = canvas.toDataURL('image/png');
+        pageLightbox.hidden = false;
+      });
       pdfPagesEl.appendChild(canvas);
       return { page, canvas, viewport };
     });
@@ -221,6 +238,13 @@
   // explicación) que apunte al botón de descarga de más arriba.
   function markPageUnavailable(canvas, viewport) {
     const ctx = canvas.getContext('2d');
+    // Si el render de pdf.js quedó a mitad de camino (por eso estamos
+    // acá - se colgó o tiró error), puede haber dejado el canvas con
+    // una transformación (traslado/escala/espejado, típico del cambio
+    // de sistema de coordenadas PDF→canvas) a medio aplicar - sin
+    // resetearla antes, el texto de acá abajo sale espejado o
+    // desplazado. setTransform(1,0,0,1,0,0) vuelve todo a la identidad.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#f2f2f0';
     ctx.fillRect(0, 0, viewport.width, viewport.height);
     ctx.fillStyle = '#8a8a86';
