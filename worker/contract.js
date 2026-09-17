@@ -10,11 +10,12 @@
                   ese id. El número solo es para que Deploy reconozca el
                   link de un vistazo - los 6 caracteres random son la
                   protección real: sin ellos, cualquiera podría probar
-                  /firmar-contrato/001, /002... y ver contratos ajenos
-                  (nombre, CUIT/DNI, domicilio de otro cliente). Deploy
-                  arma el link firmar-contrato.html?id=<id> (reescrito a
-                  /firmar-contrato/<id> por _redirects) y se lo pasa al
-                  cliente.
+                  /contrato/firmar-contrato/001, /002... y ver contratos
+                  ajenos (nombre, CUIT/DNI, domicilio de otro cliente).
+                  Deploy arma el link
+                  contrato/firmar-contrato.html?id=<id> (reescrito a
+                  /contrato/firmar-contrato/<id> por _redirects) y se lo
+                  pasa al cliente.
    GET  /contract?id=...
                   El cliente lo pide desde firmar-contrato.html para
                   cargar su contrato sin tener que subir el archivo.
@@ -153,7 +154,7 @@ async function handleSend(request, env, headers) {
         from: `Deploy Studio <${FROM_EMAIL}>`,
         to: [TO_EMAIL],
         subject: `Contrato firmado - ${safeName}`,
-        text: `Firmó: ${safeName}\n\nAdjunto el contrato firmado desde deploystudio.com.ar/firmar-contrato`,
+        text: `Firmó: ${safeName}\n\nAdjunto el contrato firmado desde deploystudio.com.ar/contrato/firmar-contrato`,
         attachments: [{ filename: safeFileName, content: pdfBase64 }],
       }),
     });

@@ -3,8 +3,8 @@
    Herramienta interna (solo para Deploy, no para clientes): sube el PDF
    de un contrato al Worker (POST /upload, protegido con la clave de
    administrador y el número de presupuesto) y arma el link
-   /firmar-contrato/<id> para pasarle al cliente. Ese link ya carga el
-   contrato solo - ver js/firmar-contrato.js.
+   /contrato/firmar-contrato/<id> para pasarle al cliente. Ese link ya
+   carga el contrato solo - ver js/firmar-contrato.js.
 
    La clave se guarda en localStorage de este navegador nomás, para no
    tener que tipearla cada vez - nunca sale de acá excepto en el header
@@ -95,8 +95,9 @@
       const data = await res.json();
       // Sin ".html" a propósito - Cloudflare redirige (307) cada página
       // .html a su versión sin extensión en este sitio (ver el MD de
-      // Search Console). /firmar-contrato/<id> lo reescribe _redirects.
-      const link = location.origin + '/firmar-contrato/' + data.id;
+      // Search Console). /contrato/firmar-contrato/<id> lo reescribe
+      // _redirects.
+      const link = location.origin + '/contrato/firmar-contrato/' + data.id;
 
       resultLink.value = link;
       stepUploading.hidden = true;

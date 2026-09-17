@@ -27,7 +27,14 @@
 .contrato-drop__text{font-size:15px;color:#3a3a3a;line-height:1.6}
 .contrato-drop__hint{font-size:12px;color:var(--stone)}
 
-/* ── Paso 2: firmar ── */
+/* ── Paso 2: leer el contrato antes de firmar ── */
+.contrato-pdfview{
+  display:block;width:100%;height:65vh;min-height:420px;
+  border:1px solid var(--mist);border-radius:var(--r);background:#fff;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* ── Paso 3: firmar ── */
 .contrato-filename{font-size:12.5px;color:var(--stone);margin-bottom:18px}
 
 .contrato-preview{margin-bottom:28px}

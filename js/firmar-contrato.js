@@ -35,10 +35,15 @@
   const stepAutoLoading = $('stepAutoLoading');
   const stepAutoError = $('stepAutoError');
   const stepUpload = $('stepUpload');
+  const stepRead = $('stepRead');
   const stepSign = $('stepSign');
   const stepSending = $('stepSending');
   const stepSuccess = $('stepSuccess');
   const stepFailure = $('stepFailure');
+
+  const fileNameReadEl = $('fileNameRead');
+  const pdfViewer = $('pdfViewer');
+  const confirmReadBtn = $('confirmReadBtn');
 
   const fileNameEl = $('fileName');
   const pageCanvas = $('pageCanvas');
@@ -51,24 +56,28 @@
   const downloadSuccess = $('downloadSuccess');
   const downloadFailure = $('downloadFailure');
 
-  // El link lindo /firmar-contrato/<id> lo reescribe _redirects a esta
-  // misma página con ?id=<id> (la URL en la barra del navegador se
-  // queda como /firmar-contrato/<id> - por eso hay que leer el id del
-  // pathname primero). El query string queda como respaldo para probar
-  // a mano sin pasar por el rewrite de Cloudflare.
+  // El link lindo /contrato/firmar-contrato/<id> lo reescribe
+  // _redirects a esta misma página con ?id=<id> (la URL en la barra del
+  // navegador se queda como /contrato/firmar-contrato/<id> - por eso
+  // hay que leer el id del pathname primero). El query string queda
+  // como respaldo para probar a mano sin pasar por el rewrite de
+  // Cloudflare. No hace falta anclar el regex al principio del path -
+  // "/firmar-contrato/<algo>" sigue apareciendo igual aunque la ruta
+  // real tenga /contrato/ antes.
   const pathMatch = location.pathname.match(/\/firmar-contrato\/([^/]+)\/?$/);
   const linkId = (pathMatch && pathMatch[1]) || new URLSearchParams(location.search).get('id');
 
   let originalBytes = null;
   let originalFileName = 'contrato.pdf';
   let anchor = null; // { pageIndex, x, y, width, pageWidth, pageHeight }
+  let pdfPage = null; // la misma página de pdf.js para detección y preview
   let hasInk = false;
 
   // stepAutoLoading/stepAutoError no forman parte de esta lista a
   // propósito: stepAutoError se muestra JUNTO con stepUpload (el error
   // arriba, el cuadro para subir el PDF a mano abajo), no en su lugar.
   function showStep(step) {
-    [stepUpload, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
+    [stepUpload, stepRead, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
       s.hidden = s !== step;
     });
   }
@@ -89,10 +98,9 @@
         return res.arrayBuffer();
       })
       .then((buf) => {
-        // loadPdf ya muestra stepSign de entrada (ver comentario ahí) -
+        // loadPdf ya muestra stepRead de entrada (ver comentario ahí) -
         // ocultamos el "Cargando..." ANTES de llamarlo, para que no
-        // queden los dos estados superpuestos mientras se arma la
-        // preview.
+        // queden los dos estados superpuestos.
         stepAutoLoading.hidden = true;
         return loadPdf(new Uint8Array(buf), 'contrato.pdf');
       })
@@ -136,32 +144,38 @@
     }
   }
 
-  // Común a los dos caminos (subida a mano o cargado por link): detecta
-  // dónde firmar, muestra la preview y pasa al paso de firma. Un solo
-  // documento/página de pdf.js para las dos cosas (detección + render),
-  // no dos getDocument() independientes.
-  //
-  // showStep(stepSign) va ANTES del render de la preview a propósito:
-  // pdf.js puede colgarse si el <canvas> destino está dentro de un
-  // contenedor "hidden" (display:none) en ese momento. La detección del
-  // renglón (findSignatureAnchor, con getTextContent) no depende de
-  // esto y ya tenemos el resultado antes de tocar el canvas - por eso
-  // firmar funciona igual aunque la preview visual falle o tarde (ver
-  // el timeout en renderLastPage).
+  // Común a los dos caminos (subida a mano o cargado por link): primero
+  // muestra el contrato COMPLETO para leer (stepRead) - recién al
+  // confirmar "ya lo leí" se pasa al paso de firma. La detección del
+  // renglón se hace acá igual (es rápida, con getTextContent) para
+  // tenerla lista de antemano; el render de la preview de la última
+  // página se deja para el momento de mostrar stepSign, no antes.
   async function loadPdf(bytes, fileName) {
     originalFileName = fileName;
     originalBytes = bytes;
     fileNameEl.textContent = '📄 ' + fileName;
-
-    showStep(stepSign);
-    resizeSignaturePad();
+    fileNameReadEl.textContent = '📄 ' + fileName;
 
     const doc = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
-    const page = await doc.getPage(doc.numPages);
+    pdfPage = await doc.getPage(doc.numPages);
+    anchor = await findSignatureAnchor(pdfPage);
 
-    anchor = await findSignatureAnchor(page);
-    await renderLastPage(page, anchor);
+    pdfViewer.src = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    showStep(stepRead);
   }
+
+  // El cliente confirma que ya leyó el contrato completo (mostrado en
+  // stepRead) - recién ahí aparece el cuadro para firmar. Coherente con
+  // la cláusula del propio contrato (DÉCIMA SÉPTIMA) que pide una
+  // conformidad expresa, no solo la firma.
+  confirmReadBtn.addEventListener('click', async () => {
+    showStep(stepSign);
+    resizeSignaturePad();
+    // pdf.js puede colgarse si el <canvas> destino está dentro de un
+    // contenedor "hidden" (display:none) en ese momento - por eso el
+    // render recién pasa acá, con stepSign ya visible.
+    await renderLastPage(pdfPage, anchor);
+  });
 
   // ── Detección del renglón de firma (pdf.js) ───────────────────────
   async function findSignatureAnchor(page) {
@@ -271,7 +285,19 @@
     hasInk = false;
     sendBtn.disabled = true;
   }
-  window.addEventListener('resize', () => { if (!stepSign.hidden) resizeSignaturePad(); });
+  // Solo reaccionamos a cambios de ANCHO (rotar el teléfono, cambiar de
+  // ventana) - un cambio de alto solo, sin el ancho, es casi siempre la
+  // barra de direcciones del navegador mobile escondiéndose/apareciendo
+  // al scrollear, no un resize real. Sin este filtro, resizeSignaturePad()
+  // borraba la firma que el cliente ya había dibujado (y desactivaba el
+  // botón de enviar) apenas scrolleaba un poco - lo que se veía como
+  // "se rompe" al firmar en el celular.
+  let lastInnerWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === lastInnerWidth) return;
+    lastInnerWidth = window.innerWidth;
+    if (!stepSign.hidden) resizeSignaturePad();
+  });
 
   let drawing = false;
   function pointerPos(e) {
@@ -352,7 +378,7 @@
       const pngDataUrl = cropped.toDataURL('image/png');
       const pngBytes = dataUrlToBytes(pngDataUrl);
 
-      const { PDFDocument } = PDFLib;
+      const { PDFDocument, StandardFonts, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.load(originalBytes);
       const pages = pdfDoc.getPages();
       const targetPage = pages[Math.min(anchor.pageIndex, pages.length - 1)];
@@ -370,6 +396,25 @@
         width: drawW,
         height: drawH,
       });
+
+      // Aclaración con el nombre tipeado, debajo de la firma - mismo
+      // criterio que un contrato en papel (firma + nombre impreso).
+      // Va bastante por debajo del renglón para no pisar la etiqueta
+      // "EL CLIENTE"/"Firma" que ya trae la plantilla en ese espacio.
+      const clientNameValue = clientNameInput.value.trim();
+      if (clientNameValue) {
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const fontSize = 8;
+        const label = 'Aclaración: ' + clientNameValue;
+        const textWidth = font.widthOfTextAtSize(label, fontSize);
+        targetPage.drawText(label, {
+          x: anchor.x + Math.max(0, (targetWidth - textWidth) / 2),
+          y: anchor.y - 42,
+          size: fontSize,
+          font,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+      }
 
       signedBytes = await pdfDoc.save();
       signedBlob = new Blob([signedBytes], { type: 'application/pdf' });

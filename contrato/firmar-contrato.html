@@ -3,17 +3,18 @@
 <head>
 
 <meta charset="UTF-8" />
-<!-- Esta página también se sirve en /firmar-contrato/<id> (rewrite de
-     _redirects para el link con número de presupuesto). Sin este <base>,
-     los href/src relativos (css/, js/, fonts/) se resolverían contra
-     esa ruta con el segmento extra en vez de la raíz del sitio, y no
-     cargaría nada (probado localmente: se rompía justo así). -->
+<!-- Esta página vive en contrato/ pero también se sirve en
+     /contrato/firmar-contrato/<id> (rewrite de _redirects para el link
+     con número de presupuesto). Sin este <base>, los href/src relativos
+     (css/, js/, fonts/) se resolverían contra esa ruta anidada en vez de
+     la raíz del sitio, y no cargaría nada (probado localmente: se
+     rompía justo así). -->
 <base href="/" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Firmar contrato | Deploy Studio</title>
 <meta name="description" content="Firmá tu contrato con Deploy Studio directamente desde el navegador, sin imprimir nada." />
 <meta name="robots" content="noindex" />
-<link rel="canonical" href="https://deploystudio.com.ar/firmar-contrato" />
+<link rel="canonical" href="https://deploystudio.com.ar/contrato/firmar-contrato" />
 
 <link rel="icon" type="image/png" href="img/favicon.png" />
 <link rel="apple-touch-icon" href="img/favicon.png" />
@@ -67,7 +68,16 @@
     <p class="contrato-error mono" id="uploadError" hidden></p>
   </section>
 
-  <!-- Paso 2: firmar -->
+  <!-- Paso 2: leer el contrato antes de poder firmar -->
+  <section class="contrato-step" id="stepRead" hidden>
+    <p class="contrato-filename mono" id="fileNameRead"></p>
+    <iframe id="pdfViewer" class="contrato-pdfview" title="Contrato a firmar"></iframe>
+    <button type="button" class="btn btn--lime btn--block" id="confirmReadBtn" style="margin-top:20px">
+      Ya leí el contrato - continuar a firmar <span class="btn__arrow">→</span>
+    </button>
+  </section>
+
+  <!-- Paso 3: firmar -->
   <section class="contrato-step" id="stepSign" hidden>
     <p class="contrato-filename mono" id="fileName"></p>
 

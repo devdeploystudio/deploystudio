@@ -1,8 +1,8 @@
-# Reescribe /firmar-contrato/<id> a /firmar-contrato?id=<id> (200 =
-# reescritura, no redirect - la URL linda se queda tal cual en la barra
-# del navegador). Sin ".html" a propósito: Cloudflare ya redirige (307)
-# cada página .html a su versión sin extensión en este sitio - usar acá
-# la versión con .html rebotaría contra ese redirect (ver el gotcha de
-# "Página con redirección" en el MD de Search Console). Ver
-# worker/contract.js y js/firmar-contrato.js.
-/firmar-contrato/:id  /firmar-contrato?id=:id  200
+# Reescribe /contrato/firmar-contrato/<id> a
+# /contrato/firmar-contrato?id=<id> (200 = reescritura, no redirect - la
+# URL linda se queda tal cual en la barra del navegador). Sin ".html" a
+# propósito: Cloudflare ya redirige (307) cada página .html a su versión
+# sin extensión en este sitio - usar acá la versión con .html rebotaría
+# contra ese redirect (ver el gotcha de "Página con redirección" en el
+# MD de Search Console). Ver worker/contract.js y js/firmar-contrato.js.
+/contrato/firmar-contrato/:id  /contrato/firmar-contrato?id=:id  200
