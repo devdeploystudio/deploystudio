@@ -24,3 +24,56 @@
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Excepción a propósito: el firmador de contratos (armar-contrato,
+# firmar-contrato) se sigue tocando seguido, y un cliente viendo una
+# versión vieja en el celular (por ejemplo desde el navegador in-app de
+# WhatsApp, que suele guardar caché de forma más agresiva que Safari
+# normal) puede directamente no poder firmar. Estas rutas nunca se
+# cachean, ni el HTML ni su CSS/JS propio - las reglas de /js/* y
+# /css/* de arriba no alcanzan a cubrir esto porque son justo lo
+# opuesto (cache larga a propósito para el resto del sitio).
+/contrato/*
+  Cache-Control: no-store
+
+/js/firmar-contrato.js
+  Cache-Control: no-store
+
+/js/armar-contrato.js
+  Cache-Control: no-store
+
+/css/contrato-tool.css
+  Cache-Control: no-store
+
+# Mismo criterio para post-deploy/ (analíticas, SEO, performance): son
+# herramientas con datos reales que el cliente consulta, se siguen
+# retocando, y una versión vieja en caché le puede mostrar números o
+# resultados que ya no son los actuales. css/styles.min.css queda
+# afuera a propósito - es el estilo base de TODO el sitio, no solo de
+# post-deploy, y perdería la cache larga en el resto de las páginas.
+/post-deploy/*
+  Cache-Control: no-store
+
+/js/analiticas.js
+  Cache-Control: no-store
+
+/js/seo.js
+  Cache-Control: no-store
+
+/js/performance.js
+  Cache-Control: no-store
+
+/css/analiticas.css
+  Cache-Control: no-store
+
+/css/seo.css
+  Cache-Control: no-store
+
+/css/performance.css
+  Cache-Control: no-store
+
+/css/post-deploy.css
+  Cache-Control: no-store
+
+/css/panel-edicion.css
+  Cache-Control: no-store

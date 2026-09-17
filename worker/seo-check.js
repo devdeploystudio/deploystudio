@@ -240,7 +240,7 @@ async function analyze(parsed) {
 
   const [robotsOk, sitemapOk, assetCacheResults] = await Promise.all([
     checkExists(parsed, '/robots.txt'),
-    checkExists(parsed, '/sitemap.xml'),
+    checkSitemap(parsed),
     Promise.all(data.assetUrls.map(checkAssetCaching)),
   ]);
   // 7 días es un punto medio razonable para un sitio chico (Lighthouse
@@ -354,6 +354,32 @@ async function checkExists(parsed, path) {
   } catch (e) {
     return false;
   }
+}
+
+// Sitios armados con @astrojs/sitemap (Astro) no generan /sitemap.xml, sino
+// /sitemap-index.xml (el formato estándar de "índice de sitemaps") -
+// confirmado real en santilli-aparts, marcaba error acá aunque el sitemap
+// estaba bien armado y declarado en robots.txt. En vez de asumir el nombre
+// clásico, leemos la línea "Sitemap:" de robots.txt (tiene que estar
+// SIEMPRE, sea cual sea el nombre real del archivo) y confirmamos que esa
+// URL responda. Si robots.txt no declara ninguna, caemos al nombre clásico
+// /sitemap.xml como último intento (sitios sin este integration, o armados
+// a mano).
+async function checkSitemap(parsed) {
+  try {
+    const robotsRes = await fetch(new URL('/robots.txt', parsed.origin).toString());
+    if (robotsRes.ok) {
+      const robotsText = await robotsRes.text();
+      const match = /^\s*Sitemap:\s*(\S+)/im.exec(robotsText);
+      if (match) {
+        const sitemapRes = await fetch(match[1]);
+        return sitemapRes.ok;
+      }
+    }
+  } catch (e) {
+    // sigue al fallback de abajo
+  }
+  return checkExists(parsed, '/sitemap.xml');
 }
 
 async function checkAssetCaching(url) {
