@@ -4,7 +4,11 @@
    armado desde armar-contrato.html (/contrato/firmar-contrato/<id>) -
    no hay subida manual de PDF acá, el cliente nunca tiene que elegir
    ningún archivo:
-   1. Pedimos el PDF al Worker (/contract?id=...).
+   1. Pedimos el PDF al Worker (/contract?id=...) - junto con nombre,
+      apellido y mail del cliente que Deploy cargó al armar el link
+      (headers X-Client-*), usados para prellenar el nombre del
+      firmante y armar el nombre de archivo ("contrato-apellido-
+      nombre-numero.pdf", ver buildFileName).
    2. Buscamos con pdf.js el renglón "EL CLIENTE / Firma" en la ÚLTIMA
       página (siempre ahí, sea cual sea el largo del contrato - la
       posición se detecta por texto, no es una coordenada fija, así que
@@ -66,11 +70,40 @@
   let anchor = null; // { pageIndex, x, y, width, pageWidth, pageHeight }
   let pdfPage = null; // la misma página de pdf.js para detección y preview
   let hasInk = false;
+  // Nombre/apellido/mail que Deploy cargó al armar el link (ver
+  // armar-contrato.html) - vienen como headers X-Client-* en la
+  // respuesta de /contract. Se usan para prellenar el nombre del
+  // firmante, armar el nombre de archivo, y mandarle la copia por mail
+  // al cliente al firmar.
+  let clientMeta = { name: '', lastname: '', email: '', budget: '' };
 
   function showStep(step) {
     [stepRead, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
       s.hidden = s !== step;
     });
+  }
+
+  function decodeMetaHeader(res, header) {
+    try {
+      return decodeURIComponent(res.headers.get(header) || '');
+    } catch {
+      return '';
+    }
+  }
+
+  // Nombre de archivo prolijo para todo lo que el cliente pueda
+  // descargar (el contrato para leer, y el firmado al final):
+  // "contrato-apellido-nombre-numero.pdf". Sin acentos/símbolos raros -
+  // no todos los sistemas los manejan bien en nombres de archivo.
+  function buildFileName() {
+    const slug = (s) => (s || '')
+      .toString()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // saca acentos
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+    const parts = ['contrato', slug(clientMeta.lastname), slug(clientMeta.name), slug(clientMeta.budget)].filter(Boolean);
+    return (parts.length > 1 ? parts.join('-') : 'contrato-firmado') + '.pdf';
   }
 
   // ── Carga del contrato desde el link ──────────────────────────────
@@ -79,6 +112,12 @@
     fetch(WORKER_URL + '/contract?id=' + encodeURIComponent(linkId))
       .then((res) => {
         if (!res.ok) throw new Error('fetch-contract-failed');
+        clientMeta = {
+          name: decodeMetaHeader(res, 'X-Client-Name'),
+          lastname: decodeMetaHeader(res, 'X-Client-Lastname'),
+          email: decodeMetaHeader(res, 'X-Client-Email'),
+          budget: decodeMetaHeader(res, 'X-Budget'),
+        };
         return res.arrayBuffer();
       })
       .then((buf) => {
@@ -86,7 +125,7 @@
         // ocultamos el "Cargando..." ANTES de llamarlo, para que no
         // queden los dos estados superpuestos.
         stepAutoLoading.hidden = true;
-        return loadPdf(new Uint8Array(buf), 'contrato.pdf');
+        return loadPdf(new Uint8Array(buf), buildFileName());
       })
       .catch((err) => {
         console.error(err);
@@ -111,6 +150,11 @@
     originalBytes = bytes;
     fileNameEl.textContent = '📄 ' + fileName;
     fileNameReadEl.textContent = '📄 ' + fileName;
+
+    // Prellenado con lo que Deploy cargó al armar el link - queda
+    // editable, por si hace falta corregirlo.
+    const fullName = [clientMeta.name, clientMeta.lastname].filter(Boolean).join(' ');
+    if (fullName) clientNameInput.value = fullName;
 
     // Para quien prefiera leerlo tranquilo aparte (su propio lector de
     // PDF) en vez de scrollear el visor de acá abajo.
@@ -432,7 +476,11 @@
 
       signedBytes = await pdfDoc.save();
       signedBlob = new Blob([signedBytes], { type: 'application/pdf' });
-      signedFileName = originalFileName.replace(/\.pdf$/i, '') + ' - firmado.pdf';
+      // originalFileName ya es "contrato-apellido-nombre-numero.pdf"
+      // (armado en loadPdf con buildFileName) - es el mismo nombre para
+      // el PDF sin firmar y para el firmado, no hace falta agregarle
+      // nada más.
+      signedFileName = originalFileName;
     } catch (err) {
       console.error(err);
       signError.textContent = 'No pudimos armar el PDF firmado. Probá de nuevo.';
@@ -448,6 +496,7 @@
         body: JSON.stringify({
           pdfBase64: bytesToBase64(signedBytes),
           clientName: clientNameInput.value.trim() || 'Sin nombre',
+          clientEmail: clientMeta.email || undefined,
           fileName: signedFileName,
           id: linkId || undefined,
         }),

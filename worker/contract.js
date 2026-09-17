@@ -5,14 +5,19 @@
 
    POST /upload   Deploy sube el PDF del contrato de un cliente (con
                   clave de administrador) junto con el número de
-                  presupuesto (?budget=003) → lo guarda en KV bajo un id
-                  "003-a1b2c3" (número + 6 caracteres random) y devuelve
-                  ese id. El número solo es para que Deploy reconozca el
-                  link de un vistazo - los 6 caracteres random son la
-                  protección real: sin ellos, cualquiera podría probar
+                  presupuesto y los datos del cliente
+                  (?budget=003&name=Juan&lastname=Pérez&email=...) → lo
+                  guarda en KV bajo un id "003-a1b2c3" (número + 6
+                  caracteres random) y devuelve ese id. El número solo
+                  es para que Deploy reconozca el link de un vistazo -
+                  los 6 caracteres random son la protección real: sin
+                  ellos, cualquiera podría probar
                   /contrato/firmar-contrato/001, /002... y ver contratos
                   ajenos (nombre, CUIT/DNI, domicilio de otro cliente).
-                  Deploy arma el link
+                  name/lastname/email quedan como metadata de KV (no en
+                  el PDF en sí) - firmar-contrato.html los pide para
+                  prellenar el nombre del firmante y armar el nombre de
+                  archivo. Deploy arma el link
                   contrato/firmar-contrato.html?id=<id> (reescrito a
                   /contrato/firmar-contrato/<id> por _redirects) y se lo
                   pasa al cliente.
@@ -21,10 +26,15 @@
                   cargar su contrato sin tener que subir el archivo.
                   Público (sin clave) - el id (con su parte random) ES
                   la protección, como cualquier link para compartir.
+                  Devuelve el PDF y la metadata (name/lastname/email) en
+                  headers X-Client-*.
    POST /send     Recibe el PDF ya firmado (armado en el navegador del
-                  cliente) y lo reenvía por mail a Deploy Studio como
-                  adjunto, usando la API de Resend. Si venía de un link
-                  con id, borra esa entrada de KV (un solo uso).
+                  cliente, con el nombre de archivo ya armado ahí) y lo
+                  reenvía por mail a Deploy Studio como adjunto, usando
+                  la API de Resend. Si vino un mail de cliente, le manda
+                  ADEMÁS una copia con diseño propio (logo, más prolijo)
+                  directo al cliente. Si venía de un link con id, borra
+                  esa entrada de KV (un solo uso).
 
    La llave de Resend y la clave de administrador viven como secrets
    del Worker (RESEND_API_KEY, ADMIN_TOKEN) - nunca llegan al navegador.
@@ -64,8 +74,21 @@ function corsHeaders(request) {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    // Por default el navegador solo deja leer desde JS un puñado de
+    // headers de respuesta "seguros" en pedidos cross-origin (Content-
+    // Type, Content-Length, etc.) - sin esto, firmar-contrato.js no
+    // podría leer los X-Client-* que devuelve /contract con fetch().
+    'Access-Control-Expose-Headers': 'X-Client-Name, X-Client-Lastname, X-Client-Email, X-Budget',
     'Vary': 'Origin',
   };
+}
+
+// Los headers HTTP solo aceptan texto ASCII - un nombre con tilde
+// ("Pérez") rompería el header tal cual. encodeURIComponent lo deja en
+// ASCII seguro; el otro lado (js/firmar-contrato.js) hace
+// decodeURIComponent para recuperar el texto real.
+function encodeHeader(value) {
+  return encodeURIComponent((value || '').toString().slice(0, 200));
 }
 
 function json(data, status, headers) {
@@ -110,7 +133,18 @@ async function handleUpload(request, url, env, headers) {
   const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 6);
   const id = `${budgetSlug}-${suffix}`;
 
-  await env.CONTRACTS.put(id, bytes, { expirationTtl: LINK_TTL_SECONDS });
+  // name/lastname/email van como metadata de KV, no como parte del PDF -
+  // sirven para prellenar el nombre del firmante en firmar-contrato.html
+  // y armar el nombre de archivo ("contrato-apellido-nombre-numero.pdf"),
+  // y el email para mandarle ahí la copia con diseño una vez que firme.
+  const metadata = {
+    budget: url.searchParams.get('budget') || '',
+    name: url.searchParams.get('name') || '',
+    lastname: url.searchParams.get('lastname') || '',
+    email: url.searchParams.get('email') || '',
+  };
+
+  await env.CONTRACTS.put(id, bytes, { expirationTtl: LINK_TTL_SECONDS, metadata });
 
   return json({ id }, 200, headers);
 }
@@ -120,10 +154,19 @@ async function handleGetContract(url, env, headers) {
   const id = url.searchParams.get('id') || '';
   if (!ID_RE.test(id)) return json({ error: 'Id inválido' }, 400, headers);
 
-  const bytes = await env.CONTRACTS.get(id, 'arrayBuffer');
+  const { value: bytes, metadata } = await env.CONTRACTS.getWithMetadata(id, 'arrayBuffer');
   if (!bytes) return json({ error: 'No encontramos ese contrato - puede haber expirado o ya haberse firmado' }, 404, headers);
 
-  return new Response(bytes, { headers: { ...headers, 'Content-Type': 'application/pdf' } });
+  return new Response(bytes, {
+    headers: {
+      ...headers,
+      'Content-Type': 'application/pdf',
+      'X-Client-Name': encodeHeader(metadata && metadata.name),
+      'X-Client-Lastname': encodeHeader(metadata && metadata.lastname),
+      'X-Client-Email': encodeHeader(metadata && metadata.email),
+      'X-Budget': encodeHeader(metadata && metadata.budget),
+    },
+  });
 }
 
 // ── POST /send ───────────────────────────────────────────────────────
@@ -135,13 +178,18 @@ async function handleSend(request, env, headers) {
     return json({ error: 'Body inválido' }, 400, headers);
   }
 
-  const { pdfBase64, clientName, fileName, id } = body || {};
+  const { pdfBase64, clientName, clientEmail, fileName, id } = body || {};
   if (!pdfBase64 || typeof pdfBase64 !== 'string') return json({ error: 'Falta el PDF' }, 400, headers);
   if (pdfBase64.length > MAX_PDF_BYTES * 1.4) return json({ error: 'El PDF es demasiado grande' }, 413, headers);
 
   const safeName = (clientName || 'Sin nombre').toString().slice(0, 120);
+  // fileName ya viene prolijo desde el navegador
+  // (contrato-apellido-nombre-numero.pdf, ver buildFileName en
+  // js/firmar-contrato.js) - acá solo se lo sanitiza por las dudas.
   const safeFileName = (fileName || 'contrato-firmado.pdf').toString().replace(/[^\w.\- ]/g, '_').slice(0, 120);
+  const attachment = { filename: safeFileName, content: pdfBase64 };
 
+  // Mail interno a Deploy con el PDF firmado adjunto.
   let resendRes;
   try {
     resendRes = await fetch('https://api.resend.com/emails', {
@@ -154,8 +202,8 @@ async function handleSend(request, env, headers) {
         from: `Deploy Studio <${FROM_EMAIL}>`,
         to: [TO_EMAIL],
         subject: `Contrato firmado - ${safeName}`,
-        text: `Firmó: ${safeName}\n\nAdjunto el contrato firmado desde deploystudio.com.ar/contrato/firmar-contrato`,
-        attachments: [{ filename: safeFileName, content: pdfBase64 }],
+        text: `Firmó: ${safeName}`,
+        attachments: [attachment],
       }),
     });
   } catch {
@@ -170,6 +218,33 @@ async function handleSend(request, env, headers) {
     return json({ error: 'No se pudo enviar el mail', status: resendRes.status, detail }, 502, headers);
   }
 
+  // Mail de cortesía al cliente, con diseño propio y el PDF adjunto -
+  // solo si Deploy cargó su mail al armar el link (armar-contrato.html).
+  // No es bloqueante: si este falla, el contrato ya quedó recibido por
+  // Deploy de todas formas (el mail de arriba ya se mandó bien), así
+  // que no vale la pena mostrarle un error al cliente por esto.
+  const safeEmail = (clientEmail || '').toString().trim();
+  if (safeEmail) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: `Deploy Studio <${FROM_EMAIL}>`,
+          to: [safeEmail],
+          subject: 'Tu contrato con Deploy Studio ya está firmado',
+          html: clientEmailHtml(safeName),
+          attachments: [attachment],
+        }),
+      });
+    } catch (err) {
+      console.error('mail al cliente falló (no bloqueante):', err);
+    }
+  }
+
   // Link de un solo uso: una vez que se mandó bien el mail, borramos el
   // contrato sin firmar de KV para que ese link no sirva para "firmar de
   // nuevo" ni quede ocupando espacio indefinidamente.
@@ -178,4 +253,53 @@ async function handleSend(request, env, headers) {
   }
 
   return json({ ok: true }, 200, headers);
+}
+
+// Mail HTML simple para el cliente - estilos inline a propósito (los
+// clientes de mail no soportan <style> ni CSS moderno de forma
+// confiable), con los colores/tipografía de la marca. La imagen del
+// logo apunta al sitio en vivo (deploystudio.com.ar) porque los mails
+// no pueden traer archivos propios embebidos de forma confiable.
+// logo-mail.png es una copia de img/logo.png recortada (sharp .trim())
+// a solo el isotipo - el original es un cuadrado de 4961x4961 con
+// mucho margen alrededor, que en un header angosto de mail se veía
+// como un recuadro alto de más.
+function clientEmailHtml(name) {
+  const firstName = (name || '').toString().split(' ')[0] || '';
+  // Tabla con bgcolor (no un <div> con background) para el fondo
+  // cremita a propósito: Gmail/Outlook suelen ignorar el background de
+  // un <div> suelto en mails, pero sí respetan el bgcolor/background de
+  // una <table> - así se ve igual en el cliente de mail real, no solo
+  // en el navegador.
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#FAFAF8" style="background:#FAFAF8;">
+  <tr>
+    <td align="center" style="padding:40px 16px;font-family:Arial,Helvetica,sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:480px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #DDDDDD;">
+        <tr>
+          <td bgcolor="#FAFAF8" style="padding:28px 32px;background:#FAFAF8;text-align:center;border-bottom:1px solid #DDDDDD;">
+            <img src="https://deploystudio.com.ar/img/logo-mail.png" alt="Deploy Studio" width="170" style="display:block;margin:0 auto;border:0;" />
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5c9900;font-weight:bold;margin:0 0 12px;">Contrato firmado</p>
+            <h1 style="font-size:22px;line-height:1.3;margin:0 0 16px;color:#0D0D0D;">¡Listo${firstName ? ', ' + firstName : ''}!</h1>
+            <p style="font-size:15px;line-height:1.6;color:#3a3a3a;margin:0 0 16px;">
+              Tu contrato con Deploy Studio quedó firmado correctamente. Te dejamos una copia adjunta en este mail para que la guardes.
+            </p>
+            <p style="font-size:15px;line-height:1.6;color:#3a3a3a;margin:0;">
+              Cualquier duda, escribinos y lo vemos.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td bgcolor="#FAFAF8" style="padding:18px 32px;background:#FAFAF8;text-align:center;">
+            <p style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.5px;color:#B7B7B7;margin:0;">deploy studio_ · deploystudio.com.ar</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>`.trim();
 }

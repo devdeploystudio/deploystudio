@@ -18,6 +18,9 @@
   const $ = (id) => document.getElementById(id);
   const adminToken = $('adminToken');
   const budgetNumber = $('budgetNumber');
+  const clientFirstName = $('clientFirstName');
+  const clientLastName = $('clientLastName');
+  const clientEmail = $('clientEmail');
   const dropZone = $('dropZone');
   const fileInput = $('fileInput');
   const fileNameEl = $('fileName');
@@ -40,9 +43,14 @@
   } catch (_) { /* localStorage puede fallar en modo privado - no pasa nada, se pide de nuevo */ }
 
   function updateBtn() {
-    uploadBtn.disabled = !(selectedFile && adminToken.value.trim());
+    uploadBtn.disabled = !(
+      selectedFile &&
+      adminToken.value.trim() &&
+      clientFirstName.value.trim() &&
+      clientLastName.value.trim()
+    );
   }
-  adminToken.addEventListener('input', updateBtn);
+  [adminToken, clientFirstName, clientLastName].forEach((el) => el.addEventListener('input', updateBtn));
 
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('is-dragover'); });
@@ -79,8 +87,13 @@
     stepUploading.hidden = false;
 
     try {
-      const budget = encodeURIComponent(budgetNumber.value.trim());
-      const res = await fetch(WORKER_URL + '/upload?budget=' + budget, {
+      const params = new URLSearchParams({
+        budget: budgetNumber.value.trim(),
+        name: clientFirstName.value.trim(),
+        lastname: clientLastName.value.trim(),
+        email: clientEmail.value.trim(),
+      });
+      const res = await fetch(WORKER_URL + '/upload?' + params.toString(), {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + token,
@@ -128,6 +141,9 @@
     fileNameEl.textContent = '';
     fileInput.value = '';
     budgetNumber.value = '';
+    clientFirstName.value = '';
+    clientLastName.value = '';
+    clientEmail.value = '';
     stepResult.hidden = true;
     stepForm.hidden = false;
     updateBtn();
