@@ -1,10 +1,11 @@
 # Cloudflare lee este archivo solo (Pages y Workers con assets estáticos)
 # para agregar headers de respuesta por ruta, sin tocar el hosting.
 #
-# El HTML NO está acá a propósito: conviene que se revalide seguido para
-# que siempre se vea el contenido actualizado (Cloudflare ya lo maneja
-# bien por default). Esto es solo para los archivos de código/diseño y
-# los assets que casi no cambian entre un deploy y el siguiente.
+# El HTML NO está acá a propósito para el sitio general: conviene que se
+# revalide seguido para que siempre se vea el contenido actualizado
+# (Cloudflare ya lo maneja bien por default). Esto es solo para los
+# archivos de código/diseño y los assets que casi no cambian entre un
+# deploy y el siguiente.
 #
 # Ojo: como los nombres de archivo son fijos (styles.min.css, no algo
 # como styles.a1b2c3.css con hash), si se actualiza un CSS/JS puntual los
@@ -12,11 +13,44 @@
 # el tiempo de abajo en ver el cambio - por eso 7 días acá (no el año que
 # se usaría con nombres versionados), y hasta 1 año solo en fuentes, que
 # prácticamente nunca cambian.
+#
+# ⚠️ Gotcha real: NO usar wildcards genéricos (/js/*, /css/*) para esto.
+# Si dos reglas de este archivo matchean el mismo archivo y ambas fijan
+# el mismo header, Cloudflare NO hace que una pise a la otra - las
+# COMBINA en un solo header roto (ej. "public, max-age=604800, no-store"
+# a la vez), y en ese caso Cloudflare igual lo cachea en su borde
+# (visto en vivo: CF-Cache-Status devolvía HIT a pesar del no-store).
+# Por eso cada archivo de JS/CSS está listado individualmente más abajo,
+# en el grupo de cache larga O en el de no-store, nunca en los dos.
 
-/css/*
+/css/styles.min.css
   Cache-Control: public, max-age=604800
 
-/js/*
+/css/styles.css
+  Cache-Control: public, max-age=604800
+
+/css/legal.css
+  Cache-Control: public, max-age=604800
+
+/css/404.css
+  Cache-Control: public, max-age=604800
+
+/css/diagnostico.css
+  Cache-Control: public, max-age=604800
+
+/js/script.js
+  Cache-Control: public, max-age=604800
+
+/js/projects.js
+  Cache-Control: public, max-age=604800
+
+/js/services.js
+  Cache-Control: public, max-age=604800
+
+/js/diagnostico.js
+  Cache-Control: public, max-age=604800
+
+/js/vendor/*
   Cache-Control: public, max-age=604800
 
 /img/*
@@ -30,9 +64,7 @@
 # versión vieja en el celular (por ejemplo desde el navegador in-app de
 # WhatsApp, que suele guardar caché de forma más agresiva que Safari
 # normal) puede directamente no poder firmar. Estas rutas nunca se
-# cachean, ni el HTML ni su CSS/JS propio - las reglas de /js/* y
-# /css/* de arriba no alcanzan a cubrir esto porque son justo lo
-# opuesto (cache larga a propósito para el resto del sitio).
+# cachean, ni el HTML ni su CSS/JS propio.
 /contrato/*
   Cache-Control: no-store
 
@@ -48,9 +80,7 @@
 # Mismo criterio para post-deploy/ (analíticas, SEO, performance): son
 # herramientas con datos reales que el cliente consulta, se siguen
 # retocando, y una versión vieja en caché le puede mostrar números o
-# resultados que ya no son los actuales. css/styles.min.css queda
-# afuera a propósito - es el estilo base de TODO el sitio, no solo de
-# post-deploy, y perdería la cache larga en el resto de las páginas.
+# resultados que ya no son los actuales.
 /post-deploy/*
   Cache-Control: no-store
 
