@@ -71,6 +71,23 @@
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
 }
+/* Flechas para pasar de hoja - además de poder deslizar (swipe). Se
+   ocultan solas en la primera/última hoja (ver disabled en JS). */
+.contrato-lightbox__nav{
+  position:fixed;top:50%;transform:translateY(-50%);z-index:1001;
+  width:44px;height:44px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.9);color:var(--ink);
+  font-size:26px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.contrato-lightbox__nav:disabled{opacity:0;pointer-events:none}
+.contrato-lightbox__nav--prev{left:16px}
+.contrato-lightbox__nav--next{right:16px}
+.contrato-lightbox__count{
+  position:fixed;bottom:20px;left:0;right:0;text-align:center;
+  color:#fff;font-size:12px;
+}
 
 /* ── Paso 3: firmar ── */
 .contrato-filename{font-size:12.5px;color:var(--stone);margin-bottom:18px}
@@ -102,12 +119,20 @@
 .contrato-field input:focus{outline:none;border-color:var(--lime)}
 
 .contrato-padwrap{
-  position:relative;margin-bottom:20px;
+  margin-bottom:20px;
   border:1px solid var(--mist);border-radius:var(--r);background:rgba(255,255,255,.7);
   padding:14px;
 }
+/* Fila propia para label + botón, en vez de posicionar el botón
+   absoluto sobre el wrapper entero: así nunca se mete pisando el
+   canvas de abajo, sea cual sea el alto del label o el ancho de
+   pantalla (antes se solapaba unos px sobre la firma en desktop). */
+.contrato-padwrap__head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:10px;
+}
 .contrato-padwrap__label{
-  display:block;font-size:11px;color:var(--stone);margin-bottom:10px;
+  display:block;font-size:11px;color:var(--stone);
 }
 .contrato-pad{
   display:block;width:100%;height:160px;
@@ -116,7 +141,6 @@
     linear-gradient(transparent calc(100% - 1px), var(--mist) calc(100% - 1px))
     0 100% / 100% 100% no-repeat;
 }
-.contrato-padwrap .btn{position:absolute;right:14px;top:14px}
 
 .contrato-error{font-size:13px;color:#c0392b;margin-top:12px}
 
@@ -131,7 +155,6 @@
 
 @media (max-width:640px){
   .contrato-drop{padding:40px 16px}
-  .contrato-padwrap .btn{position:static;margin-top:12px}
 }
 
 /* ── armar-contrato.html: resultado con el link generado ── */

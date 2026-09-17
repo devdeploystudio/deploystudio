@@ -46,7 +46,7 @@
 <main class="legal-main contrato-main">
   <span class="eyebrow mono">- Contrato</span>
   <h1>Firmá tu contrato</h1>
-  <p id="introText">Tu contrato ya está listo para revisar. Leelo, firmalo con el dedo o el mouse, y lo enviamos directo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.</p>
+  <p id="introText">Tu contrato ya está listo para revisar. Leelo con calma antes de firmar.</p>
 
   <!-- Estado inicial: cargando el contrato del link -->
   <section class="contrato-step contrato-state" id="stepAutoLoading" hidden>
@@ -93,9 +93,11 @@
     </label>
 
     <div class="contrato-padwrap">
-      <span class="mono contrato-padwrap__label">Firmá acá</span>
+      <div class="contrato-padwrap__head">
+        <span class="mono contrato-padwrap__label">Firmá acá</span>
+        <button type="button" class="btn btn--ghost btn--sm" id="clearSig">Borrar firma</button>
+      </div>
       <canvas id="sigCanvas" class="contrato-pad"></canvas>
-      <button type="button" class="btn btn--ghost btn--sm" id="clearSig">Borrar firma</button>
     </div>
 
     <button type="button" class="btn btn--lime btn--block" id="sendBtn" disabled>
@@ -111,8 +113,8 @@
 
   <section class="contrato-step contrato-state" id="stepSuccess" hidden>
     <p class="contrato-state__title">Listo, se firmó correctamente</p>
-    <p>Le llegó una copia a Deploy Studio. Guardá también tu propia copia:</p>
-    <a href="#" class="btn btn--ghost" id="downloadSuccess" download>Descargar mi copia firmada</a>
+    <p id="successDetail">Le llegó una copia a Deploy Studio.</p>
+    <a href="#" class="btn btn--lime" id="downloadSuccess" download>Descargar mi copia firmada</a>
   </section>
 
   <section class="contrato-step contrato-state" id="stepFailure" hidden>
@@ -128,10 +130,15 @@
 
 <!-- Visor grande al tocar una hoja del contrato en stepRead. Reusa la
      imagen ya renderizada (alta resolución) del canvas correspondiente,
-     no vuelve a dibujar nada. -->
+     no vuelve a dibujar nada. Una vez abierto, se puede pasar de hoja
+     deslizando (swipe) o con las flechas - las flechas están para quien
+     no dé por sentado que se puede deslizar. -->
 <div id="pageLightbox" class="contrato-lightbox" hidden>
   <button type="button" id="pageLightboxClose" class="contrato-lightbox__close" aria-label="Cerrar">✕</button>
+  <button type="button" id="pageLightboxPrev" class="contrato-lightbox__nav contrato-lightbox__nav--prev" aria-label="Página anterior">‹</button>
   <img id="pageLightboxImg" alt="Página del contrato ampliada" />
+  <button type="button" id="pageLightboxNext" class="contrato-lightbox__nav contrato-lightbox__nav--next" aria-label="Página siguiente">›</button>
+  <p id="pageLightboxCount" class="contrato-lightbox__count mono"></p>
 </div>
 
 <footer class="legal-footer mono">

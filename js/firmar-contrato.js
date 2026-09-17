@@ -30,6 +30,7 @@
 
   const $ = (id) => document.getElementById(id);
 
+  const introText = $('introText');
   const stepAutoLoading = $('stepAutoLoading');
   const stepAutoError = $('stepAutoError');
   const stepRead = $('stepRead');
@@ -45,16 +46,55 @@
   const pageLightbox = $('pageLightbox');
   const pageLightboxImg = $('pageLightboxImg');
   const pageLightboxClose = $('pageLightboxClose');
+  const pageLightboxPrev = $('pageLightboxPrev');
+  const pageLightboxNext = $('pageLightboxNext');
+  const pageLightboxCount = $('pageLightboxCount');
+  let lightboxIndex = -1;
 
   // Tocar una hoja la agranda reusando la misma imagen ya renderizada
-  // (alta resolución) - no vuelve a dibujar nada. Se cierra tocando el
-  // fondo O la crucecita - la crucecita está para quien no dé por
-  // sentado que tocar afuera cierra un visor.
-  pageLightbox.addEventListener('click', () => { pageLightbox.hidden = true; });
-  pageLightboxClose.addEventListener('click', (e) => {
-    e.stopPropagation();
-    pageLightbox.hidden = true;
+  // (alta resolución) - no vuelve a dibujar nada. Una vez abierto, se
+  // puede pasar de hoja deslizando (swipe, ver más abajo) o con las
+  // flechas. Se cierra tocando el fondo O la crucecita - la crucecita
+  // está para quien no dé por sentado que tocar afuera cierra un visor.
+  function openLightbox(index) {
+    const canvases = pdfPagesEl.querySelectorAll('.contrato-pdfview__page');
+    if (!canvases[index]) return;
+    lightboxIndex = index;
+    pageLightboxImg.src = canvases[index].toDataURL('image/png');
+    pageLightboxCount.textContent = (index + 1) + ' / ' + canvases.length;
+    pageLightboxPrev.disabled = index === 0;
+    pageLightboxNext.disabled = index === canvases.length - 1;
+    pageLightbox.hidden = false;
+  }
+  function closeLightbox() { pageLightbox.hidden = true; }
+  function shiftLightbox(delta) { openLightbox(lightboxIndex + delta); }
+
+  pageLightbox.addEventListener('click', closeLightbox);
+  pageLightboxClose.addEventListener('click', (e) => { e.stopPropagation(); closeLightbox(); });
+  pageLightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); shiftLightbox(-1); });
+  pageLightboxNext.addEventListener('click', (e) => { e.stopPropagation(); shiftLightbox(1); });
+  document.addEventListener('keydown', (e) => {
+    if (pageLightbox.hidden) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') shiftLightbox(-1);
+    else if (e.key === 'ArrowRight') shiftLightbox(1);
   });
+
+  // Deslizar (swipe) para pasar de hoja en mobile. Umbral de 40px y más
+  // horizontal que vertical, para no confundir un swipe con un scroll
+  // vertical accidental dentro del visor.
+  let touchStartX = 0, touchStartY = 0;
+  pageLightbox.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  pageLightbox.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      shiftLightbox(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
 
   const fileNameEl = $('fileName');
   const pageCanvas = $('pageCanvas');
@@ -66,6 +106,7 @@
   const signError = $('signError');
   const downloadSuccess = $('downloadSuccess');
   const downloadFailure = $('downloadFailure');
+  const successDetail = $('successDetail');
 
   // El link lindo /contrato/firmar-contrato/<id> lo reescribe
   // _redirects a esta misma página con ?id=<id> (la URL en la barra del
@@ -90,10 +131,21 @@
   // al cliente al firmar.
   let clientMeta = { name: '', lastname: '', email: '', budget: '' };
 
+  // Texto de arriba de todo, distinto según el paso - vacío en los
+  // pasos finales (sending/success/failure), donde ya no aporta nada
+  // (el propio estado explica lo que hace falta).
+  const INTRO_BY_STEP = {
+    read: 'Tu contrato ya está listo para revisar. Leelo con calma antes de firmar.',
+    sign: 'Ahora firmá con el dedo o el mouse, y lo enviamos directo a Deploy Studio.',
+  };
+
   function showStep(step) {
     [stepRead, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
       s.hidden = s !== step;
     });
+    if (step === stepRead) { introText.hidden = false; introText.textContent = INTRO_BY_STEP.read; }
+    else if (step === stepSign) { introText.hidden = false; introText.textContent = INTRO_BY_STEP.sign; }
+    else { introText.hidden = true; }
   }
 
   function decodeMetaHeader(res, header) {
@@ -120,6 +172,10 @@
   }
 
   // ── Carga del contrato desde el link ──────────────────────────────
+  // El texto de arriba ("Tu contrato ya está listo...") es del paso de
+  // lectura - no aplica mientras carga ni si falla, así que arranca
+  // oculto y showStep() lo vuelve a mostrar recién en stepRead/stepSign.
+  introText.hidden = true;
   if (linkId) {
     stepAutoLoading.hidden = false;
     fetch(WORKER_URL + '/contract?id=' + encodeURIComponent(linkId))
@@ -210,17 +266,14 @@
     // así que esto no cambia el tamaño visual, solo la nitidez. Tope en
     // 3x para no disparar el peso/tiempo de render en pantallas 4x+.
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
-    const targets = pages.map((page) => {
+    const targets = pages.map((page, index) => {
       const cssScale = Math.min(2, containerWidth / page.getViewport({ scale: 1 }).width);
       const viewport = page.getViewport({ scale: cssScale * dpr });
       const canvas = document.createElement('canvas');
       canvas.className = 'contrato-pdfview__page';
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      canvas.addEventListener('click', () => {
-        pageLightboxImg.src = canvas.toDataURL('image/png');
-        pageLightbox.hidden = false;
-      });
+      canvas.addEventListener('click', () => openLightbox(index));
       pdfPagesEl.appendChild(canvas);
       return { page, canvas, viewport };
     });
@@ -540,6 +593,13 @@
       });
       if (!res.ok) throw new Error('worker-error');
 
+      // Si Deploy cargó el mail del cliente al armar el link, el Worker
+      // le mandó ADEMÁS una copia con diseño propio a esa casilla (ver
+      // worker/contract.js) - se lo confirmamos acá con la dirección
+      // real, no un genérico "revisá tu mail".
+      successDetail.textContent = clientMeta.email
+        ? `Le llegó una copia a Deploy Studio, y te enviamos otra a tu mail: ${clientMeta.email}.`
+        : 'Le llegó una copia a Deploy Studio.';
       showDownload(downloadSuccess, signedBlob, signedFileName);
       showStep(stepSuccess);
     } catch (err) {

@@ -46,7 +46,12 @@
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+/* overflow-x acá Y en body (no alcanza con uno solo): en Safari/iOS el
+   scroll horizontal a veces lo maneja <html>, no <body> - con
+   overflow-x:hidden solo en body, elementos a sangre como los de
+   left:-5%;width:110% de abajo pueden seguir generando scroll horizontal
+   en el celular aunque en desktop no se note nada. */
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
 
 body{
   font-family:var(--font-sans);
