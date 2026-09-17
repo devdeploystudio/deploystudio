@@ -93,10 +93,13 @@ El link del mail **abre Gmail en una pestaña nueva** con el destinatario ya
 cargado (`https://mail.google.com/mail/?view=cm&fs=1&to=...`), en vez de un
 `mailto:` que depende del programa de correo que tenga instalado cada persona.
 
-El formulario envía directo a `contact.deploystudio@gmail.com` a través de
-[FormSubmit.co](https://formsubmit.co) (sin backend ni cuenta). La primera vez
-que alguien lo complete, llega un mail de confirmación con un link — hay que
-clickearlo una sola vez para activarlo.
+El formulario envía a `contact.deploystudio@gmail.com` a través de un
+Cloudflare Worker propio (`worker/contact.js`), que manda el mail usando la
+API de [Resend](https://resend.com) (mismo servicio y dominio verificado que
+usa el firmador de contratos, `worker/contract.js`). Antes usaba
+FormSubmit.co, un servicio de terceros que además requería activar el mail
+a mano la primera vez - se migró para no depender de eso y tener más
+control (logs propios, reply-to automático al mail de quien escribió).
 
 ## Secciones de la página
 

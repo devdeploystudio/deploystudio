@@ -1,22 +1,20 @@
 /* ═══════════════════════════════════════════════
    firmar-contrato.js
-   Firmador de contratos en el navegador:
-   1. El cliente sube el PDF que Deploy le mandó por WhatsApp/mail.
+   Firmador de contratos en el navegador. Siempre se entra por un link
+   armado desde armar-contrato.html (/contrato/firmar-contrato/<id>) -
+   no hay subida manual de PDF acá, el cliente nunca tiene que elegir
+   ningún archivo:
+   1. Pedimos el PDF al Worker (/contract?id=...).
    2. Buscamos con pdf.js el renglón "EL CLIENTE / Firma" en la ÚLTIMA
-      página (siempre ahí, sea cual sea el largo del contrato - ver "MD
-      para creacion de panel.md" si esto se documenta más adelante).
+      página (siempre ahí, sea cual sea el largo del contrato - la
+      posición se detecta por texto, no es una coordenada fija, así que
+      da igual si el texto previo la corre más arriba o más abajo).
    3. El cliente firma en un canvas aparte; recortamos la tinta a su
       bounding box y la insertamos con pdf-lib exactamente sobre ese
       renglón, en las coordenadas reales del PDF.
    4. Mandamos el PDF final (base64) al Worker contract (/send), que lo
       reenvía por mail via Resend. Si falla (cuota, red, lo que sea),
       nunca se pierde nada: se puede descargar y mandar por WhatsApp.
-
-   Si la página se abre con ?id=<id> en la URL (link armado desde
-   armar-contrato.html), nos saltamos el paso de "subí tu PDF": lo
-   pedimos solo al Worker (/contract?id=...) y vamos directo a firmar.
-   Si no hay id, o si falla la carga automática, queda el flujo manual
-   de subir el archivo como respaldo.
 
    Requiere pdf-lib.min.js y pdf.min.js/pdf.worker.min.js cargados antes
    (ver firmar-contrato.html) - ambos vendored en js/vendor/, sin CDN externo.
@@ -27,14 +25,9 @@
   const WHATSAPP_NUMBER = '5491125851237';
 
   const $ = (id) => document.getElementById(id);
-  const dropZone = $('dropZone');
-  const fileInput = $('fileInput');
-  const uploadError = $('uploadError');
-  const introText = $('introText');
 
   const stepAutoLoading = $('stepAutoLoading');
   const stepAutoError = $('stepAutoError');
-  const stepUpload = $('stepUpload');
   const stepRead = $('stepRead');
   const stepSign = $('stepSign');
   const stepSending = $('stepSending');
@@ -42,7 +35,8 @@
   const stepFailure = $('stepFailure');
 
   const fileNameReadEl = $('fileNameRead');
-  const pdfViewer = $('pdfViewer');
+  const pdfPagesEl = $('pdfPages');
+  const downloadReadBtn = $('downloadReadBtn');
   const confirmReadBtn = $('confirmReadBtn');
 
   const fileNameEl = $('fileName');
@@ -73,24 +67,14 @@
   let pdfPage = null; // la misma página de pdf.js para detección y preview
   let hasInk = false;
 
-  // stepAutoLoading/stepAutoError no forman parte de esta lista a
-  // propósito: stepAutoError se muestra JUNTO con stepUpload (el error
-  // arriba, el cuadro para subir el PDF a mano abajo), no en su lugar.
   function showStep(step) {
-    [stepUpload, stepRead, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
+    [stepRead, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
       s.hidden = s !== step;
     });
   }
 
-  function showUploadError(msg) {
-    uploadError.textContent = msg;
-    uploadError.hidden = false;
-  }
-
-  // ── Carga automática cuando el link ya trae el contrato ───────────
+  // ── Carga del contrato desde el link ──────────────────────────────
   if (linkId) {
-    introText.textContent = 'Revisá que sea tu contrato, firmá con el dedo o el mouse, y lo mandamos solo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.';
-    stepUpload.hidden = true;
     stepAutoLoading.hidden = false;
     fetch(WORKER_URL + '/contract?id=' + encodeURIComponent(linkId))
       .then((res) => {
@@ -108,40 +92,12 @@
         console.error(err);
         stepAutoLoading.hidden = true;
         stepAutoError.hidden = false;
-        stepUpload.hidden = false;
       });
-  }
-
-  // ── Paso 1: subir el PDF a mano ───────────────────────────────────
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('is-dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('is-dragover'));
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('is-dragover');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-  });
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) handleFile(fileInput.files[0]);
-  });
-
-  async function handleFile(file) {
-    uploadError.hidden = true;
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      showUploadError('Eso no es un PDF. Subí el contrato tal cual te lo mandamos.');
-      return;
-    }
-    if (file.size > 15 * 1024 * 1024) {
-      showUploadError('El archivo pesa demasiado - no debería ser tanto para un contrato. Probá con el PDF original que te enviamos.');
-      return;
-    }
-
-    try {
-      await loadPdf(new Uint8Array(await file.arrayBuffer()), file.name);
-    } catch (err) {
-      console.error(err);
-      showUploadError('No pudimos leer ese PDF. Puede estar dañado o protegido - probá subir de nuevo el que te mandamos.');
-    }
+  } else {
+    // Sin id en la URL no hay nada que cargar - esta página no se
+    // pensó para entrar directo, siempre por un link de
+    // armar-contrato.html.
+    stepAutoError.hidden = false;
   }
 
   // Común a los dos caminos (subida a mano o cargado por link): primero
@@ -156,12 +112,70 @@
     fileNameEl.textContent = '📄 ' + fileName;
     fileNameReadEl.textContent = '📄 ' + fileName;
 
+    // Para quien prefiera leerlo tranquilo aparte (su propio lector de
+    // PDF) en vez de scrollear el visor de acá abajo.
+    showDownload(downloadReadBtn, new Blob([bytes], { type: 'application/pdf' }), fileName);
+
     const doc = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
     pdfPage = await doc.getPage(doc.numPages);
     anchor = await findSignatureAnchor(pdfPage);
 
-    pdfViewer.src = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     showStep(stepRead);
+    await renderAllPages(doc);
+  }
+
+  // Todas las hojas del contrato apiladas como imágenes, para leer
+  // scrolleando ahí mismo - el visor nativo de PDF del navegador (un
+  // <iframe>) queda chico e incómodo en mobile, una sola página a la
+  // vez con su propia UI encima. Mismo timeout defensivo por hoja que
+  // renderLastPage: si el render de pdf.js tarda demasiado en una, esa
+  // hoja queda en blanco pero no traba ver/leer el resto.
+  async function renderAllPages(doc) {
+    pdfPagesEl.innerHTML = '<p class="contrato-pdfview__loading mono">Cargando el contrato...</p>';
+    const containerWidth = Math.max(pdfPagesEl.clientWidth - 32, 280);
+
+    const pages = await Promise.all(
+      Array.from({ length: doc.numPages }, (_, i) => doc.getPage(i + 1))
+    );
+
+    // Se arman los <canvas> de todas las hojas EN ORDEN primero (así el
+    // orden de lectura queda bien sin importar en qué orden terminen de
+    // renderizar), y recién después se renderiza cada una EN PARALELO,
+    // no una por una - siete hojas en serie con un timeout de 6s cada
+    // una podrían tardar hasta 42s en el peor caso; en paralelo, como
+    // mucho tarda lo que tarde la más lenta.
+    pdfPagesEl.innerHTML = '';
+    const targets = pages.map((page) => {
+      const scale = Math.min(2, containerWidth / page.getViewport({ scale: 1 }).width);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.className = 'contrato-pdfview__page';
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      pdfPagesEl.appendChild(canvas);
+      return { page, canvas, viewport };
+    });
+
+    await Promise.all(targets.map(async ({ page, canvas, viewport }) => {
+      const renderDone = page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const timedOut = new Promise((resolve) => setTimeout(resolve, 6000, 'timeout'));
+      const result = await Promise.race([renderDone, timedOut]).catch(() => 'error');
+      if (result === 'timeout' || result === 'error') markPageUnavailable(canvas, viewport);
+    }));
+  }
+
+  // Si una hoja puntual no llegó a renderizar a tiempo, mostrar un
+  // aviso claro en su lugar (en vez de dejarla en blanco sin
+  // explicación) que apunte al botón de descarga de más arriba.
+  function markPageUnavailable(canvas, viewport) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f2f2f0';
+    ctx.fillRect(0, 0, viewport.width, viewport.height);
+    ctx.fillStyle = '#8a8a86';
+    ctx.font = Math.max(12, viewport.width * 0.045) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No pudimos mostrar esta página.', viewport.width / 2, viewport.height / 2 - 10);
+    ctx.fillText('Descargá el PDF arriba para verla.', viewport.width / 2, viewport.height / 2 + 12);
   }
 
   // El cliente confirma que ya leyó el contrato completo (mostrado en

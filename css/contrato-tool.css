@@ -28,11 +28,23 @@
 .contrato-drop__hint{font-size:12px;color:var(--stone)}
 
 /* ── Paso 2: leer el contrato antes de firmar ── */
-.contrato-pdfview{
-  display:block;width:100%;height:65vh;min-height:420px;
-  border:1px solid var(--mist);border-radius:var(--r);background:#fff;
-  -webkit-overflow-scrolling:touch;
+.contrato-readbar{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;margin-bottom:14px;
 }
+.contrato-readbar .contrato-filename{margin-bottom:0}
+.contrato-pdfview{
+  width:100%;height:65vh;min-height:420px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid var(--mist);border-radius:var(--r);background:#e7e7e4;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:16px;
+}
+.contrato-pdfview__page{
+  max-width:100%;height:auto;flex-shrink:0;
+  background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.14);border-radius:2px;
+}
+.contrato-pdfview__loading{color:var(--stone);font-size:13px;margin:auto}
 
 /* ── Paso 3: firmar ── */
 .contrato-filename{font-size:12.5px;color:var(--stone);margin-bottom:18px}

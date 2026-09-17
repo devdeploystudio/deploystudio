@@ -1037,10 +1037,10 @@ function startReveals(){
   if(!form) return;
 
   const EMAIL = 'contact.deploystudio@gmail.com';
-  // FormSubmit.co: sin cuenta ni API key. El primer envío te manda un mail
-  // de confirmación a EMAIL con un link — lo clickeás una vez y ya queda
-  // activo para siempre.
-  const FORM_ENDPOINT = `https://formsubmit.co/ajax/${EMAIL}`;
+  // Cloudflare Worker propio (worker/contact.js) que manda el mail vía
+  // Resend - reemplaza a FormSubmit.co (dependía de un tercero y de
+  // activar el mail a mano la primera vez).
+  const FORM_ENDPOINT = 'https://contacto.contact-deploystudio.workers.dev';
   const WHATSAPP = '5491125851237';
   const btn = form.querySelector('button[type="submit"]');
 
@@ -1092,14 +1092,8 @@ function startReveals(){
     try{
       const res = await fetch(FORM_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          _subject: `Consulta Deploy Studio — ${marca || nombre}`,
-          nombre, email,
-          'proyecto / marca': marca || '—',
-          servicios: servicios.join(', '),
-          mensaje: mensaje || '—',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, email, marca, servicios, mensaje }),
       });
       if(!res.ok) throw new Error('submit failed');
 
