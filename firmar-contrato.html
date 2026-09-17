@@ -3,11 +3,17 @@
 <head>
 
 <meta charset="UTF-8" />
+<!-- Esta página también se sirve en /firmar-contrato/<id> (rewrite de
+     _redirects para el link con número de presupuesto). Sin este <base>,
+     los href/src relativos (css/, js/, fonts/) se resolverían contra
+     esa ruta con el segmento extra en vez de la raíz del sitio, y no
+     cargaría nada (probado localmente: se rompía justo así). -->
+<base href="/" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Firmar contrato | Deploy Studio</title>
 <meta name="description" content="Firmá tu contrato con Deploy Studio directamente desde el navegador, sin imprimir nada." />
 <meta name="robots" content="noindex" />
-<link rel="canonical" href="https://deploystudio.com.ar/firmar-contrato.html" />
+<link rel="canonical" href="https://deploystudio.com.ar/firmar-contrato" />
 
 <link rel="icon" type="image/png" href="img/favicon.png" />
 <link rel="apple-touch-icon" href="img/favicon.png" />
@@ -22,7 +28,7 @@
 
 <link rel="stylesheet" href="css/styles.min.css" />
 <link rel="stylesheet" href="css/legal.css" />
-<link rel="stylesheet" href="css/firmar-contrato.css" />
+<link rel="stylesheet" href="css/contrato-tool.css" />
 
 </head>
 <body class="legal">
@@ -30,16 +36,26 @@
 <div class="spot" id="spot" aria-hidden="true"></div>
 
 <header class="legal-header">
-  <a href="index.html" class="logo" aria-label="deploy - inicio">
+  <a href="/" class="logo" aria-label="deploy - inicio">
     <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
   </a>
-  <a href="index.html" class="legal-back mono">← Volver al sitio</a>
+  <a href="/" class="legal-back mono">← Volver al sitio</a>
 </header>
 
 <main class="legal-main contrato-main">
   <span class="eyebrow mono">- Contrato</span>
   <h1>Firmá tu contrato</h1>
-  <p>Subí el PDF que te mandamos por WhatsApp o mail, firmá con el dedo o el mouse, y lo mandamos solo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.</p>
+  <p id="introText">Subí el PDF que te mandamos por WhatsApp o mail, firmá con el dedo o el mouse, y lo mandamos solo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.</p>
+
+  <!-- Estado inicial cuando el link ya trae el contrato (?id=...) -->
+  <section class="contrato-step contrato-state" id="stepAutoLoading" hidden>
+    <p class="mono">Cargando tu contrato...</p>
+  </section>
+
+  <section class="contrato-step contrato-state" id="stepAutoError" hidden>
+    <p class="contrato-state__title">No pudimos cargar tu contrato</p>
+    <p id="autoErrorDetail">El link puede haber expirado o ya haberse usado. Pedile a Deploy Studio que te pase uno nuevo, o subí el PDF a mano acá abajo.</p>
+  </section>
 
   <!-- Paso 1: subir el PDF -->
   <section class="contrato-step" id="stepUpload">
@@ -57,7 +73,7 @@
 
     <div class="contrato-preview">
       <canvas id="pageCanvas"></canvas>
-      <p class="contrato-preview__caption mono">Así se ve la última página. Tu firma se va a ubicar sobre el renglón de "Firma" de EL CLIENTE.</p>
+      <p class="contrato-preview__caption mono" id="previewCaption">Así se ve la última página. Tu firma se va a ubicar sobre el renglón de "Firma" de EL CLIENTE.</p>
     </div>
 
     <label class="contrato-field">
@@ -101,7 +117,7 @@
 
 <footer class="legal-footer mono">
   <span>© <span id="legalYear">2026</span> Deploy Studio</span>
-  <a href="index.html">Volver al inicio</a>
+  <a href="/">Volver al inicio</a>
 </footer>
 
 <script src="js/vendor/pdf-lib.min.js"></script>

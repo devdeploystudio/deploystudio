@@ -8,23 +8,32 @@
    3. El cliente firma en un canvas aparte; recortamos la tinta a su
       bounding box y la insertamos con pdf-lib exactamente sobre ese
       renglón, en las coordenadas reales del PDF.
-   4. Mandamos el PDF final (base64) al Worker send-contract, que lo
+   4. Mandamos el PDF final (base64) al Worker contract (/send), que lo
       reenvía por mail via Resend. Si falla (cuota, red, lo que sea),
       nunca se pierde nada: se puede descargar y mandar por WhatsApp.
+
+   Si la página se abre con ?id=<id> en la URL (link armado desde
+   armar-contrato.html), nos saltamos el paso de "subí tu PDF": lo
+   pedimos solo al Worker (/contract?id=...) y vamos directo a firmar.
+   Si no hay id, o si falla la carga automática, queda el flujo manual
+   de subir el archivo como respaldo.
 
    Requiere pdf-lib.min.js y pdf.min.js/pdf.worker.min.js cargados antes
    (ver firmar-contrato.html) - ambos vendored en js/vendor/, sin CDN externo.
    ═══════════════════════════════════════════════ */
 
 (function () {
-  const WORKER_URL = 'https://send-contract.contact-deploystudio.workers.dev';
+  const WORKER_URL = 'https://contrato.contact-deploystudio.workers.dev';
   const WHATSAPP_NUMBER = '5491125851237';
 
   const $ = (id) => document.getElementById(id);
   const dropZone = $('dropZone');
   const fileInput = $('fileInput');
   const uploadError = $('uploadError');
+  const introText = $('introText');
 
+  const stepAutoLoading = $('stepAutoLoading');
+  const stepAutoError = $('stepAutoError');
   const stepUpload = $('stepUpload');
   const stepSign = $('stepSign');
   const stepSending = $('stepSending');
@@ -33,6 +42,7 @@
 
   const fileNameEl = $('fileName');
   const pageCanvas = $('pageCanvas');
+  const previewCaption = $('previewCaption');
   const clientNameInput = $('clientName');
   const sigCanvas = $('sigCanvas');
   const clearSigBtn = $('clearSig');
@@ -41,11 +51,22 @@
   const downloadSuccess = $('downloadSuccess');
   const downloadFailure = $('downloadFailure');
 
+  // El link lindo /firmar-contrato/<id> lo reescribe _redirects a esta
+  // misma página con ?id=<id> (la URL en la barra del navegador se
+  // queda como /firmar-contrato/<id> - por eso hay que leer el id del
+  // pathname primero). El query string queda como respaldo para probar
+  // a mano sin pasar por el rewrite de Cloudflare.
+  const pathMatch = location.pathname.match(/\/firmar-contrato\/([^/]+)\/?$/);
+  const linkId = (pathMatch && pathMatch[1]) || new URLSearchParams(location.search).get('id');
+
   let originalBytes = null;
   let originalFileName = 'contrato.pdf';
   let anchor = null; // { pageIndex, x, y, width, pageWidth, pageHeight }
   let hasInk = false;
 
+  // stepAutoLoading/stepAutoError no forman parte de esta lista a
+  // propósito: stepAutoError se muestra JUNTO con stepUpload (el error
+  // arriba, el cuadro para subir el PDF a mano abajo), no en su lugar.
   function showStep(step) {
     [stepUpload, stepSign, stepSending, stepSuccess, stepFailure].forEach((s) => {
       s.hidden = s !== step;
@@ -57,7 +78,33 @@
     uploadError.hidden = false;
   }
 
-  // ── Paso 1: subir el PDF ──────────────────────────────────────────
+  // ── Carga automática cuando el link ya trae el contrato ───────────
+  if (linkId) {
+    introText.textContent = 'Revisá que sea tu contrato, firmá con el dedo o el mouse, y lo mandamos solo a Deploy Studio. No hace falta imprimir nada ni crear ninguna cuenta.';
+    stepUpload.hidden = true;
+    stepAutoLoading.hidden = false;
+    fetch(WORKER_URL + '/contract?id=' + encodeURIComponent(linkId))
+      .then((res) => {
+        if (!res.ok) throw new Error('fetch-contract-failed');
+        return res.arrayBuffer();
+      })
+      .then((buf) => {
+        // loadPdf ya muestra stepSign de entrada (ver comentario ahí) -
+        // ocultamos el "Cargando..." ANTES de llamarlo, para que no
+        // queden los dos estados superpuestos mientras se arma la
+        // preview.
+        stepAutoLoading.hidden = true;
+        return loadPdf(new Uint8Array(buf), 'contrato.pdf');
+      })
+      .catch((err) => {
+        console.error(err);
+        stepAutoLoading.hidden = true;
+        stepAutoError.hidden = false;
+        stepUpload.hidden = false;
+      });
+  }
+
+  // ── Paso 1: subir el PDF a mano ───────────────────────────────────
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('is-dragover'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('is-dragover'));
@@ -82,26 +129,43 @@
     }
 
     try {
-      originalFileName = file.name;
-      originalBytes = new Uint8Array(await file.arrayBuffer());
-      fileNameEl.textContent = '📄 ' + file.name;
-
-      anchor = await findSignatureAnchor(originalBytes.slice());
-      await renderLastPage(originalBytes.slice(), anchor);
-
-      showStep(stepSign);
-      resizeSignaturePad();
+      await loadPdf(new Uint8Array(await file.arrayBuffer()), file.name);
     } catch (err) {
       console.error(err);
       showUploadError('No pudimos leer ese PDF. Puede estar dañado o protegido - probá subir de nuevo el que te mandamos.');
     }
   }
 
-  // ── Detección del renglón de firma (pdf.js) ───────────────────────
-  async function findSignatureAnchor(bytes) {
-    const doc = await window.pdfjsLib.getDocument({ data: bytes }).promise;
-    const pageIndex = doc.numPages - 1;
+  // Común a los dos caminos (subida a mano o cargado por link): detecta
+  // dónde firmar, muestra la preview y pasa al paso de firma. Un solo
+  // documento/página de pdf.js para las dos cosas (detección + render),
+  // no dos getDocument() independientes.
+  //
+  // showStep(stepSign) va ANTES del render de la preview a propósito:
+  // pdf.js puede colgarse si el <canvas> destino está dentro de un
+  // contenedor "hidden" (display:none) en ese momento. La detección del
+  // renglón (findSignatureAnchor, con getTextContent) no depende de
+  // esto y ya tenemos el resultado antes de tocar el canvas - por eso
+  // firmar funciona igual aunque la preview visual falle o tarde (ver
+  // el timeout en renderLastPage).
+  async function loadPdf(bytes, fileName) {
+    originalFileName = fileName;
+    originalBytes = bytes;
+    fileNameEl.textContent = '📄 ' + fileName;
+
+    showStep(stepSign);
+    resizeSignaturePad();
+
+    const doc = await window.pdfjsLib.getDocument({ data: bytes.slice() }).promise;
     const page = await doc.getPage(doc.numPages);
+
+    anchor = await findSignatureAnchor(page);
+    await renderLastPage(page, anchor);
+  }
+
+  // ── Detección del renglón de firma (pdf.js) ───────────────────────
+  async function findSignatureAnchor(page) {
+    const pageIndex = page.pageNumber - 1;
     const content = await page.getTextContent();
     const viewport = page.getViewport({ scale: 1 });
 
@@ -152,16 +216,28 @@
   }
 
   // ── Preview de la última página ───────────────────────────────────
-  async function renderLastPage(bytes, anchorInfo) {
-    const doc = await window.pdfjsLib.getDocument({ data: bytes }).promise;
-    const page = await doc.getPage(doc.numPages);
+  // Puramente visual/informativa - dónde va a caer la firma ya se
+  // decidió en findSignatureAnchor. Si el render() de pdf.js tarda
+  // demasiado (o no responde, visto en algún entorno puntual durante
+  // pruebas), no bloqueamos poder firmar: seguimos sin la imagen de
+  // fondo, con el marco punteado igual dibujado sobre el canvas en
+  // blanco para que se entienda dónde va a ir.
+  async function renderLastPage(page, anchorInfo) {
     const scale = Math.min(2, 900 / page.getViewport({ scale: 1 }).width);
     const viewport = page.getViewport({ scale });
 
     pageCanvas.width = viewport.width;
     pageCanvas.height = viewport.height;
     const ctx = pageCanvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    const renderDone = page.render({ canvasContext: ctx, viewport }).promise;
+    const timedOut = new Promise((resolve) => setTimeout(resolve, 6000, 'timeout'));
+    const result = await Promise.race([renderDone, timedOut]).catch(() => 'error');
+
+    if (result === 'timeout' || result === 'error') {
+      console.warn('renderLastPage: no se pudo generar la vista previa a tiempo, seguimos sin ella');
+      previewCaption.textContent = 'No pudimos generar la vista previa de la página, pero podés firmar igual - se va a ubicar sobre el renglón de "Firma" de EL CLIENTE.';
+    }
 
     // Marco punteado sobre el renglón detectado, para que se vea claro
     // dónde va a caer la firma antes de firmar.
@@ -307,13 +383,14 @@
     }
 
     try {
-      const res = await fetch(WORKER_URL, {
+      const res = await fetch(WORKER_URL + '/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pdfBase64: bytesToBase64(signedBytes),
           clientName: clientNameInput.value.trim() || 'Sin nombre',
           fileName: signedFileName,
+          id: linkId || undefined,
         }),
       });
       if (!res.ok) throw new Error('worker-error');
