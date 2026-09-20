@@ -169,11 +169,12 @@
   // gráfico propio además de la lista, porque ya viene como porcentaje.
   function renderImageBars(checks){
     const pct = checks.altText ? checks.altText.pct : 0;
+    const fail = checks.altText && !checks.altText.ok;
     return '' +
       '<div class="dash-mini-bar seo-group__bars">' +
         '<div class="dash-mini-bar__row">' +
           '<span class="dash-mini-bar__label">Con alt correcto</span>' +
-          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:' + pct + '%"></span></span>' +
+          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill' + (fail ? ' is-fail' : '') + '" style="width:' + pct + '%"></span></span>' +
           '<span class="dash-mini-bar__value mono">' + pct + '%</span>' +
         '</div>' +
       '</div>';

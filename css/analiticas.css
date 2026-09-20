@@ -278,6 +278,11 @@ body.dash{overflow-x:hidden}
 .dash-mini-bar__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dash-mini-bar__track{height:6px;border-radius:3px;background:var(--mist);overflow:hidden}
 .dash-mini-bar__fill{display:block;height:100%;background:var(--lime);border-radius:3px}
+/* Cuando la barra representa un check puntual que no pasó (ver
+   is-fail en seo-check-row), se pinta igual que esa marca - mismo
+   negro/ink - para que no quede una barra en lima "de éxito" justo
+   arriba de un ítem marcado con ✕ más abajo. */
+.dash-mini-bar__fill.is-fail{background:var(--ink)}
 .dash-mini-bar__value{color:var(--stone);font-variant-numeric:tabular-nums;text-align:right}
 
 .dash-reset{margin-top:28px}

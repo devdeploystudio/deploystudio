@@ -176,9 +176,9 @@
 
   function renderImageBars(checks){
     const bars = [
-      checks.altText && { label: 'Con alt correcto', pct: checks.altText.pct },
-      checks.imageDimensions && { label: 'Tamaño declarado', pct: checks.imageDimensions.pct },
-      checks.lazyLoading && { label: 'Carga diferida', pct: checks.lazyLoading.pct },
+      checks.altText && { label: 'Con alt correcto', pct: checks.altText.pct, fail: !checks.altText.ok },
+      checks.imageDimensions && { label: 'Tamaño declarado', pct: checks.imageDimensions.pct, fail: !checks.imageDimensions.ok },
+      checks.lazyLoading && { label: 'Carga diferida', pct: checks.lazyLoading.pct, fail: !checks.lazyLoading.ok },
     ].filter(Boolean);
     if (!bars.length) return '';
     return '' +
@@ -187,7 +187,7 @@
           return '' +
             '<div class="dash-mini-bar__row">' +
               '<span class="dash-mini-bar__label">' + b.label + '</span>' +
-              '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:' + b.pct + '%"></span></span>' +
+              '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill' + (b.fail ? ' is-fail' : '') + '" style="width:' + b.pct + '%"></span></span>' +
               '<span class="dash-mini-bar__value mono">' + b.pct + '%</span>' +
             '</div>';
         }).join('') +

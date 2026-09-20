@@ -158,16 +158,18 @@
   function renderImageBars(checks){
     const dims = checks.imageDimensions ? checks.imageDimensions.pct : 0;
     const lazy = checks.lazyLoading ? checks.lazyLoading.pct : 0;
+    const dimsFail = checks.imageDimensions && !checks.imageDimensions.ok;
+    const lazyFail = checks.lazyLoading && !checks.lazyLoading.ok;
     return '' +
       '<div class="dash-mini-bar seo-group__bars">' +
         '<div class="dash-mini-bar__row">' +
           '<span class="dash-mini-bar__label">Tamaño declarado</span>' +
-          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:' + dims + '%"></span></span>' +
+          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill' + (dimsFail ? ' is-fail' : '') + '" style="width:' + dims + '%"></span></span>' +
           '<span class="dash-mini-bar__value mono">' + dims + '%</span>' +
         '</div>' +
         '<div class="dash-mini-bar__row">' +
           '<span class="dash-mini-bar__label">Carga diferida</span>' +
-          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill" style="width:' + lazy + '%"></span></span>' +
+          '<span class="dash-mini-bar__track"><span class="dash-mini-bar__fill' + (lazyFail ? ' is-fail' : '') + '" style="width:' + lazy + '%"></span></span>' +
           '<span class="dash-mini-bar__value mono">' + lazy + '%</span>' +
         '</div>' +
       '</div>';
