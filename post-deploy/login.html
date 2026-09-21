@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ingresar | Panel de clientes | Deploy Studio</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<link rel="icon" type="image/png" href="../img/favicon.png" />
+<link rel="apple-touch-icon" href="../img/favicon.png" />
+
+<link
+  rel="preload"
+  href="../fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="../css/styles.min.css" />
+<link rel="stylesheet" href="../css/analiticas.css" />
+<link rel="stylesheet" href="../css/seo.css" />
+<link rel="stylesheet" href="../css/post-deploy.css" />
+
+</head>
+<body class="dash">
+
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<header class="dash-header">
+  <a href="/" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="/" class="dash-back mono">← Volver al sitio</a>
+</header>
+
+<main class="dash-main">
+
+  <section class="dash-hero">
+    <span class="eyebrow mono">- Panel</span>
+    <h1>Entrá a tu panel<span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h1>
+    <p class="dash-hero__sub">
+      Escribí el mail con el que trabajamos tu proyecto. Si está autorizado,
+      te dejamos pasar directo, sin contraseña.
+    </p>
+  </section>
+
+  <section class="seo-form">
+    <form id="loginForm" class="seo-form__row">
+      <input
+        type="email"
+        id="loginEmail"
+        class="seo-form__input mono"
+        placeholder="tu@mail.com"
+        autocomplete="email"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        required
+      />
+      <button type="submit" class="btn btn--lime" id="loginSubmit">
+        Entrar <span class="btn__arrow">→</span>
+      </button>
+    </form>
+    <div class="dash-upload__status mono" id="loginStatus" hidden></div>
+  </section>
+
+</main>
+
+<script>
+  (function(){
+    // login.html también carga analiticas.css (por .dash-header/.dash-main
+    // compartidos), que trae la regla anti-flash pensada para el resto de
+    // /post-deploy/ ("html:not(.dp-auth-ok) .dash-main{display:none}").
+    // Acá no corre post-deploy-auth.js (esta ES la puerta, no hay nada que
+    // guardar) - sin esto, el formulario de login nunca se vería.
+    document.documentElement.classList.add('dp-auth-ok');
+
+    var cursors = document.querySelectorAll('[data-cursor]');
+    setInterval(function(){
+      cursors.forEach(function(c){ c.style.opacity = c.style.opacity === '0' ? '1' : '0'; });
+    }, 530);
+  })();
+</script>
+<script src="../js/post-deploy-login.js" defer></script>
+
+</body>
+</html>

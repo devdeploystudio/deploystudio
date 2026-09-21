@@ -16,6 +16,27 @@ body.dash{overflow-x:hidden}
 }
 .dash-back:hover{color:var(--ink)}
 
+/* ══════════════ LOGIN / SESIÓN (post-deploy-auth.js) ══════════════
+   Anti-flash: la página arranca oculta hasta que se confirma la sesión
+   contra el Worker - así nadie sin login llega a ver el contenido ni un
+   frame, ni aunque tenga JS lento. Vive acá (no en post-deploy.css)
+   porque este archivo es el único que las 5 páginas protegidas cargan
+   siempre. login.html NO lleva js/post-deploy-auth.js, así que nunca
+   entra en este estado oculto. */
+html:not(.dp-auth-ok) .dash-main{display:none}
+
+.dp-session-group{display:flex;align-items:center;gap:18px}
+.dp-session{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--stone)}
+.dp-session__email{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-session__logout{
+  color:var(--stone);border:1px solid var(--mist);border-radius:100px;
+  padding:5px 12px;transition:.25s var(--ease);
+}
+.dp-session__logout:hover{border-color:var(--ink);color:var(--ink)}
+@media (max-width:560px){
+  .dp-session__email{display:none}
+}
+
 /* ══════════════ ANCHO ══════════════
    Todo el contenido (intro, carga de archivos, resultados) usa el mismo
    ancho completo del sitio (--max), igual que index.html. Los párrafos

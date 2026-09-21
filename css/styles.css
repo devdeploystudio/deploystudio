@@ -1754,10 +1754,21 @@ a{color:inherit;text-decoration:none}
 .footer__claim{font-size:14px;color:var(--stone);margin-top:12px}
 .footer__cols{
   max-width:var(--max);margin:0 auto;
-  display:grid;grid-template-columns:repeat(3,minmax(0,220px));gap:36px;
+  /* Las primeras 3 columnas se quedan angostas y pegadas entre sí, como
+     siempre - la última (Clientes) usa el resto del ancho disponible
+     (1fr) en vez de otros 220px fijos, así su contenido puede alinearse
+     contra el borde derecho real del footer en vez de quedar pegado a
+     "Contacto" con un espacio vacío después. */
+  display:grid;grid-template-columns:repeat(3,minmax(0,220px)) minmax(0,1fr);gap:36px;
   padding-bottom:40px;
 }
 .footer__cols div{display:flex;flex-direction:column;gap:11px}
+/* justify-self:end (no align-items en los hijos): el bloque entero se
+   achica a su propio contenido y se corre al borde derecho de la última
+   columna (1fr, más ancha que el resto a propósito) - "Clientes" y el
+   botón quedan alineados entre sí por su propio izquierda, como un grupo
+   solo, en vez de cada uno pegado por separado al borde derecho. */
+.footer__cols > div:last-child{justify-self:end}
 .footer__k{
   font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;
   color:#5c5c5c;margin-bottom:6px;
@@ -1765,6 +1776,20 @@ a{color:inherit;text-decoration:none}
 .footer__cols a{font-size:14.5px;color:var(--mist);width:fit-content;
   transition:color .25s,transform .25s var(--ease)}
 .footer__cols a:hover{color:var(--lime);transform:translateX(3px)}
+/* Más llamativo que el resto de los links del footer a propósito: es la
+   única acción de esta columna que lleva a algo fuera del sitio público
+   (el panel de clientes), no a una sección más. */
+.footer__cols a.footer__panel-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:600;color:var(--ink);
+  padding:9px 18px;border-radius:100px;background:var(--lime);
+  transition:background .25s var(--ease),color .25s var(--ease);
+}
+.footer__cols a.footer__panel-btn:hover{
+  background:var(--ink);color:var(--lime);transform:none;
+}
+.footer__panel-btn .btn__arrow{transition:transform .3s var(--ease)}
+.footer__panel-btn:hover .btn__arrow{transform:translateX(4px)}
 .footer__item{font-size:14.5px;color:var(--mist);width:fit-content}
 .footer__bottom{
   max-width:var(--max);margin:0 auto;
@@ -2013,6 +2038,8 @@ a{color:inherit;text-decoration:none}
   .form__row{grid-template-columns:1fr}
   .terminal__body{font-size:11.5px}
   .footer__cols{grid-template-columns:1fr;gap:28px}
+  .footer__cols > div:last-child{justify-self:start}
+  .footer__cols > div:last-child{align-items:flex-start;text-align:left}
   .totop{bottom:18px;right:18px}
   .svc-card{padding:20px 18px}
   /* flex-wrap (no flex-direction:column): el contador y el botón entran
