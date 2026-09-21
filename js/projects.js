@@ -29,6 +29,36 @@
 
 const PROYECTOS = [
   {
+    nombre: "Santilli Aparts",
+    categoria: "Sitio institucional",
+    anio: "2026",
+    desc: "Alquiler temporario de departamentos en Recoleta y Palermo. Más de 60 departamentos para 1 a 5 personas, sin seña, con asesoramiento personalizado y consulta directa por WhatsApp.",
+    tags: ["Alquiler temporario", "WhatsApp", "Múltiples zonas", "Atención personalizada"],
+    url: "https://santilliaparts.com.ar",
+    imagen: "img/proyectos/santilliaparts.jpg",
+    mock: "landing"
+  },
+  {
+    nombre: "Proyecto S3",
+    categoria: "Sitio institucional",
+    anio: "2026",
+    desc: "Estudio familiar de arquitectura y construcción, de padre a hijo. Sitio institucional con la historia del estudio, sus proyectos y su marca de muebles, Objeto, integrada.",
+    tags: ["Arquitectura", "Construcción", "Estudio familiar", "Portfolio de proyectos"],
+    url: "https://proyecto-s3.com.ar",
+    imagen: "img/proyectos/proyecto-s3.jpg",
+    mock: "landing"
+  },
+  {
+    nombre: "Nativa Vivero",
+    categoria: "Sitio institucional",
+    anio: "2026",
+    desc: "Vivero familiar especializado en plantas de interior y exterior. Catálogo de destacadas con filtros, guía de cuidados por especie y consulta directa por WhatsApp para asesorarte antes de elegir.",
+    tags: ["Catálogo", "Guía de cuidados", "WhatsApp", "Plantas destacadas"],
+    url: "https://devdeploystudio.github.io/nativa-vivero/",
+    imagen: "img/proyectos/nativa.jpg",
+    mock: "landing"
+  },
+  {
     nombre: "TERRA",
     categoria: "Sitio institucional",
     anio: "2026",
