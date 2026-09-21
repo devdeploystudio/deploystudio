@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Todos los proyectos | Deploy Studio</title>
+<meta name="description" content="Los proyectos de clientes reales de Deploy Studio, y los sitios de ejemplo que armamos para mostrar de qué somos capaces." />
+<link rel="canonical" href="https://deploystudio.com.ar/proyectos" />
+
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link rel="apple-touch-icon" href="img/favicon.png" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Deploy Studio" />
+<meta property="og:locale" content="es_AR" />
+<meta property="og:url" content="https://deploystudio.com.ar/proyectos" />
+<meta property="og:title" content="Todos los proyectos | Deploy Studio" />
+<meta property="og:description" content="Los proyectos de clientes reales de Deploy Studio, y los sitios de ejemplo que armamos para mostrar de qué somos capaces." />
+<meta property="og:image" content="https://deploystudio.com.ar/img/logo.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<link
+  rel="preload"
+  href="fonts/geist-latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<link rel="stylesheet" href="css/styles.min.css" />
+<link rel="stylesheet" href="css/proyectos.css" />
+
+<script src="js/projects.js" defer></script>
+<script src="js/proyectos-page.js" defer></script>
+
+</head>
+<body class="legal">
+
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<header class="legal-header">
+  <a href="/" class="logo" aria-label="deploy - inicio">
+    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+  </a>
+  <a href="/#proyectos" class="legal-back mono">← Volver al sitio</a>
+</header>
+
+<main class="proj-page-main">
+
+  <div class="section__head">
+    <span class="eyebrow mono">- Proyectos</span>
+    <h1 class="section__title">Todos los<br>proyectos<span class="lime">.</span></h1>
+    <p class="section__lead">Los de clientes reales, y los que armamos nosotros como ejemplo.</p>
+  </div>
+
+  <section class="proj-page-block">
+    <h2 class="proj-page-block__title">Clientes reales</h2>
+    <p class="proj-page-block__lead">Proyectos entregados a clientes que pagaron por su sitio.</p>
+    <div class="proj-grid" id="projPageClientes"></div>
+  </section>
+
+  <section class="proj-page-block" id="ejemplos">
+    <h2 class="proj-page-block__title">Ejemplos hechos por Deploy</h2>
+    <p class="proj-page-block__lead">Sitios que armamos nosotros, sin un cliente real detrás, para mostrar de qué somos capaces en distintos rubros y formatos.</p>
+    <div class="proj-grid" id="projPageEjemplos"></div>
+  </section>
+
+</main>
+
+<footer class="legal-footer mono">
+  <span>© <span id="legalYear">2026</span> Deploy Studio</span>
+  <a href="/">Volver al inicio</a>
+</footer>
+
+<script>
+  (function(){
+    var cursors = document.querySelectorAll('[data-cursor]');
+    setInterval(function(){
+      cursors.forEach(function(c){ c.style.opacity = c.style.opacity === '0' ? '1' : '0'; });
+    }, 530);
+    var y = document.getElementById('legalYear');
+    if(y) y.textContent = new Date().getFullYear();
+  })();
+</script>
+
+</body>
+</html>

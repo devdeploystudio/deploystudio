@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════
+   proyectos.html
+   Hereda variables, fuentes, reset y componentes de tarjeta
+   (.proj/.proj-grid) de css/styles.css. El header/footer son los
+   mismos de privacidad.html/terminos.html (css/legal.css no se
+   carga acá porque su .legal-main es angosto, pensado para texto -
+   esta página necesita el ancho completo de .section para los grids).
+   ═══════════════════════════════════════════════ */
+
+body.legal{overflow-x:hidden}
+
+.legal-header{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:20px var(--pad);
+  border-bottom:1px solid var(--mist);
+}
+.legal-back{font-size:13px;color:var(--stone);transition:color .25s var(--ease)}
+.legal-back:hover{color:var(--ink)}
+
+.proj-page-main{
+  position:relative;z-index:1;
+  max-width:var(--max);margin:0 auto;
+  padding:var(--sec) var(--pad) calc(var(--sec) * 1.2);
+}
+
+.proj-page-block{margin-top:clamp(48px,6vw,72px)}
+.proj-page-block:first-of-type{margin-top:clamp(32px,4vw,48px)}
+.proj-page-block__title{
+  font-size:clamp(21px,2.4vw,28px);font-weight:700;
+  letter-spacing:-.03em;margin-bottom:6px;
+}
+.proj-page-block__lead{font-size:14.5px;color:var(--stone);max-width:56ch;margin-bottom:24px}
+
+.legal-footer{
+  position:relative;z-index:1;
+  max-width:var(--max);margin:0 auto;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+  padding:24px var(--pad) 40px;border-top:1px solid var(--mist);
+  font-size:11px;color:var(--stone);
+}
+.legal-footer a{color:var(--stone);transition:color .25s var(--ease)}
+.legal-footer a:hover{color:var(--ink)}

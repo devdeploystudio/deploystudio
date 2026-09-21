@@ -927,6 +927,11 @@ function startReveals(){
   const more = document.getElementById('projMore');
   if(!grid || typeof PROYECTOS === 'undefined') return;
 
+  // Clientes reales (pagos) en la sección principal - el resto son
+  // ejemplos hechos por Deploy para mostrar capacidad, y quedan atrás
+  // del link "Ver sitios de ejemplo" más abajo (ver projExamplesToggle).
+  const CLIENTES = PROYECTOS.filter(p => p.cliente);
+
   const LIMIT = 3;
   let expanded = false;
 
@@ -987,15 +992,15 @@ function startReveals(){
       </div>
     </article>`;
 
-  const cats = ['Todos', ...new Set(PROYECTOS.map(p => p.categoria))];
+  const cats = ['Todos', ...new Set(CLIENTES.map(p => p.categoria))];
   filtersEl.innerHTML = cats.map((c, i) => `
     <button class="filter${i === 0 ? ' is-active' : ''}" data-filter="${esc(c)}" role="tab"
       aria-selected="${i === 0}">${esc(c)}
-      <span style="opacity:.5">${c === 'Todos' ? PROYECTOS.length : PROYECTOS.filter(p => p.categoria === c).length}</span>
+      <span style="opacity:.5">${c === 'Todos' ? CLIENTES.length : CLIENTES.filter(p => p.categoria === c).length}</span>
     </button>`).join('');
 
   const render = (cat) => {
-    const list = cat === 'Todos' ? PROYECTOS : PROYECTOS.filter(p => p.categoria === cat);
+    const list = cat === 'Todos' ? CLIENTES : CLIENTES.filter(p => p.categoria === cat);
     const visible = expanded ? list : list.slice(0, LIMIT);
     const hiddenCount = list.length - visible.length;
 

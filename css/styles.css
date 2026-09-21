@@ -1282,6 +1282,15 @@ a{color:inherit;text-decoration:none}
    antes por las dudas. */
 .svcs__lead{max-width:none;font-size:15px;font-style:italic;color:var(--stone)}
 .projects__lead{max-width:none;font-size:15px;color:var(--stone)}
+.proj-viewall{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:24px;font-family:var(--font-mono);font-size:13px;font-weight:600;
+  color:var(--ink);padding:13px 28px;border:1px solid var(--lime);
+  border-radius:100px;background:var(--lime);transition:.28s var(--ease);
+}
+.proj-viewall:hover{background:var(--ink);border-color:var(--ink);color:var(--lime)}
+.proj-viewall .btn__arrow{transition:transform .3s var(--ease)}
+.proj-viewall:hover .btn__arrow{transform:translateX(5px)}
 .svcs__note{
   font-size:12.5px;line-height:1.6;color:var(--stone);
   padding-left:14px;border-left:1px solid var(--lime);
@@ -1494,6 +1503,11 @@ a{color:inherit;text-decoration:none}
   display:grid;gap:clamp(18px,2.2vw,28px);
   grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));
 }
+/* display:grid de arriba le gana al [hidden] por default del navegador
+   (misma especificidad, pero "autor" siempre le gana a "user agent" sea
+   cual sea la especificidad) - sin esto, ocultar/mostrar el grid de
+   ejemplos con .hidden no hacía nada visible. */
+.proj-grid[hidden]{display:none}
 
 .proj{
   position:relative;display:flex;flex-direction:column;
@@ -1574,6 +1588,26 @@ a{color:inherit;text-decoration:none}
 .proj-more button:hover span{transform:translateX(5px)}
 
 .proj-empty{padding:60px 0;text-align:center;color:var(--stone)}
+
+/* Ejemplos hechos por Deploy (sin cliente real detrás) - separados de los
+   proyectos de arriba, atrás de un link propio en vez de mezclados en el
+   mismo grid/filtro. Mismo botón-píldora que .proj-more, para que se lea
+   como parte de la misma familia de "acciones secundarias" del bloque. */
+.proj-examples{
+  display:flex;flex-direction:column;align-items:flex-start;gap:28px;
+  margin-top:clamp(20px,2.5vw,28px);padding-top:clamp(20px,2.5vw,28px);
+  border-top:1px solid var(--mist);
+}
+.proj-examples__toggle{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--ink);
+  padding:13px 28px;border:1px solid var(--lime);border-radius:100px;
+  background:var(--lime);cursor:pointer;transition:.28s var(--ease);
+}
+.proj-examples__toggle:hover{background:var(--ink);border-color:var(--ink);color:var(--lime)}
+.proj-examples__toggle .btn__arrow{transition:transform .3s var(--ease)}
+.proj-examples__toggle:hover .btn__arrow{transform:translateX(5px)}
+.proj-examples .proj-grid{width:100%}
 
 /* ══════════════ PREGUNTAS ══════════════ */
 .faq__list{list-style:none}
@@ -1762,7 +1796,11 @@ a{color:inherit;text-decoration:none}
   position:fixed;left:18px;bottom:18px;z-index:800;
   width:52px;height:52px;border-radius:50%;
   display:none;align-items:center;justify-content:center;
-  background:var(--lime);color:var(--ink);
+  /* Excepción a la paleta lima/tinta a propósito: un botón flotante de
+     WhatsApp tiene que reconocerse al instante, así que acá gana la
+     identificación universal (verde+blanco de WhatsApp) por sobre la
+     consistencia de marca. */
+  background:#25D366;color:#fff;
   box-shadow:0 10px 24px -8px rgba(13,13,13,.45);
   transition:transform .25s var(--ease);
 }
@@ -1783,6 +1821,20 @@ a{color:inherit;text-decoration:none}
 .hero .reveal{
   opacity:1;
 }
+
+/* El delay escalonado genérico (ver startReveals() en script.js) cuenta
+   hermanos directos de .hero__inner - no se entera de que el título de
+   arriba en realidad son 3 líneas propias, cada una con su propio delay
+   y una animación de casi 1s. Sin este ajuste, .hero__sub (índice 1 entre
+   sus hermanos) terminaba de aparecer bastante antes de que la última
+   línea del título terminara de deslizarse, así que el párrafo ya se veía
+   "listo" mientras el título todavía estaba en movimiento arriba - se
+   sentía al revés. Estos delays fijos (con !important para ganarle al
+   inline-style que pone el JS) hacen que seg + botones + terminal sigan
+   apareciendo recién cuando el título ya está terminando. */
+.hero .hero__sub.reveal{transition-delay:.52s !important}
+.hero .hero__actions.reveal{transition-delay:.62s !important}
+.hero .terminal.reveal{transition-delay:.72s !important}
 
 /* ══════════════ RESPONSIVE ══════════════ */
 @media (max-width:1080px){

@@ -6,6 +6,13 @@
 
    Campos:
    nombre    → título del proyecto                        (obligatorio)
+   cliente   → true si es un cliente real (paga). Si no está el campo (o
+               es false), se trata como ejemplo hecho por Deploy para
+               mostrar capacidad - la sección "Ideas que ya hicimos
+               realidad" solo muestra los que tienen cliente:true; los
+               demás aparecen abajo, atrás del link "Ver sitios de
+               ejemplo hechos por Deploy". Ver js/script.js, bloque
+               "11. PROYECTOS".
    categoria → una de: "Landing page" | "Sitio institucional" |
                "Tienda online" | "Web app" | "Portfolio" |
                "Rediseño web" | "Logo / identidad"          (obligatorio)
@@ -30,6 +37,7 @@
 const PROYECTOS = [
   {
     nombre: "Santilli Aparts",
+    cliente: true,
     categoria: "Sitio institucional",
     anio: "2026",
     desc: "Alquiler temporario de departamentos en Recoleta y Palermo. Más de 60 departamentos para 1 a 5 personas, sin seña, con asesoramiento personalizado y consulta directa por WhatsApp.",
@@ -40,12 +48,24 @@ const PROYECTOS = [
   },
   {
     nombre: "Proyecto S3",
+    cliente: true,
     categoria: "Sitio institucional",
     anio: "2026",
     desc: "Estudio familiar de arquitectura y construcción, de padre a hijo. Sitio institucional con la historia del estudio, sus proyectos y su marca de muebles, Objeto, integrada.",
     tags: ["Arquitectura", "Construcción", "Estudio familiar", "Portfolio de proyectos"],
     url: "https://proyecto-s3.com.ar",
     imagen: "img/proyectos/proyecto-s3.jpg",
+    mock: "landing"
+  },
+  {
+    nombre: "Mariana Mungo",
+    cliente: true,
+    categoria: "Portfolio",
+    anio: "2026",
+    desc: "Portfolio personal de una arquitecta recibida en la UBA. Presentación profesional con foto, bio, contacto directo y currículum descargable, en español e inglés.",
+    tags: ["Portfolio", "Arquitectura", "Bilingüe (ES/EN)", "Contacto directo"],
+    url: "https://marumungo.github.io/Portfolio/",
+    imagen: "img/proyectos/marumungo.jpg",
     mock: "landing"
   },
   {
