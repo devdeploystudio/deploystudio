@@ -50,8 +50,16 @@
    scroll horizontal a veces lo maneja <html>, no <body> - con
    overflow-x:hidden solo en body, elementos a sangre como los de
    left:-5%;width:110% de abajo pueden seguir generando scroll horizontal
-   en el celular aunque en desktop no se note nada. */
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
+   en el celular aunque en desktop no se note nada.
+   Sin scroll-behavior:smooth a propósito: el salto nativo del navegador a
+   un <a href="#ancla"> vuelve a evaluar la posición del destino en vivo
+   mientras anima, y si ese destino es una sección que GSAP pinea (Proceso),
+   el pin la pasa a position:fixed a mitad de camino - el navegador se
+   termina peleando con eso y la página queda con el scroll trabado en 0 y
+   la sección pineada superpuesta arriba del hero. El scroll a las anclas
+   ahora lo hace a mano anchorScroll() en script.js, con un destino ya
+   calculado de antemano en vez de perseguido en vivo. */
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
 
 body{
   font-family:var(--font-sans);
@@ -131,10 +139,15 @@ a{color:inherit;text-decoration:none}
 .footer > *,.marquee > *{position:relative;z-index:1}
 
 /* ══════════════ NAV ══════════════ */
+/* El fondo/blur/borde de .nav siguen a sangre (left:0;right:0, cubre
+   todo el ancho al hacer sticky), pero el contenido va adentro de
+   .nav__inner con el mismo max-width+padding que .section/.footer__cols
+   - así el logo, los links y el botón quedan alineados con el resto
+   de la página en vez de pegados al borde real de la ventana en
+   pantallas anchas. */
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:900;
-  display:flex;align-items:center;justify-content:space-between;gap:24px;
-  padding:20px var(--pad);
+  padding:20px 0;
   transition:padding .35s var(--ease),background .35s var(--ease),border-color .35s;
   border-bottom:1px solid transparent;
 }
@@ -143,6 +156,10 @@ a{color:inherit;text-decoration:none}
   background:rgba(250,250,248,.82);
   backdrop-filter:blur(14px) saturate(140%);
   border-bottom-color:var(--mist);
+}
+.nav__inner{
+  max-width:calc(var(--max) + 2 * var(--pad));margin-inline:auto;padding:0 var(--pad);
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
 }
 
 /* LOGO */
@@ -238,8 +255,8 @@ a{color:inherit;text-decoration:none}
 .hero{
   position:relative;z-index:1;
   min-height:100svh;display:flex;flex-direction:column;justify-content:center;
-  padding:146px var(--pad) 76px;
-  max-width:var(--max);margin-inline:auto;
+  padding:108px var(--pad) 42px;
+  max-width:calc(var(--max) + 2 * var(--pad));margin-inline:auto;
   overflow:hidden;
 }
 .hero__inner{position:relative;z-index:2;max-width:1000px}
@@ -250,7 +267,7 @@ a{color:inherit;text-decoration:none}
 .hero__tag{
   display:inline-flex;align-items:center;gap:9px;
   font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;
-  color:var(--stone);margin-bottom:34px;
+  color:var(--stone);margin-bottom:20px;
 }
 /* El anillo que "explota" y se desvanece era un box-shadow animado (spread
    0→9px + alpha .7→0): mismo efecto exacto, pero moviendo un ::after con
@@ -275,7 +292,7 @@ a{color:inherit;text-decoration:none}
 .hero__title{
   font-size:clamp(48px,8vw,104px);
   font-weight:700;line-height:.92;letter-spacing:-.055em;
-  margin-bottom:30px;
+  margin-bottom:18px;
 }
 .hero__title .line{display:block;overflow:hidden}
 .hero__title em{font-style:normal;position:relative;display:inline-block}
@@ -321,11 +338,11 @@ a{color:inherit;text-decoration:none}
 
 .hero__sub{
   font-size:clamp(16px,1.55vw,20px);color:#3a3a3a;
-  max-width:56ch;margin-bottom:40px;
+  max-width:56ch;margin-bottom:26px;
 }
 .hero__sub strong{font-weight:600;color:var(--ink)}
 
-.hero__actions{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:52px}
+.hero__actions{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:30px}
 
 /* TERMINAL */
 .terminal{
@@ -342,8 +359,8 @@ a{color:inherit;text-decoration:none}
 .terminal__dots i{width:9px;height:9px;border-radius:50%;background:#2e2e2e}
 .terminal__dots i:first-child{background:var(--lime)}
 .terminal__body{
-  padding:18px;font-size:12.8px;line-height:1.95;color:var(--stone);
-  min-height:132px;
+  padding:12px 18px;font-size:12.8px;line-height:1.75;color:var(--stone);
+  min-height:106px;
 }
 .terminal__body .p{color:var(--lime)}
 .terminal__body .ok{color:var(--paper)}
@@ -354,14 +371,20 @@ a{color:inherit;text-decoration:none}
 }
 @keyframes blink{50%{opacity:0}}
 
-/* ══════════════ MARQUEE ══════════════ */
+/* ══════════════ MARQUEE ══════════════
+   Mismo texto/animación de siempre, con dos retoques para que se sienta
+   más prolijo: mask-image en los bordes (el texto se desvanece antes de
+   llegar al borde en vez de cortarse en seco - el defecto típico de un
+   marquee "crudo") y la "/" ahora respira un poco más (antes pegada al
+   texto de los dos lados), separándola visualmente como el "/" del logo
+   en vez de leerse como una barra de división genérica. */
 .marquee{
   position:relative;z-index:1;overflow:hidden;
   background:var(--ink);padding:20px 0;
   border-top:1px solid var(--ink);
 }
 .marquee__track{
-  display:flex;align-items:center;gap:34px;width:max-content;
+  display:flex;align-items:center;gap:40px;width:max-content;
   animation:scroll 34s linear infinite;
 }
 .marquee:hover .marquee__track{animation-play-state:paused}
@@ -371,7 +394,7 @@ a{color:inherit;text-decoration:none}
 }
 .marquee__track b{
   font-family:var(--font-mono);font-weight:400;color:var(--lime);
-  font-size:clamp(18px,2.6vw,30px);
+  font-size:clamp(18px,2.6vw,30px);margin-inline:2px;
 }
 @keyframes scroll{to{transform:translateX(-50%)}}
 
@@ -379,7 +402,7 @@ a{color:inherit;text-decoration:none}
 .stats{
   position:relative;z-index:1;
   display:grid;grid-template-columns:repeat(4,1fr);
-  max-width:var(--max);margin:0 auto;padding:0 var(--pad);
+  max-width:calc(var(--max) + 2 * var(--pad));margin:0 auto;padding:0 var(--pad);
   border-bottom:1px solid var(--mist);
 }
 /* Aire simétrico a los dos lados de cada divisor.
@@ -395,18 +418,56 @@ a{color:inherit;text-decoration:none}
 .stat__label i{font-style:normal;color:var(--stone);font-size:11.5px}
 
 /* ══════════════ SECTIONS ══════════════ */
+/* max-width + padding en el mismo elemento (a diferencia del footer,
+   que pone el padding en .footer y el max-width en .footer__top/cols
+   por separado) hacía que el contenido de las secciones quedara --pad
+   más lejos del borde que el del footer - dos formas de combinar lo
+   mismo dando un resultado distinto. En vez de tocar cada .section por
+   separado, se le suma 2×--pad al max-width acá: el resultado final
+   (dónde cae el borde izquierdo/derecho del contenido) queda igual al
+   del footer, sin tener que separar esto en un wrapper + un hijo como
+   tiene el footer. */
 .section{
   position:relative;z-index:1;
-  max-width:var(--max);margin-inline:auto;
+  max-width:calc(var(--max) + 2 * var(--pad));margin-inline:auto;
   padding:var(--sec) var(--pad) 0;
 }
 .section.contact{padding-bottom:var(--sec)}
+/* CTA final del home: sin sección propia de Preguntas/Contacto después,
+   .section ya no tiene un padding-bottom detrás de ella - se lo damos acá. */
+.section.cta-final{padding-bottom:var(--sec)}
+/* Preguntas es la última sección de /contacto (nada de otra .section
+   después que le dé su padding-top como aire): sin esto el footer queda
+   pegado directo contra la última pregunta del acordeón. */
+.section.faq{padding-bottom:var(--sec)}
+
+/* ══════════════ CTA BANNER ══════════════
+   Bloque de cierre reutilizable - CTA final del home (después de que
+   Preguntas/Contacto se mudaron a /contacto) y el mismo cierre en
+   /nosotros. Vive en el stylesheet principal (no en uno de página)
+   porque se usa en más de una página. Sin margin propio a propósito:
+   el espacio de arriba/abajo lo da el contenedor de cada página
+   (.section en el home, .proj-page-block en /nosotros) - si el
+   componente también sumara margin quedaba doble espacio. */
+.cta-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  padding:36px var(--pad-card,32px);
+  border:1px solid var(--mist);border-radius:var(--r);
+  background:rgba(255,255,255,.7);
+}
+.cta-banner__title{font-size:clamp(20px,2.2vw,26px);font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.cta-banner__desc{color:var(--stone)}
+.cta-banner__btn{flex-shrink:0}
+@media (max-width:560px){
+  .cta-banner{flex-direction:column;align-items:flex-start;padding:28px 24px}
+}
 .section__head{max-width:760px;margin-bottom:var(--gap-head)}
 .section__head--row{
   display:flex;justify-content:space-between;align-items:flex-end;
   gap:48px;max-width:none;
 }
 .eyebrow{
+  position:relative;
   display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.14em;
   color:var(--stone);margin-bottom:20px;padding-bottom:8px;
   border-bottom:1px solid var(--lime);
@@ -419,6 +480,17 @@ a{color:inherit;text-decoration:none}
 .section__lead{font-size:15px;color:var(--stone);max-width:52ch}
 
 /* ══════════════ SERVICIOS ══════════════ */
+/* Línea que se completa con el scroll (initServiciosProgress en
+   script.js) - mismo espíritu que el "SVG line draw" de epsilon-robotics
+   (11. Producto - apps/ejemplo 6), pero sin pin: la sección se sigue
+   scrolleando normal, solo este filito de abajo del eyebrow se llena a
+   medida que la sección pasa por pantalla. Reemplaza el border-bottom
+   estático del eyebrow (ver .eyebrow en general) solo acá. */
+#servicios .eyebrow{border-bottom-color:transparent}
+#servicios .eyebrow__progress{
+  position:absolute;left:0;bottom:-1px;width:100%;height:1px;
+  background:var(--lime);transform:scaleX(0);transform-origin:left;
+}
 /* Pestañas: sitios web / identidad */
 .svcs__tabs{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
 .svcs__tab{
@@ -625,7 +697,12 @@ a{color:inherit;text-decoration:none}
 .laptop,.phone{cursor:pointer}
 .laptop:focus-visible,.phone:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
 .laptop{
-  position:relative;width:100%;aspect-ratio:1 / .87;align-self:start;
+  /* height:100% (no width:100%): antes el ancho salía del contenedor y
+     el alto se calculaba solo por aspect-ratio, así que nunca aprovechaba
+     el stretch de la fila para igualar el alto de la card de al lado -
+     eso sí lo hacía .phone (ver más abajo). Mismo criterio acá: el alto
+     lo da la fila estirada, el ancho sale del aspect-ratio. */
+  position:relative;height:100%;width:auto;max-width:100%;aspect-ratio:1 / .87;align-self:stretch;
   /* SIN perspective, a propósito. Con perspectiva, el borde más cercano a
      la cámara (el frente del teclado) se agranda, y cuánto se agranda lo
      decide cada motor: Chrome lo deja en ~2% y WebKit lo exagera bastante.
@@ -1304,7 +1381,7 @@ a{color:inherit;text-decoration:none}
 .audience__note{
   font-size:12.5px;line-height:1.6;color:var(--stone);
   padding-left:14px;border-left:1px solid var(--lime);
-  max-width:46ch;margin-top:clamp(24px,3vw,36px);
+  max-width:46ch;margin-top:32px;
 }
 
 /* Banner al analizador gratis (diagnostico.html) - bloque propio, no
@@ -1312,7 +1389,7 @@ a{color:inherit;text-decoration:none}
    visitante llegue a scrollear justo hasta esa tarjeta. */
 .audience__audit-banner{
   display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
-  margin-top:clamp(28px,3vw,40px);padding:28px 32px;
+  margin-top:32px;padding:22px 28px;
   border:1px solid var(--mist);border-radius:var(--r);
   background:rgba(255,255,255,.7);
   transition:border-color .3s,box-shadow .35s var(--ease);
@@ -1320,6 +1397,43 @@ a{color:inherit;text-decoration:none}
 .audience__audit-banner:hover{border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4)}
 .audience__audit-banner h3{font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
 .audience__audit-banner p{font-size:14px;color:#5a5a5a;max-width:46ch}
+
+/* ══════════════ SERVICIOS · BANNER DE IDENTIDAD ══════════════
+   Mismo tratamiento que .audience__audit-banner ("Para quién"): card
+   blanca/neutra con borde mist, que se oscurece + tira sombra al hover -
+   en vez del tinte lima que tenía antes, para que se lea como el mismo
+   tipo de bloque en las dos secciones. La miniatura clickeable (abre el
+   lightbox de siempre) se estira a la altura del texto -
+   align-items:stretch + object-fit:cover, sin alto fijo. */
+.svcs__identity-banner{
+  display:flex;align-items:stretch;gap:20px;flex-wrap:wrap;
+  margin-top:clamp(28px,3vw,40px);padding:22px 28px;
+  border-radius:var(--r);background:rgba(255,255,255,.7);
+  border:1px solid var(--mist);
+  transition:border-color .3s,box-shadow .35s var(--ease);
+}
+.svcs__identity-banner:hover{border-color:var(--ink);box-shadow:0 20px 46px -30px rgba(13,13,13,.4)}
+.svcs__identity-banner-thumb{
+  flex-shrink:0;width:180px;padding:0;
+  border:1px solid var(--mist);border-radius:var(--r);overflow:hidden;
+  background:none;cursor:pointer;opacity:.94;transition:opacity .25s var(--ease);
+}
+.svcs__identity-banner-thumb:hover{opacity:1}
+.svcs__identity-banner-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+/* Mismo patrón que .audience__audit-banner: texto a la izquierda, botón a
+   la derecha (nada de apilado) - acá adentro de flex:1, al lado de la
+   miniatura. */
+.svcs__identity-banner-body{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  flex:1;min-width:220px;
+}
+.svcs__identity-banner-text{display:flex;flex-direction:column;gap:8px;max-width:48ch}
+.svcs__identity-banner-text h3{font-size:18px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
+.svcs__identity-banner-text p{font-size:14px;color:rgba(13,13,13,.75)}
+@media (max-width:560px){
+  .svcs__identity-banner{flex-direction:column;align-items:flex-start}
+  .svcs__identity-banner-thumb{width:100%;height:160px}
+}
 
 /* ══════════════ NOSOTROS ══════════════ */
 /* La columna de texto ahora incluye "Cómo trabajamos" (antes era una barra
@@ -1418,7 +1532,7 @@ a{color:inherit;text-decoration:none}
 }
 .audience__card{
   flex:0 0 clamp(240px,32vw,300px);
-  border:1px solid var(--mist);border-radius:var(--r);padding:28px;
+  border:1px solid var(--mist);border-radius:var(--r);padding:24px;
   background:rgba(255,255,255,.7);
   transition:border-color .3s,box-shadow .35s var(--ease);
 }
@@ -1430,7 +1544,7 @@ a{color:inherit;text-decoration:none}
   transition:color .35s;
 }
 .audience__card:hover .audience__n{color:var(--lime)}
-.audience__card h3{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.25;margin-bottom:8px}
+.audience__card h3{font-size:18px;font-weight:600;letter-spacing:-.02em;line-height:1.25;margin-bottom:10px}
 .audience__card p{font-size:14px;color:#5a5a5a;line-height:1.5;margin-bottom:14px}
 .audience__tag{font-size:11.5px;color:var(--stone)}
 
@@ -1447,10 +1561,101 @@ a{color:inherit;text-decoration:none}
   font-size:clamp(28px,3.2vw,42px);font-weight:400;color:var(--stone);
   letter-spacing:-.04em;line-height:1;transition:color .35s;
 }
-.step:hover .step__n{color:var(--lime)}
+/* !important: al salir del pin, initProcesoDark (script.js) deja un
+   color inline en .step__n (gsap.to a var(--stone), ver el comentario de
+   abajo) - sin esto, esa grilla estática de después del pin quedaba con
+   los números siempre grises y sin reaccionar al hover, porque un color
+   puesto por JS gana por especificidad a esta regla. */
+.step:hover .step__n{color:var(--lime) !important}
+/* Sin transition de color en .step/h3/p a propósito: GSAP los controla
+   directo (initProcesoDark en script.js) vía gsap.set/to - una
+   transition de CSS en la misma propiedad compite con eso y cada
+   ScrollTrigger.refresh() (resize, fuentes que cargan tarde) la
+   re-disparaba, viéndose como un parpadeo que aparece y desaparece
+   solo, sin que nadie esté scrolleando. */
 .step h3{font-size:clamp(21px,2.4vw,30px);font-weight:600;letter-spacing:-.04em;margin-bottom:10px}
 .step p{font-size:15px;color:#5a5a5a;max-width:62ch;margin-bottom:12px}
 .step__meta{font-size:11.5px;color:var(--stone)}
+
+/* Modo "van apareciendo y se acumulan" (initProcesoDark en script.js
+   suma esta clase solo si GSAP arrancó bien, y NUNCA la saca): grilla
+   2×2 de cards en vez de la lista con separadores de siempre, para que
+   los 4 pasos quepan juntos en una sola pantalla al terminar de
+   aparecer. Sin GSAP/con reduced-motion queda la lista de toda la vida.
+   El fondo/borde de acá es el look CLARO (mismo criterio que
+   .support__card) - GSAP anima esos mismos dos valores hacia la
+   versión oscura mientras la sección está pineada y los vuelve a este
+   valor al salir (initProcesoDark), en vez de sacar la clase entera al
+   salir - así después del pin la sección sigue viéndose como una
+   grilla de cards prolija en vez de volver a la lista plana. */
+.steps.is-gsap-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.steps.is-gsap-grid .step{
+  display:block;padding:16px;border-radius:var(--r);
+  border:1px solid var(--mist);background:rgba(255,255,255,.7);
+}
+.steps.is-gsap-grid .step:last-child{border-bottom:1px solid var(--mist)}
+.steps.is-gsap-grid .step__n{display:block;margin-bottom:6px}
+.steps.is-gsap-grid .step h3{margin-bottom:4px}
+.steps.is-gsap-grid .step p{margin-bottom:4px}
+@media (max-width:760px){
+  .steps.is-gsap-grid{grid-template-columns:1fr}
+}
+/* Mientras está pineado (GSAP recién armó la grilla), el bloque entero
+   tiene que entrar en el alto de pantalla - si no, las cards de abajo
+   quedan cortadas y nunca se llegan a ver durante el pin. El padding-top
+   NO se toca acá (queda el mismo var(--sec) que todas las secciones,
+   para que el margen entre bloques sea igual en todo el sitio) - se
+   achican solo los espacios internos, puntuales de esta sección.
+   Es un ajuste al límite (ver nota abajo) - subido 4px de cada lado
+   (arriba y abajo de la bajada) a pedido, no más que eso para no arriesgar
+   el "entra en la pantalla". Si en una pantalla real las cards de abajo
+   terminan cortadas, achicar esto de nuevo antes que tocar otra cosa. */
+.process .section__head{margin-bottom:16px}
+.process .section__title{margin-bottom:14px}
+
+/* ── Fondo oscuro al pasar por Proceso ──
+   #bgLayer vive en el <body> (ver index.html, junto a .spot), NO
+   adentro de .section.process: cuando GSAP pinea la sección la pasa a
+   position:fixed por dentro, y un hijo position:absolute adentro de un
+   ancestro que cambia de posicionamiento así es justamente el tipo de
+   cosa que genera saltos/parpadeos al entrar y salir del pin. Un layer
+   fijo de body a pantalla completa (mismo criterio que #bgLayer de
+   epsilon-robotics) no tiene ese problema porque no depende en absoluto
+   de la sección para posicionarse.
+   El fade lo escrubea GSAP en script.js (initProcesoDark) atado a la
+   posición de scroll - entra suave, se mantiene mientras la sección
+   ocupa la pantalla, sale suave. Si GSAP no carga o hay
+   prefers-reduced-motion, #bgLayer se queda en opacity:0 siempre. */
+#bgLayer{
+  position:fixed;inset:0;z-index:-1;
+  background:var(--ink);opacity:0;pointer-events:none;
+  will-change:opacity;
+}
+/* will-change:transform en la sección que GSAP pinea (Proceso): sin
+   esto, un scroll rápido (rueda a fondo) puede dejar a Chrome sin
+   repintar el frame fijo a tiempo - la sección pineada se ve en blanco
+   un instante hasta que algo fuerza un repintado. Promocionarla a su
+   propia capa de antemano evita ese salto. */
+.section.process{will-change:transform}
+
+/* El nav queda pegado arriba de todo (position:fixed) incluso cuando
+   Proceso está pineado - sin este estado se quedaba con fondo claro
+   tapando "03 — Proceso" apenas se activaba el .is-stuck (blur sobre
+   fondo negro = texto claro ilegible). Se prende/apaga con los mismos
+   onEnter/onLeave del ScrollTrigger de Proceso en script.js, no con
+   scroll normal, porque tiene que coincidir con el pin exacto. */
+.nav.is-dark{
+  background:rgba(13,13,13,.85);
+  backdrop-filter:blur(14px) saturate(140%);
+  border-bottom-color:rgba(255,255,255,.14);
+}
+.nav.is-dark .logo__word{color:var(--paper)}
+.nav.is-dark .nav__links a{color:var(--paper)}
+.nav.is-dark .nav__links a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+.nav.is-dark .burger{border-color:rgba(255,255,255,.3)}
+.nav.is-dark .burger span{background:var(--paper)}
 
 /* ══════════════ SOPORTE ══════════════ */
 /* .dots viene pensado para el h1 del hero, a .58em (si no, tres puntos al
@@ -1461,14 +1666,39 @@ a{color:inherit;text-decoration:none}
    vuelve el tamaño a 1em SOLO para este título, sin tocar el hero. */
 .support .section__title .dots{font-size:1em}
 
-/* A propósito, otra forma que ni el listado de filas de Proceso ni el
-   carrusel de Para quién: grilla estática 2×2, para que las tres
-   secciones seguidas no se vean como variaciones del mismo componente. */
+/* Misma columna que el resto del sitio (max-width normal de .section,
+   no a sangre) - la tira de tarjetas se recorta a ese ancho en vez de
+   deslizarse hasta los bordes reales de la ventana, así respeta los
+   mismos márgenes que cualquier otra sección. */
+.section.support{overflow:hidden}
+
+/* Mismas flechas prev/next que "Para quién" (.audience__lead-row/ctrl),
+   en la misma posición: al lado de la bajada, arriba del carrusel. */
+.support__lead-row{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px;margin-bottom:var(--gap-head);
+}
+.support__ctrl{display:flex;gap:10px;flex:none}
+
+/* Carrusel infinito, misma estructura que .audience__viewport/track de
+   "Para quién": .support__viewport recorta (overflow:hidden) y
+   .support__grid se mueve entero por transform (no scroll nativo) -
+   así el loop puede dar la vuelta sin que se note (ver
+   postDeployCarousel en script.js). touch-action:pan-y puntual, no acá
+   en el grid: deja pasar el scroll vertical de la página y a la vez
+   permite que iOS reconozca el arrastre horizontal a mano (pointerdown/
+   move/up) en vez de robárselo para su propio scroll nativo. */
+.support__viewport{
+  overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;
+  -webkit-user-select:none;
+}
+.support__viewport.is-dragging{cursor:grabbing}
 .support__grid{
-  list-style:none;display:grid;grid-template-columns:repeat(2,1fr);
-  gap:clamp(20px,2.5vw,32px);
+  list-style:none;display:flex;gap:clamp(20px,2.5vw,32px);width:max-content;
+  padding:2px;
 }
 .support__card{
+  flex:0 0 min(360px,82vw);
   border:1px solid var(--mist);border-radius:var(--r);padding:32px;
   background:rgba(255,255,255,.7);
   transition:border-color .3s,box-shadow .35s var(--ease);
@@ -1516,6 +1746,12 @@ a{color:inherit;text-decoration:none}
   transition:transform .45s var(--ease),box-shadow .45s var(--ease),border-color .3s;
   animation:fadeUp .55s var(--ease) both;
 }
+/* initProyectosReveal (script.js) toma el control del fade/entrada
+   ligado al scroll real - si arrancó bien, esta animación de CSS (que
+   jugaba una sola vez al renderizar, sin relación con el scroll) se
+   apaga para no pelear con GSAP por opacity/transform. Sin JS/GSAP
+   queda esta de toda la vida. */
+.proj-grid.is-gsap-reveal .proj{animation:none}
 .proj:hover{
   transform:translateY(-6px);border-color:var(--ink);
   box-shadow:0 28px 60px -34px rgba(13,13,13,.42);
@@ -1648,7 +1884,11 @@ a{color:inherit;text-decoration:none}
 }
 
 /* ══════════════ CONTACTO ══════════════ */
-.contact{max-width:var(--max)}
+/* Sin max-width propio: .contact siempre viene junto con .section en
+   el HTML (<section class="section contact">), que ya pone el
+   max-width correcto - una segunda regla acá pisándolo (misma
+   especificidad, pero definida después en el archivo) lo dejaba en el
+   valor viejo sin el ajuste que iguala el margen al del footer. */
 /* Mismo gap que .about__row/.team__grid (clamp 20-32px, no el clamp
    40-80 de antes): así el form queda del mismo ancho que la columna de
    texto de Nosotros, justo arriba — se ensancha el form hacia la
@@ -1821,11 +2061,7 @@ a{color:inherit;text-decoration:none}
   position:fixed;left:18px;bottom:18px;z-index:800;
   width:52px;height:52px;border-radius:50%;
   display:none;align-items:center;justify-content:center;
-  /* Excepción a la paleta lima/tinta a propósito: un botón flotante de
-     WhatsApp tiene que reconocerse al instante, así que acá gana la
-     identificación universal (verde+blanco de WhatsApp) por sobre la
-     consistencia de marca. */
-  background:#25D366;color:#fff;
+  background:var(--lime);color:var(--ink);
   box-shadow:0 10px 24px -8px rgba(13,13,13,.45);
   transition:transform .25s var(--ease);
 }
@@ -1839,8 +2075,19 @@ a{color:inherit;text-decoration:none}
 .reveal{opacity:0;transform:translateY(26px);
   transition:opacity .75s var(--ease),transform .75s var(--ease)}
 .reveal.is-in{opacity:1;transform:none}
-.hero__title .line.reveal{transform:translateY(100%);transition-duration:.9s}
-.hero__title .line.reveal.is-in{transform:none}
+/* El slide-up de cada línea vive en .line__inner, no en .line - .line es
+   la MÁSCARA fija (overflow:hidden) por la que se ve pasar el texto;
+   .line__inner es lo único que en realidad se mueve. Tenerlos juntos en
+   un solo elemento (como estaba antes) no funciona: overflow:hidden
+   recorta según la caja del propio elemento, así que si ESE MISMO
+   elemento es al que se le aplica el transform, la "ventana" de recorte
+   viaja pegada al contenido en vez de quedarse quieta - en la práctica,
+   no recorta nada, y se ve el bloque de texto entero deslizándose desde
+   bien abajo (su propia altura completa) por encima de lo que hay debajo
+   del título, en vez de "emerger" desde una máscara escondida. */
+.hero__title .line.reveal{opacity:1;transform:none}
+.hero__title .line.reveal .line__inner{display:block;transform:translateY(100%);transition:transform .9s var(--ease)}
+.hero__title .line.reveal.is-in .line__inner{transform:none}
 
 /* El hero debe ser pintable desde la carga inicial para Core Web Vitals */
 .hero .reveal{
@@ -1908,7 +2155,6 @@ a{color:inherit;text-decoration:none}
   .svcs__note{grid-column:1;grid-row:5;margin-top:0}
   .baseline{grid-template-columns:1fr;gap:16px}
   .about__row{grid-template-columns:1fr;gap:24px}
-  .support__grid{grid-template-columns:1fr}
   .team__grid{grid-template-columns:1fr}
 
   /* En desktop, notebook y teléfono comparten fila (grid-row:1 los dos)
@@ -2065,8 +2311,7 @@ a{color:inherit;text-decoration:none}
    de entrada por scroll lo dejaba pintando recién después del reveal.
    Solo mobile — desktop mantiene la animación tal cual. */
 @media (max-width: 760px) {
-  .hero__title .line.reveal {
-    opacity: 1;
+  .hero__title .line.reveal .line__inner {
     transform: none;
     transition: none;
   }

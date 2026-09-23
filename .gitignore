@@ -1,6 +1,7 @@
 # Claude Code
 .claude/
 .impeccable/
+graphify-out/
 
 # Dependencias / Node
 node_modules/

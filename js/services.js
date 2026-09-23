@@ -4,8 +4,15 @@
    De acá salen las tarjetas del carrusel Y las pantallas que
    se muestran dentro de la notebook.
 
+   Identidad visual / Identidad de marca ya no viven acá (dejaron de
+   ofrecerse como servicio aparte, ver el banner fijo en .svcs, en
+   index.html, que las ofrece como un extra sobre el sitio). Este
+   archivo ahora solo tiene servicios de sitios web.
+
    Campos:
-   grupo    → "web" | "marca"   (las dos pestañas)
+   grupo    → "web" (queda el campo por si en el futuro vuelve a haber
+              más de un grupo - por ahora las pestañas no se muestran,
+              ver "9. SERVICIOS" en js/script.js)
    nombre   → título de la tarjeta
    sub      → bajada corta, en mono
    desc     → explicación en lenguaje de todos los días
@@ -74,8 +81,7 @@ const SERVICIOS = [
       'Hasta 5 secciones (Inicio, Nosotros, Servicios, Contacto, etc.)',
       'Redacción y organización de los textos',
       'Generación de imágenes adaptadas al diseño completo',
-      'Formulario de contacto y botón de WhatsApp',
-      'Panel para actualizar textos e imágenes (opcional)'
+      'Formulario de contacto y botón de WhatsApp'
     ],
     plazo: '3 a 4 semanas',
     ajustes: '3 rondas',
@@ -112,8 +118,7 @@ const SERVICIOS = [
       'Carrito, cobros online con Mercado Pago y opciones de envío o retiro',
       'Cálculo automático de envíos',
       'Sistema de cupones de descuento',
-      'Mails automáticos de compra y estado del pedido',
-      'Panel para administrar productos, pedidos y descuentos (opcional)'
+      'Mails automáticos de compra y estado del pedido'
     ],
     plazo: '4 a 6 semanas',
     ajustes: '3 rondas',
@@ -148,8 +153,7 @@ const SERVICIOS = [
       'Registro e ingreso de usuarios con distintos permisos',
       'Base de datos para guardar y organizar la información',
       'Avisos y mails automáticos según lo que necesite el sistema',
-      'Exportación de información a Excel y PDF',
-      'Panel de administración para gestionar la actividad (opcional)'
+      'Exportación de información a Excel y PDF'
     ],
     plazo: 'desde 6 semanas',
     ajustes: 'por etapas',
@@ -188,8 +192,7 @@ const SERVICIOS = [
       'Galería principal con proyectos destacados',
       'Página individual para cada proyecto, con imágenes y contenido',
       'Optimización de imágenes para mantener buena calidad y velocidad',
-      'Página de presentación y contacto',
-      'Panel para cargar y actualizar nuevos trabajos (opcional)'
+      'Página de presentación y contacto'
     ],
     plazo: '2 a 3 semanas',
     ajustes: '2 rondas',
@@ -207,108 +210,4 @@ const SERVICIOS = [
       <rect class="s-mut" x="148" y="88" width="70" height="76"/>
       <rect class="s-mut" x="226" y="104" width="72" height="60"/>`
   },
-  {
-    grupo: 'web',
-    nombre: 'Rediseño web',
-    sub: 'más rápido y actualizado',
-    desc: 'Si tu sitio tarda en cargar, se ve mal en el celular o simplemente quedó viejo, vemos qué funciona, qué no y qué vale la pena cambiar. Lo actualizamos sin empezar de cero porque sí.',
-    ej: 'sitios hechos hace años, plantillas lentas, webs que no andan en el celular',
-    incluye: [
-      'Revisión completa del sitio actual',
-      'Adaptación y corrección para celular, tablet y computadora',
-      'Actualización visual y reorganización del contenido',
-      'Corrección de errores y problemas de funcionamiento',
-      'Publicación de la versión actualizada en tu dominio'
-    ],
-    plazo: '1 a 2 semanas',
-    ajustes: '2 rondas',
-    url: 'informe-de-mejoras.pdf',
-    imagen: 'img/servicios/pagina-existente.jpg',
-    imagenMobile: 'img/servicios/mobile/pagina-existente.jpg',
-    pantalla: `
-      <text class="s-txt" x="24" y="34">ANTES</text>
-      <rect class="s-mut" x="24" y="42" width="240" height="20"/>
-      <rect class="s-stone" x="24" y="42" width="72" height="20"/>
-      <text class="s-txt-b" x="272" y="57">4,2s</text>
-      <text class="s-txt" x="24" y="94">DESPUÉS</text>
-      <rect class="s-mut" x="24" y="102" width="240" height="20"/>
-      <rect class="s-lime" x="24" y="102" width="216" height="20"/>
-      <text class="s-txt-b" x="272" y="117">0,8s</text>
-      <circle class="s-lime-f" cx="28" cy="146" r="4"/>
-      <rect class="s-mut" x="38" y="143" width="90" height="6"/>
-      <circle class="s-lime-f" cx="152" cy="146" r="4"/>
-      <rect class="s-mut" x="162" y="143" width="60" height="6"/>
-      <circle class="s-lime-f" cx="246" cy="146" r="4"/>
-      <rect class="s-mut" x="256" y="143" width="46" height="6"/>`
-  },
-
-  /* ─────────────── IDENTIDAD DE MARCA ─────────────── */
-  {
-    grupo: 'marca',
-    nombre: 'Identidad visual',
-    sub: 'lo esencial para arrancar',
-    desc: 'Todo lo esencial para darle una identidad visual a tu marca: logo, colores y tipografías listos para empezar a usar. Te presentamos tres caminos distintos y desarrollamos el que más te cierre.',
-    ej: 'un emprendimiento nuevo, un rediseño chico, cuando necesitás solo lo esencial',
-    incluye: [
-      '3 propuestas de logo con enfoques diferentes',
-      'Versiones principal, horizontal, reducida y en un solo color',
-      'Paleta de colores con códigos para pantalla e impresión',
-      'Tipografías definidas para títulos, textos y detalles',
-      'Ícono para navegador y adaptaciones para perfiles de redes',
-      'Guía breve para usar correctamente el logo, los colores y las tipografías',
-      'Archivos finales listos para web e impresión'
-    ],
-    plazo: '2 a 3 semanas',
-    ajustes: '2 rondas',
-    url: 'propuestas-de-logo.pdf',
-    imagen: 'img/servicios/logo-identidad-basica.jpg',
-    imagenMobile: 'img/servicios/mobile/logo-identidad-basica.jpg',
-    pantalla: `
-      <rect class="s-line" x="20" y="30" width="76" height="56"/>
-      <circle class="s-fg-f" cx="58" cy="58" r="17"/>
-      <rect class="s-line" x="20" y="98" width="76" height="56"/>
-      <rect class="s-fg" x="44" y="112" width="28" height="28"/>
-      <rect class="s-frame-lime" x="120" y="30" width="180" height="124"/>
-      <path class="s-lime-f" d="M196 62 L208 62 L184 122 L172 122 Z"/>
-      <rect class="s-fg" x="212" y="86" width="52" height="16"/>
-      <rect class="s-lime" x="268" y="94" width="20" height="8"/>
-      <text class="s-txt" x="120" y="24">ELEGIDA</text>`
-  },
-  {
-    grupo: 'marca',
-    nombre: 'Identidad de marca',
-    sub: 'branding de punta a punta',
-    desc: 'Una identidad pensada de punta a punta: desde el nombre y el logo hasta cómo habla, se aplica y se ve tu marca en cada lugar donde aparece.',
-    ej: 'una marca que ya factura y necesita verse consistente en todo, franquicias, negocios con varios puntos de venta',
-    incluye: [
-      'Todo lo incluido en Identidad visual',
-      'Desarrollo de naming y propuestas de nombre',
-      'Chequeo de dominio y usuario de Instagram',
-      'Definición de tono de voz y ejemplos de uso',
-      'Frase de marca o tagline',
-      'Sistema visual completo y reglas de aplicación',
-      'Manual de marca en PDF',
-      'Aplicaciones para piezas impresas y digitales',
-      'Plantillas editables para redes y firma de mail',
-      'Archivos finales listos para web e impresión'
-    ],
-    plazo: '3 a 4 semanas',
-    ajustes: '3 rondas',
-    url: 'manual-de-marca.pdf',
-    imagen: 'img/servicios/identidad-completa.jpg',
-    imagenMobile: 'img/servicios/mobile/identidad-completa.jpg',
-    pantalla: `
-      <rect class="s-lime" x="24" y="24" width="62" height="62"/>
-      <rect class="s-fg" x="94" y="24" width="62" height="62"/>
-      <rect class="s-stone" x="164" y="24" width="62" height="62"/>
-      <rect class="s-line" x="234" y="24" width="62" height="62"/>
-      <text class="s-txt" x="24" y="98">#84E600</text>
-      <text class="s-txt" x="94" y="98">#0D0D0D</text>
-      <text class="s-txt" x="164" y="98">#B7B7B7</text>
-      <text class="s-txt" x="234" y="98">#FAFAF8</text>
-      <text class="s-aa" x="24" y="160">Aa</text>
-      <rect class="s-mut" x="112" y="122" width="184" height="7"/>
-      <rect class="s-mut" x="112" y="136" width="140" height="7"/>
-      <rect class="s-mut" x="112" y="150" width="164" height="7"/>`
-  }
 ];

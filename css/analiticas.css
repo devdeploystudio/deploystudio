@@ -229,9 +229,14 @@ html:not(.dp-auth-ok) .dash-main{display:none}
    grilla independiente, así que si el ancho de esta columna dependiera
    del texto, una fila con un número más largo le robaría espacio a la
    barra de esa fila puntual y quedaría más corta que las demás sin
-   motivo real. */
+   motivo real.
+   La columna del label usa fit-content (no minmax): minmax(90px,180px)
+   hacía que el grid "maximizara" esa columna a 180px aunque el label
+   fuera corto ("Nuevos", "AR") - le robaba ancho a la barra en cards
+   angostas (dash-card--span4) y con pocos ítems, dejando una barra
+   chica/cuadrada en vez de ocupar el resto del ancho disponible. */
 .dash-bar{
-  display:grid;grid-template-columns:minmax(90px,180px) 1fr 7ch;
+  display:grid;grid-template-columns:fit-content(180px) 1fr 7ch;
   align-items:center;gap:14px;
   padding:4px 6px;margin:-4px -6px;border-radius:1px;
   transition:background .2s var(--ease);
@@ -293,7 +298,7 @@ html:not(.dp-auth-ok) .dash-main{display:none}
    los gráficos principales de arriba. */
 .dash-mini-bar{display:flex;flex-direction:column;gap:10px}
 .dash-mini-bar__row{
-  display:grid;grid-template-columns:minmax(70px,120px) 1fr 4ch;
+  display:grid;grid-template-columns:fit-content(120px) 1fr 4ch;
   align-items:center;gap:10px;font-size:12.5px;
 }
 .dash-mini-bar__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

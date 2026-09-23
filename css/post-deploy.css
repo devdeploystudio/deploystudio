@@ -4,8 +4,9 @@
    ═══════════════════════════════════════════════ */
 
 /* .dots viene calibrado a .58em para el tamaño gigante del h1 de home;
-   acá el h1 es bastante más chico (clamp 30-46px), así que a 1em se lee
-   igual de bien que el resto del título, sin quedar diminuto. */
+   acá el h1 es bastante más chico (clamp 30-46px), mismo criterio que
+   .support .section__title .dots en styles.css: 1em, igual al texto que
+   lo rodea (nunca más grande que el texto en ningún lado del sitio). */
 .dash-hero h1 .dots{font-size:1em}
 
 .post-hub__grid{margin-top:var(--gap-head);margin-bottom:var(--sec)}

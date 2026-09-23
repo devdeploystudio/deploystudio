@@ -59,6 +59,13 @@
 
 <link rel="stylesheet" href="css/styles.min.css" />
 
+<!-- GSAP + ScrollTrigger: solo para las dos animaciones ligadas a la
+     posición de scroll (fondo de Proceso, carrusel de Post-deploy).
+     Si el CDN no responde, script.js lo detecta (typeof gsap==='undefined')
+     y esas dos secciones quedan en su versión estática - no rompen nada. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+
 <script src="js/services.js" defer></script>
 <script src="js/projects.js" defer></script>
 <script src="js/script.js" defer></script>
@@ -79,70 +86,6 @@
 }
 </script>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "¿Cuánto tarda un proyecto?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Depende del tipo de trabajo. Una landing puede estar lista en unas 2 semanas, un sitio institucional suele llevar entre 3 y 4, y proyectos más complejos como una tienda online o una web app requieren más tiempo. Antes de arrancar definimos el alcance y te damos un plazo estimado claro."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿Cómo se realizan los pagos?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Trabajamos con un anticipo para reservar el proyecto y el resto se divide según sus etapas. En proyectos más cortos suele ser un pago al comenzar y otro antes de la entrega; en los más grandes, se distribuye entre diseño, desarrollo y publicación. El presupuesto y la forma de pago quedan definidos antes de arrancar. Después de la entrega, el mantenimiento puede contratarse de forma mensual, con un valor fijo por período, o de manera puntual cada vez que necesites una actualización."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿Tengo que tener los textos y las imágenes listos?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No necesariamente. Si ya tenés textos, fotos o material de marca, trabajamos sobre esa base y lo adaptamos al proyecto. Si todavía no contás con contenido suficiente, podemos ayudarte a ordenar y redactar los textos, definir qué tipo de imágenes necesita la web y generar o adaptar piezas nuevas a partir de lo que ya exista."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿Voy a poder actualizar la web después?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Sí. Cuando el proyecto lo necesita, podemos dejarte un panel conectado al sitio para que cambies textos, fotos, proyectos, productos, precios o stock sin tocar código. Si preferís no encargarte vos, también ofrecemos un servicio de mantenimiento mensual o por actualización puntual."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿Qué pasa después de la entrega?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "La web queda publicada y funcionando, y durante los primeros 30 días estamos disponibles para acompañarte con cualquier ajuste o duda que aparezca. También dejamos configuradas las métricas del sitio, para que puedas saber cuántas personas entran, de dónde llegan, qué páginas visitan y qué acciones realizan."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿El dominio, la web y los archivos quedan a mi nombre?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Sí. Tu proyecto es tuyo. Si ya tenés un dominio, trabajamos sobre ese mismo, y si todavía no lo tenés, te asesoramos para elegirlo, registrarlo y configurarlo correctamente. El dominio queda siempre a tu nombre, junto con los accesos y los archivos finales del proyecto."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "¿Qué pasa si no sé exactamente qué necesito?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No hace falta que llegues con todo definido. Nos contás en qué etapa está tu proyecto, qué querés resolver y qué tenés hoy, y nosotros te ayudamos a ordenar la idea y definir qué tiene sentido hacer primero."
-      }
-    }
-  ]
-}
-</script>
 </head>
 <body>
 
@@ -156,43 +99,44 @@
 
 <!-- ══════════════ SPOTLIGHT (sigue al mouse en toda la página) ══════════════ -->
 <div class="spot" id="spot" aria-hidden="true"></div>
+<div id="bgLayer" aria-hidden="true"></div>
 
 <!-- ══════════════ NAV ══════════════ -->
 <header class="nav" id="nav">
-  <a href="#top" class="logo" aria-label="deploy - inicio">
-    <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
-  </a>
+  <div class="nav__inner">
+    <a href="#top" class="logo" aria-label="deploy - inicio">
+      <span class="logo__slash">/</span><span class="logo__word">deploy</span><span class="logo__cursor" data-cursor>_</span>
+    </a>
 
-  <nav class="nav__links" aria-label="Navegación principal">
-    <a href="#para-quien"><span class="mono nav__idx">01</span> Para quién</a>
-    <a href="#servicios"><span class="mono nav__idx">02</span> Servicios</a>
-    <a href="#proceso"><span class="mono nav__idx">03</span> Proceso</a>
-    <a href="#soporte"><span class="mono nav__idx">04</span> Soporte</a>
-    <a href="#proyectos"><span class="mono nav__idx">05</span> Proyectos</a>
-    <a href="#nosotros"><span class="mono nav__idx">06</span> Nosotros</a>
-    <a href="#preguntas"><span class="mono nav__idx">07</span> Preguntas</a>
-    <a href="#contacto"><span class="mono nav__idx">08</span> Contacto</a>
-  </nav>
+    <nav class="nav__links" aria-label="Navegación principal">
+      <a href="#para-quien"><span class="mono nav__idx">01</span> Para quién</a>
+      <a href="#servicios"><span class="mono nav__idx">02</span> Servicios</a>
+      <a href="#proceso"><span class="mono nav__idx">03</span> Proceso</a>
+      <a href="#post-deploy"><span class="mono nav__idx">04</span> Post-deploy</a>
+      <a href="/proyectos"><span class="mono nav__idx">05</span> Proyectos</a>
+      <a href="/nosotros"><span class="mono nav__idx">06</span> Nosotros</a>
+      <a href="/contacto"><span class="mono nav__idx">07</span> Contacto</a>
+    </nav>
 
-  <a href="#contacto" class="btn btn--sm btn--lime nav__cta">
-    Empezar proyecto <span class="btn__arrow">→</span>
-  </a>
+    <a href="/contacto" class="btn btn--sm btn--lime nav__cta">
+      Empezar proyecto <span class="btn__arrow">→</span>
+    </a>
 
-  <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
-    <span></span><span></span>
-  </button>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+  </div>
 </header>
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="#para-quien"><span class="mono">01</span> Para quién</a>
   <a href="#servicios"><span class="mono">02</span> Servicios</a>
   <a href="#proceso"><span class="mono">03</span> Proceso</a>
-  <a href="#soporte"><span class="mono">04</span> Soporte</a>
-  <a href="#proyectos"><span class="mono">05</span> Proyectos</a>
-  <a href="#nosotros"><span class="mono">06</span> Nosotros</a>
-  <a href="#preguntas"><span class="mono">07</span> Preguntas</a>
-  <a href="#contacto"><span class="mono">08</span> Contacto</a>
-  <a href="#contacto" class="btn btn--lime">Empezar proyecto →</a>
+  <a href="#post-deploy"><span class="mono">04</span> Post-deploy</a>
+  <a href="/proyectos"><span class="mono">05</span> Proyectos</a>
+  <a href="/nosotros"><span class="mono">06</span> Nosotros</a>
+  <a href="/contacto"><span class="mono">07</span> Contacto</a>
+  <a href="/contacto" class="btn btn--lime">Empezar proyecto →</a>
 </div>
 
 <main id="top">
@@ -205,10 +149,10 @@
     </div>
 
     <h1 class="hero__title">
-      <span class="line reveal">Hacemos que</span>
-      <span class="line reveal">tus ideas</span>
+      <span class="line reveal"><span class="line__inner">Hacemos que</span></span>
+      <span class="line reveal"><span class="line__inner">tus ideas</span></span>
       <span class="line reveal">
-        <em>tomen forma</em><span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span>
+        <span class="line__inner"><em>tomen forma</em><span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span>
       </span>
     </h1>
 
@@ -218,7 +162,7 @@
     </p>
 
     <div class="hero__actions reveal">
-      <a href="#contacto" class="btn btn--lime btn--lg">
+      <a href="/contacto" class="btn btn--lime btn--lg">
         Empecemos un proyecto <span class="btn__arrow">→</span>
       </a>
       <a href="#servicios" class="btn btn--ghost btn--lg">Conocer los servicios</a>
@@ -240,11 +184,9 @@
 <div class="marquee" aria-hidden="true">
   <div class="marquee__track">
     <span>Landing pages</span><b>/</b><span>Sitios institucionales</span><b>/</b><span>Tiendas online</span><b>/</b>
-    <span>Web apps</span><b>/</b><span>Portfolios</span><b>/</b><span>Rediseños web</span><b>/</b>
-    <span>Identidad visual</span><b>/</b><span>Identidad de marca</span><b>/</b>
+    <span>Web apps</span><b>/</b><span>Portfolios</span><b>/</b>
     <span>Landing pages</span><b>/</b><span>Sitios institucionales</span><b>/</b><span>Tiendas online</span><b>/</b>
-    <span>Web apps</span><b>/</b><span>Portfolios</span><b>/</b><span>Rediseños web</span><b>/</b>
-    <span>Identidad visual</span><b>/</b><span>Identidad de marca</span><b>/</b>
+    <span>Web apps</span><b>/</b><span>Portfolios</span><b>/</b>
   </div>
 </div>
 
@@ -332,7 +274,7 @@
       <span class="audience__n mono">06</span>
       <h3>Tu web es antigua y ya no te representa</h3>
       <p>Quedó vieja, tarda en cargar o simplemente ya no está a la altura de tu proyecto.</p>
-      <span class="audience__tag mono">↳ Rediseño web</span>
+      <span class="audience__tag mono">↳ Empezamos de cero</span>
     </li>
     <li class="audience__card reveal">
       <span class="audience__n mono">07</span>
@@ -369,7 +311,7 @@
 <!-- ══════════════ SERVICIOS ══════════════ -->
 <section class="section svcs" id="servicios">
   <div class="section__head">
-    <span class="eyebrow mono">02 — Servicios</span>
+    <span class="eyebrow mono">02 — Servicios<span class="eyebrow__progress" aria-hidden="true"></span></span>
     <h2 class="section__title">
       Todo lo que tu
       <br>
@@ -539,8 +481,27 @@
       <li>Configuración SEO básica</li>
       <li>Google Analytics configurado</li>
       <li>30 días de soporte después de la entrega</li>
-      <li>El proyecto y los archivos finales quedan en tus manos</li>
+      <li>Panel para actualizar textos e imágenes</li>
     </ul>
+  </div>
+
+  <!-- La identidad de marca ya no es un servicio aparte (ver la nota en
+       js/services.js) - se ofrece como complemento del sitio, nunca
+       como diseño gráfico suelto. Reusa la imagen del que era el
+       primer servicio de "Identidad visual". -->
+  <div class="svcs__identity-banner">
+    <button type="button" class="svcs__identity-banner-thumb" id="identityBannerThumb" aria-label="Ver imagen en grande">
+      <img src="img/servicios/logo-identidad-basica.jpg" alt="Ejemplo de identidad de marca: logo, paleta de colores y tipografías" loading="lazy" />
+    </button>
+    <div class="svcs__identity-banner-body">
+      <div class="svcs__identity-banner-text">
+        <h3>¿Además del sitio necesitás reforzar la identidad de tu marca?</h3>
+        <p>Si el proyecto lo necesita, sumamos logo, colores y tipografías junto con la construcción del sitio.</p>
+      </div>
+      <a href="/contacto" class="btn btn--lime">
+        Contanos qué necesitás <span class="btn__arrow">→</span>
+      </a>
+    </div>
   </div>
 
 </section>
@@ -554,7 +515,7 @@
   </div>
 
   <ol class="steps">
-    <li class="step reveal">
+    <li class="step">
       <span class="step__n mono">01</span>
       <div>
         <h3>Briefing</h3>
@@ -562,7 +523,7 @@
         <span class="step__meta mono">↳ objetivos definidos</span>
       </div>
     </li>
-    <li class="step reveal">
+    <li class="step">
       <span class="step__n mono">02</span>
       <div>
         <h3>Diseño</h3>
@@ -570,7 +531,7 @@
         <span class="step__meta mono">↳ propuesta aprobada</span>
       </div>
     </li>
-    <li class="step reveal">
+    <li class="step">
       <span class="step__n mono">03</span>
       <div>
         <h3>Desarrollo</h3>
@@ -578,7 +539,7 @@
         <span class="step__meta mono">↳ desarrollo finalizado</span>
       </div>
     </li>
-    <li class="step reveal">
+    <li class="step">
       <span class="step__n mono">04</span>
       <div>
         <h3>Deploy &amp; entrega</h3>
@@ -590,14 +551,26 @@
 </section>
 
 <!-- ══════════════ SOPORTE ══════════════ -->
-<section class="section support" id="soporte">
+<section class="section support" id="post-deploy">
   <div class="section__head">
-    <span class="eyebrow mono">04 — Soporte</span>
+    <span class="eyebrow mono">04 — Post-deploy</span>
     <h2 class="section__title">Después del <em>deploy</em><span class="dots lime" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h2>
-    <p class="section__lead">Que el proyecto esté online no significa que quede quieto. Dejamos todo preparado para que puedas seguir usándolo, midiéndolo y actualizándolo con el tiempo.</p>
   </div>
 
-  <ul class="support__grid">
+  <div class="support__lead-row">
+    <p class="section__lead">Que el proyecto esté online no significa que quede quieto. Dejamos todo preparado para que puedas seguir usándolo, midiéndolo y actualizándolo con el tiempo.</p>
+    <div class="support__ctrl">
+      <button class="rail__btn" id="supportPrev" aria-label="Ver funcionalidad anterior">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 L5 8 L10 13"/></svg>
+      </button>
+      <button class="rail__btn" id="supportNext" aria-label="Ver funcionalidad siguiente">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3 L11 8 L6 13"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="support__viewport">
+  <ul class="support__grid" id="supportTrack">
     <li class="support__card reveal">
       <span class="support__n mono">01</span>
       <h3>Sabés qué está pasando</h3>
@@ -623,6 +596,7 @@
       <span class="support__tag mono">↳ nada queda cerrado para siempre</span>
     </li>
   </ul>
+  </div>
 </section>
 
 <!-- ══════════════ PROYECTOS ══════════════ -->
@@ -658,237 +632,19 @@
   </div>
 </section>
 
-<!-- ══════════════ NOSOTROS ══════════════ -->
-<section class="section about" id="nosotros">
-  <div class="section__head">
-    <span class="eyebrow mono">06 — Nosotros</span>
-    <h2 class="section__title">
-      Un estudio chico,
-      <br>
-      hecho <em>a mano</em><span class="lime">.</span>
-    </h2>
-    <p class="section__lead">Hablás directamente con quienes piensan, diseñan y desarrollan tu proyecto. Sin intermediarios ni trabajo tercerizado.</p>
-  </div>
-
-  <div class="about__row">
-    <div class="about__media reveal">
-      <img src="img/nosotros.jpg" alt="Escritorio de trabajo con bocetos de una interfaz, notas y una laptop mostrando un diseño en proceso" width="1000" height="750" loading="lazy" />
+<!-- ══════════════ CTA FINAL ══════════════
+     Nosotros y Preguntas+Contacto se mudaron a /nosotros y /contacto
+     (ver el pedido de reordenar la navbar) - esto es lo único que
+     queda de esas secciones en el home, a modo de cierre. -->
+<section class="section cta-final">
+  <div class="cta-banner reveal">
+    <div>
+      <p class="cta-banner__title">¿Tenés un proyecto en mente?</p>
+      <p class="cta-banner__desc">Contanos qué necesitás y lo charlamos sin compromiso.</p>
     </div>
-    <div class="about__body reveal">
-      <p>Deploy nació con una idea simple: que no necesites coordinar con cinco personas distintas para <strong class="lime">construir una marca y llevarla al mundo digital.</strong> Pensamos el concepto, diseñamos la identidad y desarrollamos lo que el proyecto necesite, buscando que cada parte tenga sentido con la anterior.</p>
-      <p>Además de diseñadores y desarrolladores, <strong class="lime">somos arquitectos.</strong> Esa mezcla de disciplinas atraviesa nuestra forma de trabajar: antes de decidir cómo se ve algo, pensamos <strong class="lime">para qué sirve, cómo se organiza y cómo lo va a recorrer quien lo use.</strong> Programa antes que forma, recorrido antes que decoración. Cambia la escala y cambia la herramienta, pero la lógica de proyecto sigue siendo la misma.</p>
-      <p>Trabajamos con <strong class="lime">pocos proyectos a la vez, a propósito.</strong> Así podemos involucrarnos de verdad en cada uno, entender qué necesitás y acompañar las decisiones durante todo el proceso. Estamos presentes desde las primeras ideas hasta que el proyecto está listo para salir.</p>
-
-      <div class="baseline">
-        <span class="baseline__k mono">Cómo trabajamos</span>
-        <ul class="baseline__list mono">
-          <li>Una charla, no un formulario</li>
-          <li>Presupuesto claro antes de arrancar</li>
-          <li>Los archivos son tuyos, siempre</li>
-          <li>Máxima calidad en cada detalle</li>
-          <li>Seguimos ahí después de entregar</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-    <ul class="team__grid">
-    <li class="team__card reveal">
-      <img class="team__photo" src="img/team-ignacio.jpg" alt="Foto de Ignacio González Trezza" width="480" height="480" loading="lazy" />
-      <div class="team__info">
-        <h3>Ignacio González Trezza</h3>
-        <span class="team__role mono">Estrategia de marca · Visión comercial</span>
-        <p>Se mete en el proyecto para entender qué hay que contar, a quién y de qué manera. Define la dirección para que la identidad se sienta propia y represente fielmente a la marca.</p>
-      </div>
-    </li>
-    <li class="team__card reveal">
-      <img class="team__photo" src="img/team-mariana.jpg" alt="Foto de Mariana Mungo" width="480" height="480" loading="lazy" />
-      <div class="team__info">
-        <h3>Mariana Mungo</h3>
-        <span class="team__role mono">Diseño · Desarrollo</span>
-        <p>Convierte esa dirección en algo que se puede ver y usar. Diseña la experiencia y desarrolla cada sitio o aplicación hasta llevarlo a producción.</p>
-      </div>
-    </li>
-  </ul>
-</section>
-
-<!-- ══════════════ PREGUNTAS ══════════════ -->
-<section class="section faq" id="preguntas">
-  <div class="section__head">
-    <span class="eyebrow mono">07 — Preguntas</span>
-    <h2 class="section__title">Dudas<br>frecuentes<span class="lime">.</span></h2>
-    <p class="section__lead">Las consultas que más se repiten antes de arrancar un proyecto.</p>
-  </div>
-
-  <ul class="faq__list">
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-1" id="faq-q-1">
-        <span class="faq__n mono">01</span>
-        <span class="faq__q-text">¿Cuánto tarda un proyecto?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-1" role="region" aria-labelledby="faq-q-1">
-        <div class="faq__a-inner">
-          <p>Depende del tipo de trabajo. Una landing puede estar lista en unas 2 semanas, un sitio institucional suele llevar entre 3 y 4, y proyectos más complejos como una tienda online o una web app requieren más tiempo. <strong class="lime">Antes de arrancar definimos el alcance y te damos un plazo estimado claro.</strong></p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-2" id="faq-q-2">
-        <span class="faq__n mono">02</span>
-        <span class="faq__q-text">¿Cómo se realizan los pagos?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-2" role="region" aria-labelledby="faq-q-2">
-        <div class="faq__a-inner">
-          <p>Trabajamos con <strong class="lime">un anticipo para reservar el proyecto</strong> y el resto se divide según sus etapas. En proyectos más cortos suele ser un pago al comenzar y otro antes de la entrega; en los más grandes, se distribuye entre diseño, desarrollo y publicación. <strong class="lime">El presupuesto y la forma de pago quedan definidos antes de arrancar.</strong></p>
-          <p>Después de la entrega, el mantenimiento puede contratarse de forma <strong class="lime">mensual, con un valor fijo por período</strong>, o de manera puntual cada vez que necesites una actualización. En ese caso, <strong class="lime">cotizamos el cambio antes de hacerlo y se abona únicamente ese trabajo.</strong></p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-3" id="faq-q-3">
-        <span class="faq__n mono">03</span>
-        <span class="faq__q-text">¿Tengo que tener los textos y las imágenes listos?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-3" role="region" aria-labelledby="faq-q-3">
-        <div class="faq__a-inner">
-          <p>No necesariamente. Si ya tenés textos, fotos o material de marca, <strong class="lime">trabajamos sobre esa base</strong> y lo adaptamos al proyecto.</p>
-          <p>Si todavía no contás con contenido suficiente, podemos ayudarte a <strong class="lime">ordenar y redactar los textos</strong>, definir qué tipo de imágenes necesita la web y generar o adaptar piezas nuevas a partir de lo que ya exista, siempre respetando <strong class="lime">el tono, el estilo y la estética de tu marca</strong> para que todo se sienta parte de un mismo universo.</p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-4" id="faq-q-4">
-        <span class="faq__n mono">04</span>
-        <span class="faq__q-text">¿Voy a poder actualizar la web después?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-4" role="region" aria-labelledby="faq-q-4">
-        <div class="faq__a-inner">
-          <p>Sí. Cuando el proyecto lo necesita, podemos dejarte un <strong class="lime">panel conectado al sitio</strong> para que cambies textos, fotos, proyectos, productos, precios o stock sin tocar código. Antes de entregar, te mostramos cómo usarlo para que puedas manejarlo de forma simple.</p>
-          <p>Si preferís no encargarte vos, también ofrecemos un <strong class="lime">servicio de mantenimiento</strong> que puede contratarse de forma mensual o cada vez que necesites hacer una actualización, ajuste o mejora en el futuro.</p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-5" id="faq-q-5">
-        <span class="faq__n mono">05</span>
-        <span class="faq__q-text">¿Qué pasa después de la entrega?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-5" role="region" aria-labelledby="faq-q-5">
-        <div class="faq__a-inner">
-          <p>La web queda <strong class="lime">publicada y funcionando</strong>, y durante los <strong class="lime">primeros 30 días</strong> estamos disponibles para acompañarte con cualquier ajuste o duda que aparezca.</p>
-          <p>También dejamos configuradas las <strong class="lime">métricas del sitio</strong>, para que puedas saber cuántas personas entran, de dónde llegan, qué páginas visitan y qué acciones realizan. Así no solo tenés una web online: <strong class="lime">también podés entender cómo la está usando la gente.</strong></p>
-          <p>Si tu proyecto lo necesita, también podés contar con un <strong class="lime">panel para actualizar textos, fotos, productos, precios, stock u otro contenido</strong> sin tocar código. Y si preferís que lo hagamos nosotros, podés contratar <strong class="lime">mantenimiento mensual o pedir cambios puntuales</strong> cuando los necesites.</p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-6" id="faq-q-6">
-        <span class="faq__n mono">06</span>
-        <span class="faq__q-text">¿El dominio, la web y los archivos quedan a mi nombre?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-6" role="region" aria-labelledby="faq-q-6">
-        <div class="faq__a-inner">
-          <p>Sí. <strong class="lime">Tu proyecto es tuyo.</strong> Si ya tenés un dominio, trabajamos sobre ese mismo. Y si todavía no lo tenés, <strong class="lime">te asesoramos para elegirlo, registrarlo y configurarlo correctamente.</strong></p>
-          <p>En cualquier caso, <strong class="lime">el dominio queda siempre a tu nombre</strong>, junto con los accesos y los archivos finales del proyecto. La idea es que tengas control sobre todo y <strong class="lime">no quedes atado a Deploy</strong> para poder administrar tu propia marca o tu sitio en el futuro.</p>
-        </div>
-      </div>
-    </li>
-    <li class="faq__item reveal">
-      <button class="faq__q" aria-expanded="false" aria-controls="faq-a-7" id="faq-q-7">
-        <span class="faq__n mono">07</span>
-        <span class="faq__q-text">¿Qué pasa si no sé exactamente qué necesito?</span>
-        <span class="faq__icon" aria-hidden="true"></span>
-      </button>
-      <div class="faq__a" id="faq-a-7" role="region" aria-labelledby="faq-q-7">
-        <div class="faq__a-inner">
-          <p>No hace falta que llegues con todo definido. Nos contás en qué etapa está tu proyecto, qué querés resolver y qué tenés hoy. <strong class="lime">Nosotros te ayudamos a ordenar la idea y definir qué tiene sentido hacer primero.</strong></p>
-        </div>
-      </div>
-    </li>
-  </ul>
-
-  <p class="faq__note mono reveal">
-    // ¿Te quedó alguna duda?
-    <br>
-    Contactanos y te respondemos a la brevedad.
-  </p>
-</section>
-
-<!-- ══════════════ CTA / CONTACTO ══════════════ -->
-<section class="section contact" id="contacto">
-  <div class="contact__inner">
-    <div class="contact__left">
-      <span class="eyebrow mono">08 — Contacto</span>
-      <h2 class="contact__title">
-        Contanos qué
-        <br>
-        necesitás<span class="lime">.</span>
-      </h2>
-      <p class="contact__lead">Contanos qué tenés en mente, en qué etapa está tu proyecto y qué necesitás resolver.</p>
-      <p class="contact__lead">No hace falta que vengas con todo definido: podemos ordenar la idea juntos y encontrar la mejor forma de llevarla adelante.</p>
-
-      <ul class="contact__links mono">
-        <li><span class="k">email</span> <a href="https://mail.google.com/mail/?view=cm&fs=1&to=contact.deploystudio@gmail.com" target="_blank" rel="noopener">contact.deploystudio@gmail.com</a></li>
-        <li><span class="k">instagram</span> <a href="https://instagram.com/deploystudio_" target="_blank" rel="noopener">@deploystudio_</a></li>
-        <li><span class="k">whatsapp</span> <a href="https://wa.me/5491125851237?text=%C2%A1Hola!%20Me%20gustar%C3%ADa%20empezar%20un%20proyecto%20con%20ustedes.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F" target="_blank" rel="noopener">Mariana - +54 9 11 2585-1237</a></li>
-        <li><span class="k">whatsapp</span> <a href="https://wa.me/5491176262733?text=%C2%A1Hola!%20Me%20gustar%C3%ADa%20empezar%20un%20proyecto%20con%20ustedes.%20%C2%BFCoordinamos%20una%20reuni%C3%B3n%3F" target="_blank" rel="noopener">Ignacio - +54 9 11 7626-2733</a></li>
-      </ul>
-
-      <div class="contact__audit">
-        <p class="contact__audit-text mono">¿Todavía no estás segur@?</p>
-        <a href="diagnostico" class="btn btn--ghost btn--sm">
-          Analizar mi sitio gratis <span class="btn__arrow">→</span>
-        </a>
-      </div>
-    </div>
-
-    <form class="form" id="form" novalidate>
-      <div class="form__row">
-        <label class="field">
-          <span class="mono">nombre *</span>
-          <input type="text" name="nombre" autocomplete="name" required placeholder="Tu nombre" />
-        </label>
-        <label class="field">
-          <span class="mono">email *</span>
-          <input type="email" name="email" autocomplete="email" required placeholder="tu@email.com" />
-        </label>
-      </div>
-
-      <label class="field">
-        <span class="mono">proyecto / marca</span>
-        <input type="text" name="marca" autocomplete="organization" placeholder="Nombre del proyecto" />
-      </label>
-
-      <fieldset class="field field--chips">
-        <legend class="mono">qué necesitás *</legend>
-        <div class="chips">
-          <label class="chip"><input type="checkbox" name="servicio" value="Landing page" /><span>Landing page</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Sitio institucional" /><span>Sitio institucional</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Tienda online" /><span>Tienda online</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Web app" /><span>Web app</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Portfolio" /><span>Portfolio</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Rediseño web" /><span>Rediseño web</span></label>
-          <label class="chip"><input type="checkbox" name="servicio" value="Logo / identidad" /><span>Logo / identidad</span></label>
-        </div>
-      </fieldset>
-
-      <label class="field field--grow">
-        <span class="mono">contanos un poco más *</span>
-        <textarea name="mensaje" rows="4" required placeholder="Qué hacés, qué necesitás y para cuándo…"></textarea>
-      </label>
-
-      <button type="submit" class="btn btn--lime btn--lg btn--block">
-        Enviar consulta <span class="btn__arrow">→</span>
-      </button>
-
-      <p class="form__note mono" id="formNote" role="status"></p>
-    </form>
+    <a href="/contacto" class="btn btn--lime cta-banner__btn">
+      Contactanos <span class="btn__arrow">→</span>
+    </a>
   </div>
 </section>
 
@@ -911,7 +667,6 @@
       <span class="footer__item">Tienda online</span>
       <span class="footer__item">Web app</span>
       <span class="footer__item">Portfolio</span>
-      <span class="footer__item">Rediseño web</span>
       <span class="footer__item">Logo / identidad</span>
     </div>
     <div>
@@ -919,11 +674,10 @@
       <a href="#para-quien">Para quién</a>
       <a href="#servicios">Servicios</a>
       <a href="#proceso">Proceso</a>
-      <a href="#soporte">Soporte</a>
+      <a href="#post-deploy">Post-deploy</a>
       <a href="#proyectos">Proyectos</a>
-      <a href="#nosotros">Nosotros</a>
-      <a href="#preguntas">Preguntas</a>
-      <a href="#contacto">Contacto</a>
+      <a href="/nosotros">Nosotros</a>
+      <a href="/contacto">Contacto</a>
     </div>
     <div>
       <span class="mono footer__k">Contacto</span>
@@ -939,7 +693,7 @@
   </div>
 
   <div class="footer__bottom mono">
-    <span>© <span id="year">2026</span> Deploy Studio — Todos los derechos reservados · <a href="privacidad">Privacidad</a> · <a href="terminos">Términos</a></span>
+    <span>© <span id="year">2026</span> Deploy Studio — Todos los derechos reservados · <a href="/legal/privacidad">Privacidad</a> · <a href="/legal/terminos">Términos</a></span>
     <span class="footer__status"><i class="dot"></i> build: stable · v1.0.0</span>
   </div>
 </footer>
@@ -960,7 +714,7 @@
   <button class="lightbox__close" id="lightboxClose" aria-label="Cerrar imagen">✕</button>
   <div class="lightbox__stage">
     <button class="lightbox__nav lightbox__prev" id="lightboxPrev" aria-label="Ver foto anterior">‹</button>
-    <img class="lightbox__img" id="lightboxImg" src="" alt="Vista ampliada del proyecto seleccionado" width="1600" height="1000" />
+    <img class="lightbox__img" id="lightboxImg" src="" alt="Vista ampliada del proyecto seleccionado" />
     <button class="lightbox__nav lightbox__next" id="lightboxNext" aria-label="Ver foto siguiente">›</button>
   </div>
   <p class="lightbox__title mono" id="lightboxTitle"></p>

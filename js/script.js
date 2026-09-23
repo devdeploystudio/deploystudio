@@ -4,6 +4,18 @@
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Alto real del nav ya en modo .is-stuck (padding 12px + logo ~30px +
+// borde 1px) - para cuando algo se PINEA, no dejarlo pegado literal
+// contra el borde de la pantalla, tapado detrás del nav fijo. Usado
+// por initProcesoDark().
+const NAV_H = 70;
+
+// Config común a los pin:true de la página (por ahora, solo Proceso) -
+// en vez de repetirla suelta en el scrollTrigger. fastScrollEnd +
+// anticipatePin son la recomendación puntual de GSAP para el bug de
+// "scrolleás rápido y se ven secciones pineadas superpuestas".
+const PIN_DEFAULTS = { invalidateOnRefresh: true, fastScrollEnd: true, anticipatePin: 1 };
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
   c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
@@ -26,7 +38,20 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
   const bar  = document.getElementById('bootBar');
   if(!boot) return;
 
-  const arrancar = () => { startReveals(); watchTerminal(); };
+  const arrancar = () => {
+    startReveals();
+    watchTerminal();
+    initProcesoDark();
+    initServiciosProgress();
+    initProyectosReveal();
+    // Fuerza un recálculo prolijo del ScrollTrigger de Proceso -
+    // epsilon-robotics hace lo mismo (ScrollTrigger.refresh() al final
+    // de su initAll()). Sin esto puede quedar calculado con el alto de
+    // página de un momento distinto al de otro contenido que revela más
+    // abajo (proyectos, etc.), y ahí es cuando el pin se termina
+    // disparando en el rango equivocado al bajar y volver a subir.
+    if(typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+  };
 
   const finish = () => {
     boot.classList.add('is-done');
@@ -35,10 +60,18 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
     arrancar();
   };
 
-  // Ya se vio en esta sesión → no repetir
+  // Ya se vio en esta sesión → no repetir. setTimeout (no arrancar()
+  // directo): esta rama corre en el mismo pase síncrono en el que se
+  // está parseando el script, ANTES de que projects() - definido más
+  // abajo en el archivo - llegue a llenar #projGrid. initProyectosReveal()
+  // ya se reintenta solo si lo llaman antes de tiempo (ver más abajo),
+  // pero total con este margen ni hace falta ese reintento en el caso
+  // común. setTimeout, no requestAnimationFrame: rAF se pausa en una
+  // pestaña en segundo plano (nunca llega a dispararse mientras no esté
+  // a la vista), setTimeout no.
   if(sessionStorage.getItem('deploy_booted') || REDUCED){
     boot.remove();
-    arrancar();
+    setTimeout(arrancar, 0);
     return;
   }
 
@@ -87,6 +120,13 @@ function typeTerminal(){
   ];
 
   const token = ++termToken;      // invalida cualquier tipeo anterior
+
+  // Reserva el alto FINAL (con todo el texto ya puesto) antes de
+  // arrancar a tipear, para que la caja no vaya creciendo de a poco
+  // mientras aparece el texto - el min-height fijo del CSS era una
+  // aproximación que se quedaba corta.
+  el.innerHTML = script.map(s => s.t).join('');
+  el.style.minHeight = el.offsetHeight + 'px';
   el.innerHTML = '';
 
   if(REDUCED){
@@ -163,17 +203,23 @@ function startReveals(){
   const io = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const el = entry.target;
+      // El delay se pone en el elemento que de verdad tiene la transición.
+      // En el título del hero es .line__inner (el que se desliza) - .line
+      // en sí ya no anima nada (ver el comentario junto a esa regla en
+      // css/styles.css). En cualquier otro .reveal normal, es el propio
+      // elemento, como siempre.
+      const target = el.querySelector(':scope > .line__inner') || el;
 
       if(entry.isIntersecting && entry.intersectionRatio >= .08){
         // Delay escalonado entre hermanos
         const siblings = [...(el.parentElement?.children || [])]
           .filter(c => c.classList.contains('reveal'));
         const idx = Math.max(0, siblings.indexOf(el));
-        el.style.transitionDelay = `${Math.min(idx * 80, 400)}ms`;
+        target.style.transitionDelay = `${Math.min(idx * 80, 400)}ms`;
         el.classList.add('is-in');
       } else if(!entry.isIntersecting){
         // Fuera de pantalla: se rearma para la próxima pasada
-        el.style.transitionDelay = '0ms';
+        target.style.transitionDelay = '0ms';
         el.classList.remove('is-in');
       }
     });
@@ -182,14 +228,234 @@ function startReveals(){
   items.forEach(i => io.observe(i));
 }
 
+/* ─────────── 4b. "PROCESO" - PIN + CARDS QUE SE REEMPLAZAN ───────────
+   Lo que pidió explícito: llegás al bloque, se pone negro, queda fijo
+   en pantalla (pin, como "10b. IMPACT" de epsilon-robotics), y sólo
+   ahí adentro - sin que la página siga bajando - van entrando las 4
+   cards de a una, reemplazando a la anterior.
+   Para que se sienta una card entrando de verdad (no "le cambia el
+   texto a la de siempre"), cada .step:
+     - tiene su propio fondo/borde de card (gsap.set más abajo, look
+       de tarjeta oscura con relieve, no solo texto suelto)
+     - se mueve de verdad al entrar/salir (translateY), no solo opacity
+   Se superponen en el mismo lugar (position:absolute) porque tienen
+   que ocupar el mismo espacio para "reemplazarse" - la altura de
+   .steps se fija a mano (gsap.set) porque un contenedor con hijos
+   absolutos no tiene alto propio. */
+function initProcesoDark(){
+  if(REDUCED || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  const section = document.getElementById('proceso');
+  const bg = document.getElementById('bgLayer');
+  const nav = document.getElementById('nav');
+  const stepsList = section?.querySelector('.steps');
+  const steps = stepsList ? [...stepsList.querySelectorAll('.step')] : [];
+  if(!section || !bg || !stepsList || !steps.length) return;
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const title = section.querySelector('.section__title');
+  const lead = section.querySelector('.section__lead');
+  const eyebrow = section.querySelector('.eyebrow');
+  const stepH3s = section.querySelectorAll('.step h3');
+  const stepPs = section.querySelectorAll('.step p');
+  const stepNs = section.querySelectorAll('.step__n');
+
+  // Título, bajada Y cards escondidos de antemano: al acercarse a la
+  // sección solo tiene que verse "03 — Proceso" - nada de ver ya el
+  // resto armado antes de que el fondo se ponga negro. Todo entra recién
+  // como parte de la secuencia, con el pin ya enganchado.
+  gsap.set([title, lead], { opacity: 0 });
+  gsap.set(steps, { opacity: 0, y: 50, scale: .92 });
+
+  // La grilla 2×2 se pone de una, ANTES de crear el pin (no en medio del
+  // timeline como antes) - si no, ScrollTrigger mide el alto de la
+  // sección todavía en modo lista (una card por fila, mucho más alta) y
+  // deja ese alto trabado para todo el pin, aunque después la grilla
+  // real ocupe mucho menos: la caja fija quedaba con un hueco enorme
+  // vacío abajo y no entraba en la pantalla. Midiendo ya en modo grilla
+  // el pin queda del alto real que se ve.
+  stepsList.classList.add('is-gsap-grid');
+
+  // Duraciones con nombre en vez de números sueltos, para que se pueda
+  // reordenar la secuencia sin tener que recalcular todo a mano.
+  const EYEBROW_IN = .2;                      // 03 — Proceso se ilumina
+  const TITLE_AT = EYEBROW_IN;                // el título entra recién después
+  const TITLE_IN = .3;
+  const GRID_AT = TITLE_AT + TITLE_IN;        // ahí se arma la grilla 2×2
+  const CARD_GAP = .5, CARD_IN = .5;          // cada card entra .5 después de la anterior
+  const END_BUFFER = .2;                      // poco margen muerto antes de salir
+  const totalUnits = GRID_AT + (steps.length - 1) * CARD_GAP + CARD_IN + END_BUFFER;
+  const EXIT_DUR = .12;                       // salida: snap rápido, no fundido lento
+  const EXIT_AT = totalUnits - EXIT_DUR;
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: section,
+      // "top top+=NAV_H": el pin no deja la sección pegada literal contra
+      // el borde de la pantalla (ahí quedaba tapado el eyebrow detrás
+      // del nav fijo) - la deja fija un poco más abajo.
+      start: `top top+=${NAV_H}`,
+      end: () => '+=' + Math.round(window.innerHeight * totalUnits),
+      scrub: true,
+      pin: true,
+      ...PIN_DEFAULTS,
+      // El nav pasa a modo oscuro exactamente durante el pin (no con
+      // scroll suelto): coincide en altura (offset de arriba) y en
+      // color con el fondo ya negro de la sección.
+      onEnter: () => nav?.classList.add('is-dark'),
+      onEnterBack: () => nav?.classList.add('is-dark'),
+      onLeave: () => nav?.classList.remove('is-dark'),
+      onLeaveBack: () => nav?.classList.remove('is-dark'),
+    },
+  });
+
+  // 1) Fondo + eyebrow: lo primero que se ve al entrar. El eyebrow
+  // cambia de color MÁS RÁPIDO que el fondo (no a la par) - si los dos
+  // pasan por gris al mismo tiempo, el texto se termina mimetizando con
+  // el fondo un instante y queda ilegible justo ahí. Llegando antes a
+  // blanco, siempre hay contraste contra el fondo (todavía claro o ya
+  // oscuro, nunca los dos a mitad de camino juntos).
+  tl.to(bg, { opacity: 1, duration: EYEBROW_IN }, 0);
+  if(eyebrow) tl.to(eyebrow, { color: '#FAFAF8', duration: EYEBROW_IN * .4, ease: 'power2.out' }, 0);
+
+  // 2) Título + bajada: recién cuando el eyebrow ya está. opacity tiene
+  // que estar en el objeto "to" - los escondimos con opacity:0 más
+  // arriba, si no se repite acá GSAP nunca los vuelve a poner en 1.
+  tl.fromTo(title,
+    { opacity: 0, color: '#0D0D0D', y: 20 },
+    { opacity: 1, color: '#FAFAF8', y: 0, duration: TITLE_IN, ease: 'power2.out' },
+    TITLE_AT,
+  );
+  if(lead) tl.to(lead, { opacity: 1, duration: TITLE_IN, ease: 'power2.out' }, TITLE_AT);
+
+  // 3) Acá (.set, instantáneo) se arma la grilla 2×2 - .is-gsap-grid en
+  // el CSS pone el display:grid y el look de card CLARO por default
+  // (para cuando se sale del pin más abajo). El fondo/borde oscuro de
+  // acá SÍ se anima (to, no set): entra al entrar al pin y se revierte
+  // al salir, igual que el resto de los colores - así no hace falta
+  // sacar la clase entera a la salida, la sección queda siempre en
+  // modo grilla, solo cambian los colores.
+  // Todas las cards arrancan invisibles: van apareciendo de a una y SE
+  // QUEDAN puestas (se acumulan), no se reemplazan entre sí.
+  tl.to(steps, { backgroundColor: 'rgba(255,255,255,.05)', borderColor: 'rgba(255,255,255,.12)', duration: EYEBROW_IN }, GRID_AT)
+    .set(stepH3s, { color: '#FAFAF8' }, GRID_AT)
+    .set(stepPs, { color: '#c7c7c7' }, GRID_AT)
+    .set(stepNs, { color: 'var(--lime)' }, GRID_AT);
+
+  // 4) Las 4 cards entran de a una, con el mismo "aterrizaje" con
+  // impulso (power2.out) - el número de cada una hace un pop propio un
+  // toque después.
+  steps.forEach((step, i) => {
+    const at = GRID_AT + i * CARD_GAP;
+    const numIn = step.querySelector('.step__n');
+    tl.to(step, { opacity: 1, y: 0, scale: 1, duration: CARD_IN, ease: 'power2.out' }, at);
+    if(numIn){
+      tl.fromTo(numIn,
+        { scale: 1.6, opacity: 0 },
+        { scale: 1, opacity: 1, duration: CARD_IN * .6, ease: 'back.out(2)' },
+        at + CARD_IN * .2,
+      );
+    }
+  });
+
+  // Salida: snap rápido pegado al final, no un fundido lento - antes
+  // quedaba un tramo largo viéndose todo ya claro pero todavía adentro
+  // del pin ("ya se fue pero seguís atrapado ahí"). Revierte TODAS las
+  // cards (ya están las 4 acumuladas, no solo la última).
+  tl.to(bg, { opacity: 0, duration: EXIT_DUR, ease: 'none' }, EXIT_AT)
+    .to(title, { color: '#0D0D0D', duration: EXIT_DUR, ease: 'none' }, EXIT_AT)
+    .to(stepH3s, { color: '#0D0D0D', duration: EXIT_DUR, ease: 'none' }, EXIT_AT)
+    .to(stepPs, { color: '#5a5a5a', duration: EXIT_DUR, ease: 'none' }, EXIT_AT)
+    .to(stepNs, { color: 'var(--stone)', duration: EXIT_DUR, ease: 'none' }, EXIT_AT)
+    // La grilla (.is-gsap-grid) NO se saca - se queda para siempre, con
+    // su look claro de card de base (ver el CSS). Solo el fondo/borde
+    // oscuro que se había animado más arriba vuelve a ese valor claro.
+    .to(steps, { backgroundColor: 'rgba(255,255,255,.7)', borderColor: 'var(--mist)', duration: EXIT_DUR, ease: 'none' }, EXIT_AT);
+  if(eyebrow) tl.to(eyebrow, { color: '#B7B7B7', duration: EXIT_DUR, ease: 'none' }, EXIT_AT);
+}
+
+/* ─────────── 4d. "SERVICIOS" - LÍNEA QUE SE COMPLETA CON EL SCROLL ───
+   Sin pin: esta sección tiene tabs + rail con scroll nativo + mockups de
+   notebook/celu que cambian entre sí - pinearla y manejarla desde el
+   scroll vertical pelearía con toda esa lógica ya armada. En cambio,
+   mismo espíritu que "14. PROCESS - SVG line draw" de epsilon-robotics
+   (ver 07. Producto - apps/ejemplo 6/assets/js/main.js): un filito
+   (reemplaza el borde estático del eyebrow, ver #servicios .eyebrow en
+   el CSS) se completa de izquierda a derecha a medida que la sección
+   pasa por pantalla, scrolleando 100% normal. */
+function initServiciosProgress(){
+  if(REDUCED || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  const section = document.getElementById('servicios');
+  const bar = section?.querySelector('.eyebrow__progress');
+  if(!section || !bar) return;
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to(bar, {
+    scaleX: 1, ease: 'none',
+    scrollTrigger: { trigger: section, start: 'top 75%', end: 'bottom 60%', scrub: .6 },
+  });
+}
+
+/* ─────────── 4e. "PROYECTOS" - CARDS QUE APARECEN CON EL SCROLL ───────
+   Sin pin: la grilla es filtrable (varias filas/columnas, cambia de
+   alto según el filtro) y las cards ya traen imagen 16:10 - pinearla
+   entera no entra en una pantalla sin achicar esas fotos, un cambio de
+   diseño más grande que esto. En cambio, cada card se revela (fade +
+   sube un poco) apenas entra en la pantalla scrolleando normal - dispara
+   de nuevo cada vez que se filtra o se pide "ver más", porque ese click
+   reemplaza el grid.innerHTML entero (cards nuevas, nada que revelar de
+   las anteriores). Reemplaza el fadeUp de CSS (que jugaba una sola vez
+   al renderizar, sin relación con el scroll) solo cuando GSAP arranca
+   bien - ver .proj-grid.is-gsap-reveal .proj en el CSS. */
+function initProyectosReveal(){
+  if(REDUCED || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  const grid = document.getElementById('projGrid');
+  if(!grid) return;
+
+  // projects() (más abajo en este archivo) recién llena el grid al
+  // correr - si por orden de ejecución todavía está vacío, se reintenta
+  // al cuadro siguiente en vez de armar el reveal sobre nada.
+  if(!grid.children.length){ setTimeout(initProyectosReveal, 0); return; }
+
+  gsap.registerPlugin(ScrollTrigger);
+  grid.classList.add('is-gsap-reveal');
+
+  let triggers = [];
+  const revelar = () => {
+    triggers.forEach(st => st.kill());
+    triggers = [];
+    const cards = [...grid.children];
+    if(!cards.length) return;
+    gsap.set(cards, { opacity: 0, y: 30 });
+    cards.forEach((card, i) => {
+      const tw = gsap.to(card, {
+        opacity: 1, y: 0, duration: .5, ease: 'power2.out', delay: i * .05,
+        scrollTrigger: { trigger: card, start: 'top 88%', toggleActions: 'play none none reverse' },
+      });
+      triggers.push(tw.scrollTrigger);
+    });
+  };
+  revelar();
+
+  // filters/projMore reemplazan grid.innerHTML entero (ver projects() más
+  // abajo) - hay que rearmar el reveal sobre las cards nuevas cada vez.
+  document.getElementById('filters')?.addEventListener('click', () => requestAnimationFrame(revelar));
+  document.getElementById('projMore')?.addEventListener('click', () => requestAnimationFrame(revelar));
+}
+
 /* ─────────── 5. NAV: sticky + link activo ─────────── */
 (function nav(){
   const nav = document.getElementById('nav');
   const toTop = document.getElementById('toTop');
   const links = [...document.querySelectorAll('.nav__links a')];
-  const sections = links
-    .map(a => document.querySelector(a.getAttribute('href')))
-    .filter(Boolean);
+  // Los links que no son anclas de esta página (ej. /nosotros, /contacto)
+  // quedan como null acá para no correr los índices del resto - el
+  // resaltado activo simplemente los ignora.
+  const sections = links.map(a => {
+    const href = a.getAttribute('href');
+    return href.startsWith('#') ? document.querySelector(href) : null;
+  });
 
   const onScroll = () => {
     const y = window.scrollY;
@@ -198,7 +464,7 @@ function startReveals(){
 
     let current = -1;
     sections.forEach((s, i) => {
-      if(s.getBoundingClientRect().top <= 140) current = i;
+      if(s && s.getBoundingClientRect().top <= 140) current = i;
     });
     links.forEach((l, i) => l.classList.toggle('is-active', i === current));
   };
@@ -207,6 +473,41 @@ function startReveals(){
   onScroll();
 
   toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+})();
+
+/* ─────────── 5b. ANCLAS: scroll a mano (no scroll-behavior:smooth) ───────────
+   Cualquier <a href="#seccion"> de la página (nav, menú mobile, botones del
+   hero, footer) - se intercepta el click y se calcula el destino ACÁ, en
+   vez de dejar que el navegador salte solo. Ver el comentario largo en
+   html{} de styles.css: el salto nativo persigue la posición del destino en
+   vivo cuadro a cuadro, y si el destino es una sección que GSAP pinea
+   (Proceso), a mitad de camino el pin la pasa a position:fixed - el
+   navegador se termina peleando con eso y la página queda con el scroll
+   trabado en 0 y la sección pineada superpuesta arriba del hero. Con el
+   destino ya calculado de antemano (un solo scrollTo, nada de perseguir el
+   elemento cuadro a cuadro) ese conflicto no pasa.
+   Ojo con getBoundingClientRect() para el destino: sirve para una sección
+   suelta, pero para Proceso (la única pineada) da un valor distinto según
+   desde dónde se lo mida - GSAP le deja un transform puesto que representa
+   su posición de salida del pin, no la de entrada, si se lo mide viniendo
+   de más abajo en la página. self.start del ScrollTrigger de esa sección
+   es el valor que GSAP mismo usa para saber dónde empieza su pin - siempre
+   da lo mismo sin importar desde dónde se lo consulte, así que se usa ese
+   en vez del rect cuando existe. */
+(function anchorScroll(){
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if(!a || a.getAttribute('href').length < 2) return;
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if(!target) return;
+    e.preventDefault();
+    const st = typeof ScrollTrigger !== 'undefined'
+      && ScrollTrigger.getAll().find(t => t.trigger === target && t.pin);
+    const y = st
+      ? st.start
+      : Math.max(0, target.getBoundingClientRect().top + window.scrollY - NAV_H);
+    window.scrollTo({ top: y, behavior: REDUCED ? 'auto' : 'smooth' });
+  });
 })();
 
 /* ─────────── 6. MENÚ MOBILE ─────────── */
@@ -236,7 +537,7 @@ function startReveals(){
   if(!spot || REDUCED || window.matchMedia('(hover:none)').matches) return;
 
   const root = document.documentElement;
-  const darkBlocks = [...document.querySelectorAll('.footer,.marquee')];
+  const darkBlocks = [...document.querySelectorAll('.footer, .marquee')];
   let tx = window.innerWidth / 2, ty = window.innerHeight * .4;
   let cx = tx, cy = ty, raf = null, idle = null;
 
@@ -389,9 +690,13 @@ function startReveals(){
   ubicarTools();
   mqToolsArriba.addEventListener('change', ubicarTools);
 
+  // Identidad de marca ya no es una pestaña acá - se ofrece como banner
+  // fijo debajo del carrusel (ver .svcs__identity-banner en index.html).
+  // Se deja el array por si en el futuro vuelve a haber más de un grupo;
+  // con uno solo, la "pestaña" queda como una etiqueta fija (llena el
+  // hueco a la izquierda de las flechas en vez de dejarlo vacío).
   const GRUPOS = [
-    { id: 'web',   label: 'Presencia digital' },
-    { id: 'marca', label: 'Identidad de marca' }
+    { id: 'web', label: 'Servicios' }
   ];
 
   let lista = [];
@@ -424,11 +729,17 @@ function startReveals(){
     galIdx = (galIdx + delta + galeria.length) % galeria.length;
     pintarLightbox();
   };
-  const abrirLightbox = (imagenActual, tipo) => {
+  const abrirLightbox = (imagenActual, tipo, nombreFallback) => {
     galeria = lista
       .map(s => ({ imagen: tipo === 'mobile' ? (s.imagenMobile || s.imagen) : s.imagen, nombre: s.nombre }))
       .filter(g => g.imagen);
-    const idx = galeria.findIndex(g => g.imagen === imagenActual);
+    let idx = galeria.findIndex(g => g.imagen === imagenActual);
+    // La imagen no pertenece al grupo activo (ej. el banner fijo de
+    // identidad, que no vive en SERVICIOS): se abre sola, sin flechas.
+    if(idx < 0 && nombreFallback){
+      galeria = [{ imagen: imagenActual, nombre: nombreFallback }];
+      idx = 0;
+    }
     galIdx = idx >= 0 ? idx : 0;
     const multi = galeria.length > 1;
     lightboxPrev.hidden = !multi;
@@ -438,6 +749,14 @@ function startReveals(){
     lightboxClose.focus();
   };
   const cerrarLightbox = () => { lightbox.hidden = true; lightboxImg.src = ''; };
+
+  // Miniatura fija del banner de identidad (.svcs__identity-banner, fuera
+  // del carrusel) - abre el mismo lightbox, pero sin flechas de "siguiente".
+  const identityThumb = document.getElementById('identityBannerThumb');
+  identityThumb?.addEventListener('click', () => {
+    const img = identityThumb.querySelector('img');
+    abrirLightbox(img.getAttribute('src'), 'desktop', 'Identidad de marca');
+  });
 
   lightboxClose.addEventListener('click', cerrarLightbox);
   lightboxPrev.addEventListener('click', () => irLightbox(-1));
@@ -555,6 +874,24 @@ function startReveals(){
     if(img) abrirLightbox(img.getAttribute('src'), 'mobile');
   });
 
+  // La notebook/el celu tienen que medir lo mismo que la tarjeta activa
+  // (no lo que le convenga a su propio aspect-ratio). Con align-items:
+  // stretch del grid solo no alcanzaba: .laptop-wrap sí se achicaba al
+  // alto de la tarjeta, pero adentro suyo .laptop es OTRO grid (comparte
+  // celda con .phone) y ese alto:100% seguía resolviendo contra el alto
+  // "natural" de .laptop (ancho × aspect-ratio), no contra el nuevo alto
+  // ya achicado del wrapper - círculo parecido, un nivel más adentro.
+  // Fijando el alto de .laptop A MANO (inline, gana seguro sobre
+  // cualquier regla del CSS) se corta ese círculo del todo.
+  const sincronizarAlto = () => {
+    const activa = rail.children[activo];
+    if(!activa || !lapWrap) return;
+    const h = activa.getBoundingClientRect().height;
+    lapWrap.style.height = `${h}px`;
+    laptop.style.height = `${h}px`;
+  };
+  window.addEventListener('resize', sincronizarAlto);
+
   const marcar = (i) => {
     activo = i;
     [...rail.children].forEach((c, n) => {
@@ -565,6 +902,7 @@ function startReveals(){
     count.textContent = `${dosDig(i + 1)}/${dosDig(lista.length)}`;
     bar.style.transform = `scaleX(${(i + 1) / lista.length})`;
     mostrar(i);
+    sincronizarAlto();
   };
 
   // Mientras el scroll lo dispara el propio código (traer), el listener de
@@ -804,7 +1142,120 @@ function startReveals(){
   render('web');
 })();
 
-/* ─────────── 10. A QUIÉN APUNTAMOS: carrusel infinito ─────────── */
+/* ─────────── 9b. POST-DEPLOY: carrusel infinito ───────────
+   Calco exacto de audienceCarousel() ("10. A QUIÉN APUNTAMOS" más abajo)
+   - mismo mecanismo de siempre: clones para el loop infinito, autoplay
+   continuo en rAF (no "saltar de card en card"), arrastre con inercia.
+   La estructura de los listeners de pointer (down/move/up/cancel) +
+   touch-action:pan-y en el CSS es particular a propósito: es lo que
+   hace que iOS/Safari reconozca el arrastre horizontal a mano en vez de
+   tomarlo como scroll vertical de la página. */
+(function postDeployCarousel(){
+  const viewport = document.querySelector('.support__viewport');
+  const track = document.getElementById('supportTrack');
+  const prevBtn = document.getElementById('supportPrev');
+  const nextBtn = document.getElementById('supportNext');
+  if(!viewport || !track) return;
+
+  const originales = Array.from(track.children);
+  originales.forEach(li => {
+    const clon = li.cloneNode(true);
+    clon.classList.remove('reveal', 'is-in');
+    clon.setAttribute('aria-hidden', 'true');
+    clon.setAttribute('tabindex', '-1');
+    track.appendChild(clon);
+  });
+
+  const VELOCIDAD = 34; // px/s
+  let setW = 0, paso = 0, pos = 0, encima = false, aLaVista = true;
+
+  function medir(){
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    paso = originales[0].getBoundingClientRect().width + gap;
+    setW = originales.reduce((sum, li) => sum + li.getBoundingClientRect().width + gap, 0);
+  }
+  medir();
+  window.addEventListener('resize', medir);
+
+  const mover = () => { track.style.transform = `translateX(${-pos}px)`; };
+
+  new IntersectionObserver(([e]) => { aLaVista = e.isIntersecting; }, { threshold: .1 }).observe(viewport);
+
+  ['pointerenter', 'focusin'].forEach(ev => viewport.addEventListener(ev, () => encima = true));
+  ['pointerleave', 'focusout'].forEach(ev => viewport.addEventListener(ev, () => encima = false));
+
+  const clampPos = p => ((p % setW) + setW) % setW;
+  prevBtn?.addEventListener('click', () => { pos = clampPos(pos - paso); mover(); });
+  nextBtn?.addEventListener('click', () => { pos = clampPos(pos + paso); mover(); });
+
+  /* Arrastre táctil (o con mouse): la tira se mueve con transform vía
+     JS (para el loop infinito), así que no hay scroll nativo que
+     aproveche el dedo solo. Lo simulamos a mano: mientras se arrastra,
+     "encima" se pone true (mismo flag que el hover, pausa el autoplay)
+     y pos sigue el delta del dedo/mouse.
+     Al soltar sin inercia quedaba tosco - el dedo se despega y la tira
+     frena en seco, nada que ver con un scroll nativo. Ahora se mide la
+     velocidad de los últimos pointermove (px/ms) y, al soltar, esa
+     velocidad "sigue" unos frames más con fricción hasta apagarse (coast
+     de abajo) - recién ahí retoma el autoplay, desde donde haya quedado. */
+  let arrastrando = false, startX = 0, startPos = 0;
+  let velX = 0, lastMoveX = 0, lastMoveT = 0;
+
+  viewport.addEventListener('pointerdown', e => {
+    arrastrando = true; encima = true;
+    startX = e.clientX; startPos = pos;
+    lastMoveX = e.clientX; lastMoveT = performance.now(); velX = 0;
+    viewport.setPointerCapture(e.pointerId);
+    viewport.classList.add('is-dragging');
+  });
+  viewport.addEventListener('pointermove', e => {
+    if(!arrastrando) return;
+    const now = performance.now();
+    const dt = now - lastMoveT;
+    if(dt > 0) velX = (lastMoveX - e.clientX) / dt; // px/ms, + = va hacia la izquierda
+    lastMoveX = e.clientX; lastMoveT = now;
+    pos = clampPos(startPos + (startX - e.clientX));
+    mover();
+  });
+  const inercia = () => {
+    let v = velX, last = performance.now();
+    (function coast(now){
+      const dt = now - last; last = now;
+      v *= Math.pow(0.94, dt / 16);
+      if(Math.abs(v) < 0.02){ encima = false; return; }
+      pos = clampPos(pos + v * dt);
+      mover();
+      requestAnimationFrame(coast);
+    })(last);
+  };
+  const soltar = () => {
+    if(!arrastrando) return;
+    arrastrando = false;
+    viewport.classList.remove('is-dragging');
+    if(Math.abs(velX) > 0.02) inercia();
+    else encima = false;
+  };
+  viewport.addEventListener('pointerup', soltar);
+  viewport.addEventListener('pointercancel', soltar);
+
+  if(REDUCED) return;
+
+  let last = performance.now();
+  requestAnimationFrame(function tick(now){
+    const dt = (now - last) / 1000;
+    last = now;
+    if(!encima && aLaVista){
+      pos = (pos + VELOCIDAD * dt) % setW;
+      mover();
+    }
+    requestAnimationFrame(tick);
+  });
+})();
+
+/* ─────────── 10. A QUIÉN APUNTAMOS: carrusel infinito ───────────
+   "Para quién" ya no pinea (queda solo Proceso) - vuelve a ser el
+   carrusel de siempre: clones al final para el loop infinito, autoplay
+   continuo en rAF, arrastre con inercia y los botones prev/next. */
 (function audienceCarousel(){
   const viewport = document.querySelector('.audience__viewport');
   const track = document.getElementById('audienceTrack');
@@ -814,7 +1265,7 @@ function startReveals(){
 
   // Clonamos las cards originales una vez y las sumamos al final de la
   // tira: así, cuando el scroll llega a la mitad (setW), podemos restar
-  // setW a la posición sin que se note el salto — el loop es infinito.
+  // setW a la posición sin que se note el salto - el loop es infinito.
   const originales = Array.from(track.children);
   originales.forEach(li => {
     const clon = li.cloneNode(true);
@@ -863,7 +1314,7 @@ function startReveals(){
      frena en seco, nada que ver con un scroll nativo. Ahora se mide la
      velocidad de los últimos pointermove (px/ms) y, al soltar, esa
      velocidad "sigue" unos frames más con fricción hasta apagarse (coast
-     de abajo) — recién ahí retoma el autoplay, desde donde haya quedado. */
+     de abajo) - recién ahí retoma el autoplay, desde donde haya quedado. */
   let arrastrando = false, startX = 0, startPos = 0;
   let velX = 0, lastMoveX = 0, lastMoveT = 0;
   const clampPos = p => ((p % setW) + setW) % setW;

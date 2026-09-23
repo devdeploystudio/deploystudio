@@ -15,7 +15,7 @@
                "11. PROYECTOS".
    categoria → una de: "Landing page" | "Sitio institucional" |
                "Tienda online" | "Web app" | "Portfolio" |
-               "Rediseño web" | "Logo / identidad"          (obligatorio)
+               "Logo / identidad"                            (obligatorio)
                Los filtros se arman solos con lo que uses acá. Usá
                los mismos nombres que las tarjetas de "Qué hacemos"
                (js/services.js) y los botones del formulario de
