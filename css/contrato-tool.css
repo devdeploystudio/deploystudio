@@ -118,7 +118,7 @@
 }
 .contrato-field input:focus{outline:none;border-color:var(--lime)}
 
-.contrato-hint{font-size:12px;color:var(--stone);margin-top:-14px;margin-bottom:24px}
+.contrato-hint{margin-top:-8px;margin-bottom:24px}
 
 .contrato-padwrap{
   margin-bottom:20px;
