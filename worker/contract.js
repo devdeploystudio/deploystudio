@@ -21,6 +21,13 @@
                   contrato/firmar-contrato.html?id=<id> (reescrito a
                   /contrato/firmar-contrato/<id> por _redirects) y se lo
                   pasa al cliente.
+                  Si además viene ?id=<id existente>, en vez de generar
+                  un link nuevo se pisa el PDF (y la metadata) de ESE id,
+                  siempre que todavía exista en KV sin firmar - así
+                  Deploy puede corregir un error en el PDF sin tener que
+                  reenviarle al cliente un link distinto. Si el id ya no
+                  existe (se firmó, se usó o expiró), devuelve 404 en vez
+                  de crear silenciosamente un link nuevo bajo otro id.
    GET  /contract?id=...
                   El cliente lo pide desde firmar-contrato.html para
                   cargar su contrato sin tener que subir el archivo.
@@ -60,7 +67,7 @@ const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 const TO_EMAIL = 'contact.deploystudio@gmail.com';
 const FROM_EMAIL = 'contrato@deploystudio.com.ar';
 const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB, de sobra para un contrato
-const LINK_TTL_SECONDS = 60 * 60 * 6; // los links sin firmar expiran solos a las 6 horas
+const LINK_TTL_SECONDS = 60 * 60 * 24; // los links sin firmar expiran solos a las 24 horas
 const ID_RE = /^[a-z0-9]{1,24}-[a-f0-9]{6}$/i;
 
 function isAllowedOrigin(origin) {
@@ -124,15 +131,6 @@ async function handleUpload(request, url, env, headers) {
   if (!bytes.length) return json({ error: 'Falta el PDF' }, 400, headers);
   if (bytes.length > MAX_PDF_BYTES) return json({ error: 'El PDF es demasiado grande' }, 413, headers);
 
-  // El número de presupuesto es solo para que el id sea reconocible de
-  // un vistazo - se limpia a alfanumérico (nada de espacios/símbolos que
-  // compliquen la URL) y se recorta. Si no llega ninguno, "contrato" a
-  // secas como prefijo por default.
-  const rawBudget = (url.searchParams.get('budget') || 'contrato').toString();
-  const budgetSlug = (rawBudget.replace(/[^a-zA-Z0-9]/g, '').slice(0, 24) || 'contrato').toLowerCase();
-  const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 6);
-  const id = `${budgetSlug}-${suffix}`;
-
   // name/lastname/email van como metadata de KV, no como parte del PDF -
   // sirven para prellenar el nombre del firmante en firmar-contrato.html
   // y armar el nombre de archivo ("contrato-apellido-nombre-numero.pdf"),
@@ -143,6 +141,32 @@ async function handleUpload(request, url, env, headers) {
     lastname: url.searchParams.get('lastname') || '',
     email: url.searchParams.get('email') || '',
   };
+
+  // Reemplazo de un link ya emitido: si viene ?id=<id>, se pisa el PDF (y
+  // la metadata) de ese id en vez de crear uno nuevo, siempre que
+  // todavía exista sin firmar en KV. Se chequea existencia antes de
+  // escribir para no crear silenciosamente un "link nuevo" bajo un id
+  // que en realidad ya expiró o se usó - eso confundiría a Deploy, que
+  // esperaría estar corrigiendo el link que ya le pasó al cliente.
+  const replaceId = (url.searchParams.get('id') || '').toString();
+  if (replaceId) {
+    if (!ID_RE.test(replaceId)) return json({ error: 'Id inválido' }, 400, headers);
+    const existing = await env.CONTRACTS.get(replaceId);
+    if (existing === null) {
+      return json({ error: 'Ese link ya no existe (se firmó, se usó o expiró) - armá uno nuevo dejando el campo de reemplazo vacío' }, 404, headers);
+    }
+    await env.CONTRACTS.put(replaceId, bytes, { expirationTtl: LINK_TTL_SECONDS, metadata });
+    return json({ id: replaceId }, 200, headers);
+  }
+
+  // El número de presupuesto es solo para que el id sea reconocible de
+  // un vistazo - se limpia a alfanumérico (nada de espacios/símbolos que
+  // compliquen la URL) y se recorta. Si no llega ninguno, "contrato" a
+  // secas como prefijo por default.
+  const rawBudget = (url.searchParams.get('budget') || 'contrato').toString();
+  const budgetSlug = (rawBudget.replace(/[^a-zA-Z0-9]/g, '').slice(0, 24) || 'contrato').toLowerCase();
+  const suffix = crypto.randomUUID().replace(/-/g, '').slice(0, 6);
+  const id = `${budgetSlug}-${suffix}`;
 
   await env.CONTRACTS.put(id, bytes, { expirationTtl: LINK_TTL_SECONDS, metadata });
 
@@ -264,6 +288,26 @@ async function handleSend(request, env, headers) {
 // a solo el isotipo - el original es un cuadrado de 4961x4961 con
 // mucho margen alrededor, que en un header angosto de mail se veía
 // como un recuadro alto de más.
+//
+// Modo oscuro del cliente de mail: Gmail (sobre todo la app de
+// Android/iOS) reinterpreta solo por su cuenta los colores de un mail
+// que no diga lo contrario - el header con el logo (fondo crema
+// #FAFAF8) quedaba invertido a un gris oscuro random, mientras el resto
+// del mail no siempre corría la misma suerte, un despelote visual sin
+// ninguna lógica de marca. <meta name="color-scheme"/"supported-color-
+// schemes" content="light"> es la forma estándar de decirle a Gmail/
+// Apple Mail/Outlook.com "este mail ya está diseñado para verse así,
+// no lo reinterpretes" - en los clientes que lo respetan (la mayoría),
+// esto alcanza y el mail se ve igual siempre, oscuro o no.
+// Como red de contención para el puñado de clientes que igual llegan a
+// aplicar su propio modo oscuro (Gmail no lee @media prefers-color-
+// scheme en absoluto, pero Apple Mail y algunos otros sí), el <style>
+// de abajo pide explícitamente: si el dispositivo está en oscuro, el
+// header pierde el fondo crema (para no chocar con lo que sea que el
+// cliente pintó alrededor) y el isotipo PNG (negro, pensado para fondo
+// claro) se cambia por un wordmark de texto blanco - no existe una
+// versión blanca del logo como imagen, así que se arma con HTML/CSS en
+// vez de mantener un archivo aparte para este único caso.
 function clientEmailHtml(name) {
   const firstName = (name || '').toString().split(' ')[0] || '';
   // Tabla con bgcolor (no un <div> con background) para el fondo
@@ -272,13 +316,34 @@ function clientEmailHtml(name) {
   // una <table> - así se ve igual en el cliente de mail real, no solo
   // en el navegador.
   return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light" />
+<meta name="supported-color-schemes" content="light" />
+<title>Deploy Studio</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    .ds-logo-header { background:#0D0D0D !important; border-bottom-color:#242424 !important; }
+    .ds-logo-img { display:none !important; }
+    .ds-logo-fallback { display:block !important; }
+    .ds-footer { background:#0D0D0D !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#FAFAF8;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#FAFAF8" style="background:#FAFAF8;">
   <tr>
     <td align="center" style="padding:40px 16px;font-family:Arial,Helvetica,sans-serif;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:480px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #DDDDDD;">
         <tr>
-          <td bgcolor="#FAFAF8" style="padding:28px 32px;background:#FAFAF8;text-align:center;border-bottom:1px solid #DDDDDD;">
-            <img src="https://deploystudio.com.ar/img/logo-mail.png" alt="Deploy Studio" width="170" style="display:block;margin:0 auto;border:0;" />
+          <td class="ds-logo-header" bgcolor="#FAFAF8" style="padding:28px 32px;background:#FAFAF8;text-align:center;border-bottom:1px solid #DDDDDD;">
+            <img class="ds-logo-img" src="https://deploystudio.com.ar/img/logo-mail.png" alt="Deploy Studio" width="170" style="display:block;margin:0 auto;border:0;" />
+            <div class="ds-logo-fallback" style="display:none;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:bold;color:#ffffff;">
+              <span style="color:#84E600;">/</span>deploy<span style="color:#84E600;">_</span>
+            </div>
           </td>
         </tr>
         <tr>
@@ -294,12 +359,14 @@ function clientEmailHtml(name) {
           </td>
         </tr>
         <tr>
-          <td bgcolor="#FAFAF8" style="padding:18px 32px;background:#FAFAF8;text-align:center;">
+          <td class="ds-footer" bgcolor="#FAFAF8" style="padding:18px 32px;background:#FAFAF8;text-align:center;">
             <p style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.5px;color:#B7B7B7;margin:0;">deploy studio_ · deploystudio.com.ar</p>
           </td>
         </tr>
       </table>
     </td>
   </tr>
-</table>`.trim();
+</table>
+</body>
+</html>`.trim();
 }

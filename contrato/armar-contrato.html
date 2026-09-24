@@ -71,6 +71,12 @@
       <input type="email" id="clientEmail" placeholder="juan@ejemplo.com" autocomplete="email" />
     </label>
 
+    <label class="contrato-field">
+      <span class="mono">Reemplazar un link ya enviado (opcional)</span>
+      <input type="text" id="replaceLink" placeholder="Pegá el link o el ID (ej. 79-a1b2c3)" />
+    </label>
+    <p class="contrato-hint mono">Si lo dejás vacío se genera un link nuevo. Si pegás un link/ID que ya mandaste y todavía no lo firmaron, se pisa ESE contrato y el link del cliente no cambia.</p>
+
     <label class="contrato-drop" id="dropZone" for="fileInput">
       <span class="contrato-drop__icon" aria-hidden="true">↑</span>
       <span class="contrato-drop__text">Tocá para elegir el PDF del contrato<br /><span class="mono contrato-drop__hint">o soltalo acá</span></span>
@@ -90,7 +96,7 @@
 
   <section class="contrato-step" id="stepResult" hidden>
     <p class="contrato-state__title">Listo</p>
-    <p>Pasale este link al cliente (por WhatsApp, mail, donde sea). Vence solo a las 6 horas, y también deja de funcionar apenas firme (un solo uso).</p>
+    <p id="resultDetail">Pasale este link al cliente (por WhatsApp, mail, donde sea). Vence solo a las 24 horas, y también deja de funcionar apenas firme (un solo uso).</p>
     <div class="contrato-result">
       <span class="contrato-result__label mono">Link para el cliente</span>
       <div class="contrato-result__row">

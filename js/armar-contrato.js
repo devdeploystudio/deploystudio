@@ -21,6 +21,7 @@
   const clientFirstName = $('clientFirstName');
   const clientLastName = $('clientLastName');
   const clientEmail = $('clientEmail');
+  const replaceLink = $('replaceLink');
   const dropZone = $('dropZone');
   const fileInput = $('fileInput');
   const fileNameEl = $('fileName');
@@ -32,6 +33,7 @@
   const stepResult = $('stepResult');
 
   const resultLink = $('resultLink');
+  const resultDetail = $('resultDetail');
   const copyBtn = $('copyBtn');
   const resetBtn = $('resetBtn');
 
@@ -64,6 +66,17 @@
     if (fileInput.files[0]) selectFile(fileInput.files[0]);
   });
 
+  // Acepta tanto el link completo (.../firmar-contrato/79-a1b2c3) como el
+  // id pegado a mano (79-a1b2c3) - mismo patrón que ID_RE en el Worker.
+  // Si no matchea nada, se manda tal cual y el Worker lo rechaza con
+  // "Id inválido" (mejor que tragarse el error acá silenciosamente).
+  function extractReplaceId(raw) {
+    const value = (raw || '').trim();
+    if (!value) return '';
+    const match = value.match(/([a-z0-9]{1,24}-[a-f0-9]{6})\/?$/i);
+    return match ? match[1] : value;
+  }
+
   function selectFile(file) {
     uploadError.hidden = true;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
@@ -93,6 +106,9 @@
         lastname: clientLastName.value.trim(),
         email: clientEmail.value.trim(),
       });
+      const replaceId = extractReplaceId(replaceLink.value);
+      if (replaceId) params.set('id', replaceId);
+
       const res = await fetch(WORKER_URL + '/upload?' + params.toString(), {
         method: 'POST',
         headers: {
@@ -103,7 +119,13 @@
       });
 
       if (res.status === 401) throw new Error('clave incorrecta');
-      if (!res.ok) throw new Error('upload-failed');
+      if (!res.ok) {
+        // El Worker manda un mensaje puntual (ej. "Ese link ya no existe...")
+        // para 404/400 - mejor mostrar eso que un genérico "no pudimos
+        // subir", sobre todo en el caso de reemplazo de un link vencido.
+        const body = await res.json().catch(() => null);
+        throw new Error(body && body.error ? body.error : 'upload-failed');
+      }
 
       const data = await res.json();
       // Sin ".html" a propósito - Cloudflare redirige (307) cada página
@@ -113,6 +135,9 @@
       const link = location.origin + '/contrato/firmar-contrato/' + data.id;
 
       resultLink.value = link;
+      resultDetail.textContent = replaceId
+        ? 'Reemplazamos el PDF. El link del cliente es el mismo de antes, no hace falta volver a mandárselo.'
+        : 'Pasale este link al cliente (por WhatsApp, mail, donde sea). Vence solo a las 24 horas, y también deja de funcionar apenas firme (un solo uso).';
       stepUploading.hidden = true;
       stepResult.hidden = false;
     } catch (err) {
@@ -121,7 +146,9 @@
       stepForm.hidden = false;
       uploadError.textContent = err.message === 'clave incorrecta'
         ? 'Clave incorrecta.'
-        : 'No pudimos subir el contrato. Probá de nuevo.';
+        : (err.message && err.message !== 'upload-failed'
+          ? err.message
+          : 'No pudimos subir el contrato. Probá de nuevo.');
       uploadError.hidden = false;
     }
   });
@@ -144,6 +171,7 @@
     clientFirstName.value = '';
     clientLastName.value = '';
     clientEmail.value = '';
+    replaceLink.value = '';
     stepResult.hidden = true;
     stepForm.hidden = false;
     updateBtn();

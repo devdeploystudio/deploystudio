@@ -38,13 +38,18 @@ html:not(.dp-auth-ok) .dash-main{display:none}
 }
 
 /* ══════════════ ANCHO ══════════════
-   Todo el contenido (intro, carga de archivos, resultados) usa el mismo
-   ancho completo del sitio (--max), igual que index.html. Los párrafos
-   largos individuales limitan su propio ancho en "ch" para que no se
-   vuelvan incómodos de leer en una pantalla ancha - eso es un límite de
-   tipografía, no de layout, así que vive en el elemento de texto, no en
-   un contenedor que angoste toda la sección. */
-.dash-main{max-width:var(--max);margin-inline:auto;padding:0 var(--pad)}
+   Antes usaba el mismo --max que index.html (1280px) - a pedido, este
+   panel ahora ocupa el ancho real de la ventana (sin max-width), con
+   var(--pad) como único margen lateral. Es un dashboard de datos, no una
+   página editorial: en monitores anchos conviene aprovechar el espacio en
+   vez de dejarlo vacío a los costados. Los KPIs/cards ya son grid con
+   auto-fit (ver más abajo), así que sea cual sea el ancho disponible, las
+   cards existentes siempre se reparten para llenarlo entero - no hace
+   falta un número fijo de columnas. Los párrafos largos individuales
+   limitan su propio ancho en "ch" para que no se vuelvan incómodos de
+   leer en una pantalla ancha - eso es un límite de tipografía, no de
+   layout, así que vive en el elemento de texto, no acá. */
+.dash-main{margin-inline:auto;padding:0 var(--pad)}
 
 .dash-hero{padding:var(--sec) 0 0}
 .dash-hero__back{
@@ -175,24 +180,31 @@ html:not(.dp-auth-ok) .dash-main{display:none}
 .dash-kpi__hint{display:block;font-size:11.5px;color:#8a8a8a;margin-top:4px;line-height:1.4}
 
 /* ══════════════ GRID PRINCIPAL ══════════════
-   12 columnas, como cualquier grid de dashboard, pero los tamaños de
-   card están elegidos por prioridad de contenido (acciones de contacto
-   es lo más importante → card más grande), no por simetría. */
-/* Antes usaba var(--gap-head) (hasta 44px) para el espacio entre filas -
-   contra los 26px de padding interno de cada card, y los 24px de gap
-   horizontal, se sentía desbalanceado (más aire ENTRE cards que DENTRO de
-   ellas). 28px queda parejo con el gap horizontal sin pegotearse. */
+   Los tamaños de card están elegidos por prioridad de contenido
+   (acciones de contacto es lo más importante → card más grande), no por
+   simetría - pero qué cards aparecen depende de qué haya en los CSV que
+   Deploy suba (no todos los negocios tienen ecommerce, o puede faltar
+   algún reporte puntual). Con un grid de 12 columnas fijas + spans fijos,
+   una fila con menos cards de las esperadas quedaba con un hueco vacío
+   al final en vez de repartirse entre las que sí están.
+   Por eso esto es flex, no grid: cada card tiene un flex-basis (~ mismo
+   ancho relativo que tenía su span de 12) pero con flex-grow:1 - así, si
+   falta una vecina de esa fila, la que quedó CRECE y ocupa el lugar
+   vacío. flex-wrap arma las filas solo, en el orden del HTML. */
 .dash-grid{
-  display:grid;grid-template-columns:repeat(12,1fr);
+  display:flex;flex-wrap:wrap;
   gap:28px 24px;
 }
-.dash-card--span4{grid-column:span 4}
-.dash-card--span5{grid-column:span 5}
-.dash-card--span6{grid-column:span 6}
-.dash-card--span7{grid-column:span 7}
-.dash-card--span12{grid-column:span 12}
+.dash-card--span4{flex:1 1 calc(33.333% - 16px)}
+.dash-card--span5{flex:1 1 calc(41.667% - 14px)}
+.dash-card--span6{flex:1 1 calc(50% - 12px)}
+.dash-card--span7{flex:1 1 calc(58.333% - 10px)}
+.dash-card--span12{flex:1 1 100%}
 
 .dash-card{
+  min-width:0; /* flex-item default (min-width:auto) frena el shrink/grow
+    si el contenido de adentro es ancho (una barra, el SVG de tendencia) -
+    esto deja que el flex-basis/grow de arriba manden de verdad. */
   border:1px solid var(--mist);border-radius:var(--r);
   padding:26px 28px;background:rgba(255,255,255,.7);
   opacity:0;transform:translateY(10px);
