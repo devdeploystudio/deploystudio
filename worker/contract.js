@@ -294,86 +294,66 @@ async function handleSend(request, env, headers) {
 
 // Mail HTML simple para el cliente - estilos inline a propósito (los
 // clientes de mail no soportan <style> ni CSS moderno de forma
-// confiable), con los colores/tipografía de la marca. La imagen del
-// logo apunta al sitio en vivo (deploystudio.com.ar) porque los mails
-// no pueden traer archivos propios embebidos de forma confiable.
-// logo-mail.png es una copia de img/logo.png recortada (sharp .trim())
-// a solo el isotipo - el original es un cuadrado de 4961x4961 con
-// mucho margen alrededor, que en un header angosto de mail se veía
-// como un recuadro alto de más.
+// confiable), con los colores/tipografía de la marca.
 //
-// Modo oscuro del cliente de mail: Gmail (sobre todo la app de
-// Android/iOS) reinterpreta solo por su cuenta los colores de un mail
-// que no diga lo contrario - el header con el logo (fondo crema
-// #FAFAF8) quedaba invertido a un gris oscuro random, mientras el resto
-// del mail no siempre corría la misma suerte, un despelote visual sin
-// ninguna lógica de marca. <meta name="color-scheme"/"supported-color-
-// schemes" content="light"> es la forma estándar de decirle a Gmail/
-// Apple Mail/Outlook.com "este mail ya está diseñado para verse así,
-// no lo reinterpretes" - en los clientes que lo respetan (la mayoría),
-// esto alcanza y el mail se ve igual siempre, oscuro o no.
-// Como red de contención para el puñado de clientes que igual llegan a
-// aplicar su propio modo oscuro (Gmail no lee @media prefers-color-
-// scheme en absoluto, pero Apple Mail y algunos otros sí), el <style>
-// de abajo pide explícitamente: si el dispositivo está en oscuro, el
-// header pierde el fondo crema (para no chocar con lo que sea que el
-// cliente pintó alrededor) y el isotipo PNG (negro, pensado para fondo
-// claro) se cambia por un wordmark de texto blanco - no existe una
-// versión blanca del logo como imagen, así que se arma con HTML/CSS en
-// vez de mantener un archivo aparte para este único caso.
+// Oscuro SIEMPRE, a propósito (antes era claro con un intento de
+// bloquear el modo oscuro del cliente de mail): la app de Gmail
+// (sobre todo Android/iOS) ignora <meta name="color-scheme"/
+// "supported-color-schemes"> Y ADEMÁS borra los <style> con @media del
+// mail antes de mostrarlo - ninguna de las dos formas estándar de
+// pedirle "no reinterpretes esto" funciona ahí, así que pelearle al
+// modo oscuro forzado de Gmail no es viable de forma confiable (esto
+// está bien documentado, no es un bug de acá). La salida real: en vez
+// de intentar quedar siempre CLARO, este mail queda siempre OSCURO -
+// Gmail generalmente no toca lo que ya está oscuro, así que se ve igual
+// sea cual sea el modo del que lo abre. Mismo look que el footer/los
+// bloques oscuros del sitio (fondo --ink, texto blanco, lima de acento).
+// Por el mismo motivo ya no hace falta el logo en PNG (pensado para
+// fondo claro) ni una versión alternativa - el wordmark de texto
+// blanco/lima de abajo funciona siempre, y de paso se ve aunque el
+// cliente de mail tenga las imágenes bloqueadas por default.
 function clientEmailHtml(name) {
   const firstName = (name || '').toString().split(' ')[0] || '';
-  // Tabla con bgcolor (no un <div> con background) para el fondo
-  // cremita a propósito: Gmail/Outlook suelen ignorar el background de
-  // un <div> suelto en mails, pero sí respetan el bgcolor/background de
-  // una <table> - así se ve igual en el cliente de mail real, no solo
-  // en el navegador.
+  // Tabla con bgcolor (no un <div> con background) para el fondo a
+  // propósito: Gmail/Outlook suelen ignorar el background de un <div>
+  // suelto en mails, pero sí respetan el bgcolor/background de una
+  // <table> - así se ve igual en el cliente de mail real, no solo en el
+  // navegador.
   return `
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="color-scheme" content="light" />
-<meta name="supported-color-schemes" content="light" />
 <title>Deploy Studio</title>
-<style>
-  @media (prefers-color-scheme: dark) {
-    .ds-logo-header { background:#0D0D0D !important; border-bottom-color:#242424 !important; }
-    .ds-logo-img { display:none !important; }
-    .ds-logo-fallback { display:block !important; }
-    .ds-footer { background:#0D0D0D !important; }
-  }
-</style>
 </head>
-<body style="margin:0;padding:0;background:#FAFAF8;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#FAFAF8" style="background:#FAFAF8;">
+<body style="margin:0;padding:0;background:#0D0D0D;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0D0D0D" style="background:#0D0D0D;">
   <tr>
     <td align="center" style="padding:40px 16px;font-family:Arial,Helvetica,sans-serif;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="max-width:480px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #DDDDDD;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#161616" style="max-width:480px;background:#161616;border-radius:8px;overflow:hidden;border:1px solid #242424;">
         <tr>
-          <td class="ds-logo-header" bgcolor="#FAFAF8" style="padding:28px 32px;background:#FAFAF8;text-align:center;border-bottom:1px solid #DDDDDD;">
-            <img class="ds-logo-img" src="https://deploystudio.com.ar/img/logo-mail.png" alt="Deploy Studio" width="170" style="display:block;margin:0 auto;border:0;" />
-            <div class="ds-logo-fallback" style="display:none;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:bold;color:#ffffff;">
+          <td bgcolor="#0D0D0D" style="padding:28px 32px;background:#0D0D0D;text-align:center;border-bottom:1px solid #242424;">
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:bold;color:#ffffff;">
               <span style="color:#84E600;">/</span>deploy<span style="color:#84E600;">_</span>
             </div>
           </td>
         </tr>
         <tr>
           <td style="padding:32px;">
-            <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5c9900;font-weight:bold;margin:0 0 12px;">Contrato firmado</p>
-            <h1 style="font-size:22px;line-height:1.3;margin:0 0 16px;color:#0D0D0D;">¡Listo${firstName ? ', ' + firstName : ''}!</h1>
-            <p style="font-size:15px;line-height:1.6;color:#3a3a3a;margin:0 0 16px;">
+            <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#84E600;font-weight:bold;margin:0 0 12px;">Contrato firmado</p>
+            <h1 style="font-size:22px;line-height:1.3;margin:0 0 16px;color:#FAFAF8;">¡Listo${firstName ? ', ' + firstName : ''}!</h1>
+            <p style="font-size:15px;line-height:1.6;color:#b8b8b8;margin:0 0 16px;">
               Tu contrato con Deploy Studio quedó firmado correctamente. Te dejamos una copia adjunta en este mail para que la guardes.
             </p>
-            <p style="font-size:15px;line-height:1.6;color:#3a3a3a;margin:0;">
+            <p style="font-size:15px;line-height:1.6;color:#b8b8b8;margin:0;">
               Cualquier duda, escribinos y lo vemos.
             </p>
           </td>
         </tr>
         <tr>
-          <td class="ds-footer" bgcolor="#FAFAF8" style="padding:18px 32px;background:#FAFAF8;text-align:center;">
-            <p style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.5px;color:#B7B7B7;margin:0;">deploy studio_ · deploystudio.com.ar</p>
+          <td bgcolor="#0D0D0D" style="padding:18px 32px;background:#0D0D0D;text-align:center;">
+            <p style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:.5px;color:#8a8a8a;margin:0;">deploy studio_ · deploystudio.com.ar</p>
           </td>
         </tr>
       </table>
