@@ -27,7 +27,11 @@
                   Deploy puede corregir un error en el PDF sin tener que
                   reenviarle al cliente un link distinto. Si el id ya no
                   existe (se firmó, se usó o expiró), devuelve 404 en vez
-                  de crear silenciosamente un link nuevo bajo otro id.
+                  de crear silenciosamente un link nuevo bajo otro id -
+                  a menos que además venga ?force=1 (el botón de
+                  "generalo en esa URL igual" que aparece en
+                  armar-contrato.html después de ese 404), en cuyo caso
+                  crea el contrato de cero bajo ese mismo id puntual.
    GET  /contract?id=...
                   El cliente lo pide desde firmar-contrato.html para
                   cargar su contrato sin tener que subir el archivo.
@@ -67,7 +71,7 @@ const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 const TO_EMAIL = 'contact.deploystudio@gmail.com';
 const FROM_EMAIL = 'contrato@deploystudio.com.ar';
 const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB, de sobra para un contrato
-const LINK_TTL_SECONDS = 60 * 60 * 24; // los links sin firmar expiran solos a las 24 horas
+const LINK_TTL_SECONDS = 60 * 60 * 24 * 30; // los links sin firmar expiran solos a los 30 días - misma duración que un presupuesto (antes 24hs, muy poco margen para un cliente real)
 const ID_RE = /^[a-z0-9]{1,24}-[a-f0-9]{6}$/i;
 
 function isAllowedOrigin(origin) {
@@ -148,12 +152,21 @@ async function handleUpload(request, url, env, headers) {
   // escribir para no crear silenciosamente un "link nuevo" bajo un id
   // que en realidad ya expiró o se usó - eso confundiría a Deploy, que
   // esperaría estar corrigiendo el link que ya le pasó al cliente.
+  // ?force=1 se salta ese chequeo a propósito: es el botón de "el link
+  // venció, generalo ahí igual" en armar-contrato.html, que solo aparece
+  // DESPUÉS de que este mismo endpoint ya devolvió notFound una vez - o
+  // sea, Deploy ya confirmó a propósito que quiere crear un contrato
+  // nuevo bajo ese id puntual (recuperó la URL vieja del cliente), no es
+  // el camino por default.
   const replaceId = (url.searchParams.get('id') || '').toString();
+  const force = url.searchParams.get('force') === '1';
   if (replaceId) {
     if (!ID_RE.test(replaceId)) return json({ error: 'Id inválido' }, 400, headers);
-    const existing = await env.CONTRACTS.get(replaceId);
-    if (existing === null) {
-      return json({ error: 'Ese link ya no existe (se firmó, se usó o expiró) - armá uno nuevo dejando el campo de reemplazo vacío' }, 404, headers);
+    if (!force) {
+      const existing = await env.CONTRACTS.get(replaceId);
+      if (existing === null) {
+        return json({ error: 'Ese link ya no existe (se firmó, se usó o expiró)', notFound: true }, 404, headers);
+      }
     }
     await env.CONTRACTS.put(replaceId, bytes, { expirationTtl: LINK_TTL_SECONDS, metadata });
     return json({ id: replaceId }, 200, headers);

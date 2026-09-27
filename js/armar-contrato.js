@@ -27,6 +27,7 @@
   const fileNameEl = $('fileName');
   const uploadBtn = $('uploadBtn');
   const uploadError = $('uploadError');
+  const forceBtn = $('forceBtn');
 
   const stepForm = $('stepForm');
   const stepUploading = $('stepUploading');
@@ -89,8 +90,9 @@
     updateBtn();
   }
 
-  uploadBtn.addEventListener('click', async () => {
+  async function doUpload(force) {
     uploadError.hidden = true;
+    forceBtn.hidden = true;
     const token = adminToken.value.trim();
     if (!selectedFile || !token) return;
 
@@ -99,6 +101,8 @@
     stepForm.hidden = true;
     stepUploading.hidden = false;
 
+    const replaceId = extractReplaceId(replaceLink.value);
+
     try {
       const params = new URLSearchParams({
         budget: budgetNumber.value.trim(),
@@ -106,8 +110,8 @@
         lastname: clientLastName.value.trim(),
         email: clientEmail.value.trim(),
       });
-      const replaceId = extractReplaceId(replaceLink.value);
       if (replaceId) params.set('id', replaceId);
+      if (force) params.set('force', '1');
 
       const res = await fetch(WORKER_URL + '/upload?' + params.toString(), {
         method: 'POST',
@@ -124,7 +128,13 @@
         // para 404/400 - mejor mostrar eso que un genérico "no pudimos
         // subir", sobre todo en el caso de reemplazo de un link vencido.
         const body = await res.json().catch(() => null);
-        throw new Error(body && body.error ? body.error : 'upload-failed');
+        const err = new Error(body && body.error ? body.error : 'upload-failed');
+        // notFound: el id existe con buen formato pero ya no está en KV
+        // (venció, se firmó o se usó) - ahí es cuando tiene sentido
+        // ofrecer el botón de "generalo en esa URL igual" (?force=1),
+        // nunca para un id con formato inválido u otro tipo de error.
+        err.notFound = !!(body && body.notFound);
+        throw err;
       }
 
       const data = await res.json();
@@ -135,9 +145,7 @@
       const link = location.origin + '/contrato/firmar-contrato/' + data.id;
 
       resultLink.value = link;
-      resultDetail.textContent = replaceId
-        ? 'Reemplazamos el PDF. El link del cliente es el mismo de antes, no hace falta volver a mandárselo.'
-        : 'Pasale este link al cliente (por WhatsApp, mail, donde sea). Vence solo a las 24 horas, y también deja de funcionar apenas firme (un solo uso).';
+      resultDetail.textContent = 'Pasale este link al cliente (por WhatsApp, mail, donde sea). Vence solo a los 30 días, y también deja de funcionar apenas firme (un solo uso).';
       stepUploading.hidden = true;
       stepResult.hidden = false;
     } catch (err) {
@@ -150,8 +158,14 @@
           ? err.message
           : 'No pudimos subir el contrato. Probá de nuevo.');
       uploadError.hidden = false;
+      // Solo se ofrece cuando el propio link que se pegó ya no existe -
+      // si no había replaceId puesto, esto no puede pasar.
+      forceBtn.hidden = !(replaceId && err.notFound);
     }
-  });
+  }
+
+  uploadBtn.addEventListener('click', () => doUpload(false));
+  forceBtn.addEventListener('click', () => doUpload(true));
 
   copyBtn.addEventListener('click', async () => {
     try {
@@ -172,6 +186,7 @@
     clientLastName.value = '';
     clientEmail.value = '';
     replaceLink.value = '';
+    forceBtn.hidden = true;
     stepResult.hidden = true;
     stepForm.hidden = false;
     updateBtn();
