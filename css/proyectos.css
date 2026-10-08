@@ -43,7 +43,7 @@ body.legal{overflow-x:hidden}
    en el primer hijo directo de .has-fixed-nav - el resto de los bloques
    de la página siguen espaciándose entre sí con su margin-top normal. */
 .has-fixed-nav > .section:first-child{padding-top:0}
-.has-fixed-nav > .proj-page-block:first-of-type{margin-top:0}
+.has-fixed-nav > .proj-page-block:first-child{margin-top:0}
 
 .proj-page-block{margin-top:clamp(48px,6vw,72px)}
 .proj-page-block:first-of-type{margin-top:clamp(32px,4vw,48px)}

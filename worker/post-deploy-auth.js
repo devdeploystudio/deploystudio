@@ -33,6 +33,7 @@ const ALLOWED_EMAILS = [
   'contact.deploystudio@gmail.com',
   'proyecto.s3object@gmail.com',
   'francosantilli71@gmail.com',
+  'santinoschembari.s@gmail.com',
 ];
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 días
